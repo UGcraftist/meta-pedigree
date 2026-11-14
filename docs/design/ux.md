@@ -33,7 +33,9 @@ picks one; the choice and its reason are recorded here.
 - References: 家族森林, Observable notebooks, atlas plates.
 - Why: suits region-by-region comparison (US vs EU vs APAC) in US-008; weakest for dense networks.
 
-Status: **awaiting pick by UGcraftist** (D1 recommended). Until then tokens below are provisional D1.
+**Chosen: D1 档案桌** by UGcraftist on 2026-11-14. Reason: output has to survive screenshots
+(P2) and print/PDF reproduction (P3), and the sourced-pedigree product *is* a document. Palette
+and type below are therefore final for R1; D2/D3 stay as documented alternatives.
 
 ## Design system
 
@@ -55,7 +57,7 @@ Status: **awaiting pick by UGcraftist** (D1 recommended). Until then tokens belo
 
 | ID | Screen | Stories | States covered | Status |
 |---|---|---|---|---|
-| S-01 | 画布主界面：左搜索/筛选，中视图，右详情 | US-013, US-017 | default, loading, empty dataset, error, partial data, long labels | proposal |
+| S-01 | 画布主界面：左搜索/筛选，中视图，右详情；**一个画布 + 视图切换器**（树/时间轴/关系网共用同一状态） | US-013, US-017 | default, loading, empty dataset, error, partial data, long labels | in review |
 | S-02 | 谱系树视图（聚焦、分支、五类关系编码） | US-004, US-005, US-006, US-014 | focused, unfocused-dim, unknown-type fallback, no lineage | proposal |
 | S-03 | 时间轴视图（时间刷、精度带、区间） | US-002, US-004, US-015 | year-only bands, ranges, conflicts, empty period | proposal |
 | S-04 | 关系网视图（聚合、标签抽稀、性能态） | US-017, US-018, US-024 | 1,500-relation load, paused layout, hover-neighbourhood | proposal |
@@ -68,6 +70,40 @@ Status: **awaiting pick by UGcraftist** (D1 recommended). Until then tokens belo
 | S-11 | 审核队列（R2） | US-023 | pending, rejected with comment, published | R2 |
 | S-12 | 公开站点（R2，只读快照、版本号、署名） | US-021, US-022 | public, limited object hidden, stale edition banner | R2 |
 
+### S-01 wireframe (text)
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│ [search ▸] [时间▾ 地区▾ 类型▾ 置信▾]        view: 谱系树│时间轴│关系网 │
+├──────────────┬─────────────────────────────────────────┬─────────────┤
+│ 结果 (US-016)│                                         │ S-07 详情   │
+│ 组织/人物分组│      canvas: S-02 / S-03 / S-04          │ 来源·引文   │
+│ 别名命中标记 │      每条边带 provenance chip，             │ 冲突并列    │
+│              │      每个日期带 precision badge            │ 无来源标记  │
+├──────────────┴─────────────────────────────────────────┴─────────────┤
+│ S-08 对比托盘（0–3 槽）        S-09 导出        URL 状态（可复制链接）│
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+The switcher keeps focus, filters, time window and compare selection; only the rendering and
+the edge layout change. Switching views never loses the user's place.
+
+## URL state (deep links)
+
+The address bar carries the whole picture, so a link can be pasted into an article or a paper and
+reopen the same view:
+
+```
+#/org/ORG-eu-012?view=tree&t=2015-2024&f=region:eu,kind:startup&compare=ORG-us-004
+```
+
+Carried: view (`tree|timeline|network`), focus object, time window, active filters, compare set.
+Stable human-readable IDs (FR-004); an unknown or stale reference is dropped with a banner, never
+guessed. This is exactly the string S-09 "复制链接" copies. Without URL state, sharing means the
+reader has to re-navigate by hand and sees a different picture — which breaks US-019.
+
+**Proposed: carry state in the URL** (awaiting UGcraftist confirmation at the stage-2 gate).
+
 ## States checklist (Must screens)
 Every Must screen must cover: default · loading · empty · error · partial data · long content ·
 no permission (R2 only) · narrow width (1024 px). Canvas screens additionally: 40-relation and
@@ -78,7 +114,12 @@ no permission (R2 only) · narrow width (1024 px). Canvas screens additionally: 
 - Relation type and precision are encoded by shape + text, never colour alone.
 - Keyboard: `/` search, `f` focus, `Esc` exit focus, `Tab` cycles panel → canvas → panel.
 
-## Open items to close before the stage-2 gate
-- Pick D1 / D2 / D3 (UGcraftist).
-- Confirm S-01 layout: one canvas with a view switcher, versus three separate pages — depends on whether depth is passed by URL (US-019).
-- Decide whether 无来源 facts are allowed in the R1 test set at all, or only with an explicit "draft" mark (affects S-07 and FR-001 acceptance).
+## Resolved at the stage-2 review
+- Art direction: **D1 档案桌** (UGcraftist, 2026-11-14).
+- S-01: **one canvas + view switcher**, not three pages; focus/filters/time survive switching.
+- 无来源 facts: **allowed in the R1 test set**, always labelled `无来源` and never rendered as a
+  normal sourced fact (FR-001, S-07). The detail panel shows the gap instead of hiding the node.
+
+## Open items before the stage-2 gate
+- URL state: confirm or reject the proposal above (one line from UGcraftist).
+- Wireframes: S-01–S-10 and S-12 flip from `in review` to `ready` on owner approval (DR-0001).

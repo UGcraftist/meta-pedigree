@@ -72,6 +72,7 @@
 | Event (e.g. founding, merger, election) | curator entry | P4 | private until published | all versions |
 | Source (name, author, locator, date, licence, as-of) | curator entry | P4 | public | kept permanently |
 | Fact / claim (field, value, source, precision, confidence) | curator entry | P4 | per visibility rule | kept permanently |
+| No-source fact (fact with an empty source, allowed since 2026-11-14) | curator entry | P4 | private until published | kept, always flagged `无来源` |
 | Vocabulary / registry (relation + attribute types, version) | P4 | P4 | public | versioned, never rewritten |
 | **Party-domain reserved slots** (faction, alliance, election contest, ideology axes, legal status, membership, cross-party role) | party dataset only (Q9) | P4 | private until published | kept permanently; null for enterprise datasets |
 | User (account, role, session) | system | project owner | restricted | account life + audit 1 year |
