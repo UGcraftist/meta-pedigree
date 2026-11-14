@@ -38,7 +38,7 @@ flowchart LR
 | editor | 建/改/提交/发布事实与来源、改词表、看审计 | UGcraftist |
 | admin | 管理 editor 账号 | UGcraftist（单一持有人 —— 见风险 R-001） |
 
-gate 检查要求每个管理角色两名具名持有人；R1 只有一人，**记为已知例外**：R2 前补第二持有人
+gate 检查要求每个管理角色两名具名持有人；R1 只有一人，**记为已知例外**（UGcraftist 2026-11-14 接受）：R2 前补第二持有人
 （或明确"单人运维"接受书）。
 
 ## Credentials
