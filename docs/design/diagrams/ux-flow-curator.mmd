@@ -1,0 +1,16 @@
+%% Question: how does P4 enter, validate and publish a fact without touching code?
+%% Sources: ux.md screen index, US-003, US-006, US-024, US-021, FR-006, FR-009, FR-011
+flowchart LR
+  enter([P4 opens 录入台 S-10]) --> kind{录入什么}
+  kind -->|组织 / 人物 / 任职| form[表单 + 来源 + 精度]
+  kind -->|关系| rel[选注册表类型 + 起止 + 百分比]
+  kind -->|新类型 / 新属性| vocab[改注册表: 名称 · 方向 · 渲染提示 · 是否政党专用槽]
+  rel --> validate{校验}
+  form --> validate
+  vocab --> validate
+  validate -->|引用不存在| err[拒绝并指出坏引用]
+  validate -->|通过| save[保存: 写审计 who/when/what]
+  err --> form
+  save --> refresh[刷新画布: 无重建]
+  refresh --> audit[S-07 可见修改记录]
+  vocab --> refresh

@@ -1,0 +1,13 @@
+%% Question: how does P1 get from "an org I heard about" to "a sourced answer I can show"?
+%% Sources: ux.md screen index, US-004, US-005, US-013, US-015, US-016, US-017, US-019, US-020
+flowchart LR
+  start([P1 opens app]) --> search[S-05 搜索: name or alias]
+  search -->|hit| focus[S-01 画布 / 聚焦]
+  search -->|no result| empty[S-05 空结果: 换别名 / 收窄条件]
+  focus --> view{S-02 tree / S-03 timeline / S-04 network}
+  view --> detail[S-07 详情: 来源 · 截至 · 精度 · 冲突]
+  detail -->|无来源 or 冲突| mark[显示 无来源 / 并列冲突, 不补全]
+  detail -->|可引用| compare[S-08 对比 2–3 对象]
+  compare --> export[S-09 分享链接 / 导出 + 出处附录]
+  mark --> export
+  export --> done([简报或文章可核对])
