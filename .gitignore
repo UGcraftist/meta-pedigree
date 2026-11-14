@@ -1,2 +1,5 @@
 build/*
 !build/.gitkeep
+
+# Local reference material (external example projects), not part of this repo
+ref/
