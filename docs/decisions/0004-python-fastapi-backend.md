@@ -1,6 +1,6 @@
 # DR-0004: 后端运行时改为 Python 3.12 + FastAPI（替代 DR-0002 的 Node/Fastify 段）
 
-- Status: accepted
+- Status: superseded by DR-0005
 - Date: 2026-11-14
 - Category: backend-runtime, code-organization, testing
 - Reversibility: one-way (runtime and repo layout)

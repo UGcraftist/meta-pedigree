@@ -1,11 +1,21 @@
 # Architecture
 Audience: engineers · Last updated: 2026-11-14 by UGcraftist
-Sources: DR-0002 (stack; runtime/layout superseded by DR-0004), DR-0004 (backend runtime, layout), DR-0003 (data model), requirements.md (NFR-001…), ux.md
+Sources: DR-0005 (Supabase + Cloudflare; supersedes DR-0002/DR-0004 runtime+deploy), DR-0003 (data model), requirements.md (NFR-001…), ux.md
 
 ## Shape
 
-模块化单体（DR-0002 + DR-0004）：一个 API 进程 + 一个 SPA，一个 PostgreSQL。R1 无第三方服务，
-无后台任务，无缓存层。所有读操作走 API；PNG 导出在前端 SVG 上完成，不经过服务器。
+**无应用服务器（DR-0005）**：静态 SPA（Cloudflare Pages）直接调 Supabase（PostgREST + Auth + RLS）。
+
+```
+浏览器 SPA ──HTTPS──> Cloudflare Pages（静态托管）
+     │
+     └──HTTPS + JWT──> Supabase: PostgREST ──> PostgreSQL 16
+                        Auth（邀请制）
+                        RLS（R1 关闭 anon 读；R2 打开 published 只读）
+```
+
+R1 无后台任务、无缓存层、无自建进程；业务校验在 SQL 函数/触发器里（`submit_fact` 等 RPC），
+展示逻辑（树布局、时间轴刻度、SVG）在客户端。PNG 导出在前端完成，不经过服务器。
 
 ## Context
 
@@ -26,27 +36,29 @@ C4Context
 
 ```mermaid
 C4Container
-  Container(web, "web", "React 19 + Vite + TS", "三视图、详情、录入台；D3/SVG")
-  Container(api, "api", "Python 3.12 + FastAPI", "REST/JSON，OpenAPI 契约")
-  ContainerDb(pg, "PostgreSQL 16", "单库", "org/person/fact/source + 注册表")
+  Container(web, "web", "React 19 + Vite + TS on Cloudflare Pages", "三视图、详情、录入台；D3/SVG")
+  Container(pgr, "Supabase PostgREST", "托管 API", "读=视图，写=RPC 函数")
+  ContainerDb(pg, "PostgreSQL 16 (Supabase)", "单库", "org/person/fact/source + 注册表")
+  Container(auth, "Supabase Auth", "托管鉴权", "邮箱+密码，JWT 角色");
 
-  Rel(web, api, "JSON over HTTPS")
-  Rel(api, pg, "SQL + 递归 CTE")
+  Rel(web, pgr, "JSON over HTTPS + JWT")
+  Rel(pgr, pg, "SQL + 递归 CTE")
+  Rel(web, auth, "登录/刷新 token", "HTTPS")
 ```
 
 | Container | 职责 | 关键约束 |
 |---|---|---|
-| `web/` | S-01…S-10；URL 状态；SVG 导出 PNG | NFR-001（首屏 ≤3s）、NFR-004（放大不重叠）、NFR-002（无硬编码颜色） |
-| `api/` | 读 API + 编辑 API；发布校验（来源/时间精度）；审计写入 | NFR-003（≤200ms/事实）；服务端鉴权 |
-| PostgreSQL | 唯一事实源；递归 CTE 出树 | 迁移只向前（DR-0003） |
-| 契约 `openapi.yaml` | 词表与类型的单一来源（非容器） | web 由它生成类型（T-004）；后端 Pydantic 模型对应同一份契约 |
+| `web/` | S-01…S-10；URL 状态；SVG 导出 PNG；布局与交互逻辑 | NFR-001（首屏 ≤3s）、NFR-004（放大不重叠）、NFR-002（无硬编码颜色） |
+| Supabase PostgREST | 读=视图（`tree_nodes`/`timeline_events`/…），写=RPC（`submit_fact`/`upsert_stance`/`merge_source`）+ RLS | NFR-003（≤200ms/事实）；RLS 是唯一防线（DR-0005） |
+| PostgreSQL | 唯一事实源；递归 CTE 出树；约束+触发器承担校验 | 迁移只向前（DR-0003） |
+| 契约 `openapi.yaml` | PostgREST/RPC 面的词表与类型单一来源（非容器） | web 由它生成类型（T-004） |
 
 ## 关键流程
 
-- 树：`GET /api/v1/tree` → 递归 CTE（relation_type.implied_parent 决定父子方向）→ 前端 D3 布局（US-004）。
+- 树：`POST /api/v1/tree` 语义不变，落成 PostgREST 视图 `tree_nodes`/`tree_edges`（递归 CTE，`relation_type.implied_parent` 决定方向）→ 前端 D3 布局（US-004）。
 - 冲突并列：一个 (subject,predicate,object) 多行 → API 分组返回 → S-08 并列显示，可分别引用（US-009）。
 - 无来源：fact 无 source 行 → API 返回 `has_source:false` → S-07 画虚线 + `无来源` 标签（FR-001）。
-- 发布：S-10 保存 draft → 提交 in_review → 发布校验（来源或显式无来源 + 时间精度非空）→ published，写审计行。
+- 发布：RPC `submit_fact` 单事务完成"校验（来源或显式无来源 + 时间精度非空）→ 关旧修订 → 插新修订 → 写 audit_log"（TH-02）。
 
 ## NFR 追溯
 

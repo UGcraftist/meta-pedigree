@@ -1,6 +1,6 @@
 # Project state: Meta Pedigree
 
-Current stage: 5 implementation
+Current stage: 5 implementation — T-001 done; DR-0005 (Supabase + Cloudflare, no app server) applied; next T-002
 Last updated: 2026-11-14 by UGcraftist
 
 ## Gates

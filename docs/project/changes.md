@@ -49,3 +49,10 @@
 - 2026-11-14: project initialized with the team workflow.
 - 2026-11-14: CR-001 raised (solo-developer schedule vs. Must scope).
 - 2026-11-14: CR-001 decided by UGcraftist — option B, full scope, R1 ≈ 2026-12-13; preview 2026-11-18 internal.
+- 2026-11-14: **CR-003 raised and decided** by UGcraftist — platform switch: data/API on Supabase (PostgreSQL + PostgREST + Auth + RLS), frontend on Cloudflare Pages; **no application server in R1**. Recorded in DR-0005 (supersedes DR-0002/DR-0004 runtime and deploy sections). Trigger: no local PostgreSQL/Docker, solo maintainer.
+
+## Affected docs
+- docs/decisions/0005-supabase-cloudflare-platform.md — new
+- docs/decisions/0002-stack-and-system-shape.md, 0004-python-fastapi-backend.md — status updated (superseded in part / wholly)
+- docs/design/architecture.md — containers and flows rewritten
+- docs/project/plan.md — T-002/T-004/T-007/T-014/T-018/T-019 rescoped; missing T-007…T-009 rows added
