@@ -1,3 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+web/dist/
+.env
+
 build/*
 !build/.gitkeep
 
