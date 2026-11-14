@@ -23,7 +23,7 @@
 ## Stories
 
 ### US-001 每条事实都能追到来源
-- Epic: E1 · Persona: P3 · Status: draft
+- Epic: E1 · Persona: P3 · Status: agreed
 - Story: 作为文科研究人员，我想在图上点开任何一条关系或任职时看到它的出处（文献、页码或链接）和"截至何时"，以便我能在论文里安全引用。
 - Acceptance criteria:
   - Given 一条组织分合关系，when 我打开它的详情，then 我看到的来源名称、定位（页码或链接）和数据截止日期。
@@ -33,7 +33,7 @@
 - Source: 访谈（P3 关切）；`ref/` 中尼泊尔示例以书中摘录作悬浮说明的做法
 
 ### US-002 缺失与不确定要显式标出
-- Epic: E1 · Persona: P3 · Status: draft
+- Epic: E1 · Persona: P3 · Status: agreed
 - Story: 作为研究者，我想让"只知道年份""两份材料说法冲突""来源未载"各看起来不一样，以便我不会把推测当成事实。
 - Acceptance criteria:
   - Given 一条只有年份的记录，when 它出现在图上，then 它不被画成精确到日的点，并且精度（年 / 月 / 日）可见。
@@ -43,7 +43,7 @@
 - Source: 访谈（P3）+ 两个参考案例都把"缺失/低置信"显式标出
 
 ### US-003 更新数据后不必改代码
-- Epic: E1 · Persona: P4 · Status: draft
+- Epic: E1 · Persona: P4 · Status: agreed
 - Story: 作为数据策展人，我想把新组织、新关系、新来源录入后，图立刻反映，以便我一天能录入很多条而不必等一次重新发布。
 - Acceptance criteria:
   - Given 我新增一个组织和一条关系，when 我刷新图，then 它们出现在正确的时间位置和所在谱系里。
@@ -53,7 +53,7 @@
 - Source: 访谈（P4 的工作方式）
 
 ### US-004 沿时间看一个组织的谱系
-- Epic: E2 · Persona: P1 · Status: draft
+- Epic: E2 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想从一个组织出发，沿时间看到它的前身、后继与分支，以便回答"这个党/公司是怎么来的"。
 - Acceptance criteria:
   - Given 一个组织，when 我聚焦它，then 图上高亮它和与它直接相连的组织链，其余内容淡出。
@@ -63,7 +63,7 @@
 - Source: 访谈（P1 的核心问题）；参考案例的"组织列 + 分合线"结构
 
 ### US-005 五种组织关系不混
-- Epic: E2 · Persona: P1 · Status: draft
+- Epic: E2 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想一眼区分改名、整体合并、分裂、部分并入和共同组建，以便不把派系分离写成继承。
 - Acceptance criteria:
   - Given 一条关系，when 我查看它，then 它属于五种类型之一，并且类型在图例和详情里写法一致。
@@ -73,7 +73,7 @@
 - Source: 访谈（P1 的典型误判）；尼泊尔示例的 `partial_merge` 区分
 
 ### US-006 同名不等于同一组织
-- Epic: E2 · Persona: P1 · Status: draft
+- Epic: E2 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想让同名但不同来源的组织在图上各自独立（例如两个不同时期的同名委员会），以便我不把两段历史接成一条。
 - Acceptance criteria:
   - Given 两个同名组织，when 我查看它们的详情，then 各自有独立的标识和区分线索（成立时间、前身组织）。
@@ -82,7 +82,7 @@
 - Source: 访谈（P1）；尼泊尔示例中同名"团结中心"的处理
 
 ### US-007 企业集团的控制结构
-- Epic: E2 · Persona: P1 · Status: assumption
+- Epic: E2 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想看清公司集团里的母子关系、控股与改名，以便判断一个企业背后谁在控制。
 - Acceptance criteria:
   - Given 一个母公司，when 我聚焦它，then 子公司和参股关系以不同于"时间谱系"的方式呈现。
@@ -92,7 +92,7 @@
 - Source: 假设——用户提到"企业"；P1 是否需要股权比例待确认
 
 ### US-008 跨地区并置比较
-- Epic: E2 · Persona: P1 · Status: assumption
+- Epic: E2 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想把两个国家或地区的同类谱系放在同一条时间轴上并排看，以便比较它们的分合节奏。
 - Acceptance criteria:
   - Given 两个地区的谱系，when 我并置它们，then 时间轴是同一把尺子，各列的编号与人物互不混淆。
@@ -101,7 +101,7 @@
 - Source: 假设——用户提到"各地"
 
 ### US-009 一个人跨组织的完整轨迹
-- Epic: E3 · Persona: P1 · Status: draft
+- Epic: E3 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想把一个人在各组织的任职、转任、退出按时间串成一条线，以便看出他是正常转任还是被排挤出局。
 - Acceptance criteria:
   - Given 一个人，when 我聚焦他，then 他在每个组织的任职时段相连，跨组织的位置变化可见。
@@ -111,7 +111,7 @@
 - Source: 访谈（P1 的核心用例）
 
 ### US-010 某组织某时期有哪些人
-- Epic: E3 · Persona: P1 · Status: draft
+- Epic: E3 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想选定一个组织和一段时间，看到当时在里面的人和职务，以便还原某一年的班底。
 - Acceptance criteria:
   - Given 一个组织和一个时间段，when 我确认，then 我看到当时任职的人、职务和起止时间，并能按职务排序。
@@ -121,7 +121,7 @@
 - Source: 访谈（P1）；尼泊尔示例按时间锁定人员
 
 ### US-011 人物现在在哪
-- Epic: E3 · Persona: P2 · Status: draft
+- Epic: E3 · Persona: P2 · Status: agreed
 - Story: 作为写稿的观察者，我想看到某人最新的已知身份与所在组织，以及这条信息截至哪一天，以便不在稿子里写一个过时的头衔。
 - Acceptance criteria:
   - Given 一个人，when 我打开摘要，then 我看到最新一条任职、所在组织和数据截止日期。
@@ -131,7 +131,7 @@
 - Source: 访谈（P2）
 
 ### US-012 同名人物分开
-- Epic: E3 · Persona: P1 · Status: draft
+- Epic: E3 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想让同名或名字相近的人物各自独立并给出区分线索，以便我不把两个人的履历合成一份。
 - Acceptance criteria:
   - Given 两个同名人物，when 我搜索这个名字，then 结果各自列出区分线索（出生年、地区、所属组织）。
@@ -140,7 +140,7 @@
 - Source: 访谈（P1）；尼泊尔示例中三个"维迪亚"的区分
 
 ### US-013 聚焦一个对象
-- Epic: E4 · Persona: P2 · Status: draft
+- Epic: E4 · Persona: P2 · Status: agreed
 - Story: 作为观察者，我想点一个人或一个组织，就把它和它的一切关系提亮、其余淡出，以便一眼看清重点。
 - Acceptance criteria:
   - Given 我在看一张信息很密的图，when 我点一个人，then 他和他的轨迹最突出，其余内容淡出但不是消失。
@@ -150,7 +150,7 @@
 - Source: 两个参考案例都以此为主要交互
 
 ### US-014 比较 2–3 个对象
-- Epic: E4 · Persona: P1 · Status: draft
+- Epic: E4 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想同时锁定最多三个人（或组织）放在一起看，以便回答"这几个人在哪些时期同属一个组织"。
 - Acceptance criteria:
   - Given 我按住修饰键（或进入比较模式），when 我点第二、第三个人，then 他们同时被锁定，超出上限时给出提示。
@@ -160,7 +160,7 @@
 - Source: 两个参考案例的比较模式（上限 3 / 6）
 
 ### US-015 按条件筛选
-- Epic: E4 · Persona: P1 · Status: draft
+- Epic: E4 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想按时间、地区、组织类型、人物角色筛选，以便只看与我当前问题相关的部分。
 - Acceptance criteria:
   - Given 我设了几个条件，when 它们被同时应用，then 结果是交集，并显示命中了多少。
@@ -170,7 +170,7 @@
 - Source: 两个参考案例的筛选面板
 
 ### US-016 搜索定位
-- Epic: E4 · Persona: P2 · Status: draft
+- Epic: E4 · Persona: P2 · Status: agreed
 - Story: 作为观察者，我想输入名字就定位到那个人或组织，以便在陌生的数据集里不用手工翻找。
 - Acceptance criteria:
   - Given 我输入几个字，when 有多个匹配，then 候选列表给出足够的区分信息。
@@ -180,7 +180,7 @@
 - Source: 参考案例的人物搜索
 
 ### US-017 同一份数据换视角
-- Epic: E4 · Persona: P1 · Status: draft
+- Epic: E4 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想在谱系树、时间轴、关系网这几种视角之间切换而不用重新录入数据，以便同一批事实能回答不同的问题。
 - Acceptance criteria:
   - Given 我在谱系视角选中了一个人，when 我切到关系网视角，then 选中状态和时间范围还在。
@@ -190,7 +190,7 @@
 - Source: 访谈（"重点在于灵活的可视化"）
 
 ### US-018 大图仍能顺畅操作
-- Epic: E4 · Persona: P1 · Status: draft
+- Epic: E4 · Persona: P1 · Status: agreed
 - Story: 作为分析者，我想在 100 个组织、数百人的图上缩放、悬停、聚焦都不卡，以便我不必把一张图拆成很多小图。
 - Acceptance criteria:
   - Given 数据量达到 v1 约定规模（100 个组织、≤500 人、≤1500 条关系），when 我平移缩放，then 画面跟手，不会每次操作都停顿数秒。
@@ -200,7 +200,7 @@
 - Source: 参考案例（数千节点）与访谈中的规模预期
 
 ### US-019 分享当前视图
-- Epic: E5 · Persona: P2 · Status: draft
+- Epic: E5 · Persona: P2 · Status: agreed
 - Story: 作为观察者，我想把现在这个画面（聚焦谁、筛了什么、看到哪段时间）复制成一个链接发出去，以便同事打开就是同一张图。
 - Acceptance criteria:
   - Given 我处于某个聚焦与筛选状态，when 我复制链接，then 对方打开后看到相同的聚焦、筛选和时间范围。
@@ -210,7 +210,7 @@
 - Source: 参考案例的对外链接；P2 的发稿场景
 
 ### US-020 导出用于报告
-- Epic: E5 · Persona: P3 · Status: draft
+- Epic: E5 · Persona: P3 · Status: agreed
 - Story: 作为研究者，我想把当前画面导出成高清图片或矢量文件，并带上图例、来源和"截至日期"，以便直接放进报告和论文。
 - Acceptance criteria:
   - Given 我调好画面，when 我导出，then 得到高清位图和可无级放大的矢量两种结果。
@@ -220,7 +220,7 @@
 - Source: 访谈（P2/P3 都要把图放进成品）
 
 ### US-021 公网发布
-- Epic: E5 · Persona: P2 · Status: draft
+- Epic: E5 · Persona: P2 · Status: agreed
 - Story: 作为观察者，我想在浏览器里直接打开一个稳定网址看图，不用安装任何东西，以便随时把它引用给读者。
 - Acceptance criteria:
   - Given 我只打开浏览器，when 我访问网址，then 几秒内看到可交互的图，而不是空白页或报错。
@@ -230,7 +230,7 @@
 - Source: 访谈（"web 部署"）；两个参考案例都是网页
 
 ### US-022 公开与受限数据
-- Epic: E5 · Persona: P4 · Status: draft
+- Epic: E5 · Persona: P4 · Status: agreed
 - Story: 作为数据策展人，我想把数据集标成公开或仅成员可见，以便未核实的数据不被外人看到，公开数据仍可被引用。
 - Acceptance criteria:
   - Given 一份受限数据，when 未登录的人访问，then 他只看到公开部分，受限部分不可见。
@@ -240,7 +240,7 @@
 - Source: 访谈（远程数据 + 公网部署）；参考案例的账号与管理员界面
 
 ### US-023 协作录入与审核
-- Epic: E5 · Persona: P4 · Status: assumption
+- Epic: E5 · Persona: P4 · Status: agreed
 - Story: 作为数据策展人，我想让合作者提交草稿、由我审核后再发布，以便多人录入时质量不失控。
 - Acceptance criteria:
   - Given 合作者提交一条草稿，when 我查看，then 我看到它改动了什么、依据是什么。
@@ -250,7 +250,7 @@
 - Source: 假设——两位开发者，是否需要审核流程待确认
 
 ### US-024 领域可移植：换一个领域只加词表，不重写模型
-- Epic: E1 · Persona: P4 · Status: draft
+- Epic: E1 · Persona: P4 · Status: agreed
 - Story: 作为数据策展人，我想在把系统从"企业谱系"迁到"政党谱系"时只新增关系类型与字段定义、不改动存储和接口，以便同一套底子能服务两类完全不同的组织。
 - Acceptance criteria:
   - Given 现有模型只有企业关系（分拆、收购、控股、改名），when 引入政党关系（派系分离、 coalition、选举联盟、继承），then 不需要迁移已有的组织、人物、任职、来源数据。
@@ -292,6 +292,8 @@
 暂无。
 
 ## Open questions and assumptions
+
+> Stage-1 gate approved 2026-11-14 by UGcraftist. US-001–US-024 are agreed as written; Q8 persona details remain assumptions — revisit trigger: the first real interview with P1–P3 or the first quarterly review, whichever comes first.
 
 | ID | Question | Owner | Due |
 |---|---|---|---|
