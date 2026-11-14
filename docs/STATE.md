@@ -15,12 +15,14 @@ Last updated: 2026-11-14 by UGcraftist
 | 7 release-retro | not started | | | docs/project/releases/<version>.md |
 
 ## Open questions (blocking the current gate)
-- Q9 party field list (factions, alliances, elections, ideology) before the schema freezes → [product/stories.md](product/stories.md#open-questions-and-assumptions)
-- Stage-3 menu decisions: stack, database, API style, auth, deployment (see `docs/STATE.md` next turn) → docs/decisions/
+- ~~Q9 party field list~~ **closed 2026-11-14**: factions, alliances, elections, ideology + China/US stance axes → registry rows, DR-0003.
+- Stage-3 remaining: API contract + data model read-through by UGcraftist, then the stage-3 gate (auth for R2 still open, recorded as a risk) → [decisions/README.md](decisions/README.md)
 
 ## Resolved (recorded in stories.md, ux.md, changes.md)
 - Q1 scope: US/EU embodied-AI companies, ≤100 orgs, persons as collected; production target is political parties, so the model stays domain-neutral (US-024, FR-011/FR-024 party slots).
-- Q2 data model: deferred to stage 3 (schema decision record); data requirements written in stage 2.
+- Q2 data model: deferred to stage 3; **DR-0003** now fixes it (fact-centered, registry-driven, five time precisions).
+- Stack/shape: **DR-0002** accepted (modular monolith, React SPA, PostgreSQL + recursive CTE, REST/OpenAPI), all menu defaults, 2026-11-14.
+- S-10 mockup: elements accepted, pixel layout provisional (revise after the real screen exists).
 - Q3 views: pedigree tree, timeline and relation network all ship in v1 (CR-001 option B keeps the network view).
 - Art direction: D1 档案桌 (UGcraftist, 2026-11-14).
 - S-01 is one canvas with a view switcher; no-source facts are allowed in the R1 test set, always labelled `无来源`.

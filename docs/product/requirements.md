@@ -74,7 +74,7 @@
 | Fact / claim (field, value, source, precision, confidence) | curator entry | P4 | per visibility rule | kept permanently |
 | No-source fact (fact with an empty source, allowed since 2026-11-14) | curator entry | P4 | private until published | kept, always flagged `无来源` |
 | Vocabulary / registry (relation + attribute types, version) | P4 | P4 | public | versioned, never rewritten |
-| **Party-domain reserved slots** (faction, alliance, election contest, ideology axes, legal status, membership, cross-party role) | party dataset only (Q9) | P4 | private until published | kept permanently; null for enterprise datasets |
+| **Party-domain reserved slots** (faction, alliance, election contest, ideology + **stance toward China / toward US**, legal status, membership, cross-party role) | party dataset only (Q9) | P4 | private until published | kept permanently; null for enterprise datasets |
 | User (account, role, session) | system | project owner | restricted | account life + audit 1 year |
 | Audit log (who, when, what, before/after) | system | project owner | restricted | 1 year |
 | Public snapshot (frozen edition) | publish action | P4 | public | kept per edition |
@@ -109,7 +109,7 @@ Data owning rule: one dataset, one edition; every field value is a claim with a 
 |---|---|---|---|
 | A-01 | The test set can be assembled from public sources within ~2 weeks of curation | R1 demo slips | P4 |
 | A-02 | US/EU embodied-AI companies really share the five relation types (merge, split, rename, control, alliance) | A sixth type appears; FR-009 already absorbs it | P1 |
-| A-03 | Party-domain field list (Q9) arrives before stage 3 freezes the schema | Reserved slots are guessed and need rework | project owner |
+| A-03 | Party-domain field list (Q9) arrives before stage 3 freezes the schema | **Closed 2026-11-14**: factions, alliances, elections, ideology + China/US stance axes; modeled as registry rows (DR-0003) | project owner |
 | A-04 | Single curator is enough for R1; public launch waits for R2 | Scope grows; R2 pulls ahead | project owner |
 | A-05 | Mid-range laptop is the performance reference device | NFR-001 numbers guessed | project owner |
 | A-06 | Figma or equivalent is unavailable; design stays text + Mermaid until stage 3 | Screens are reviewed late | project owner |

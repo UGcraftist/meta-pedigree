@@ -77,6 +77,8 @@ and type below are therefore final for R1; D2/D3 stay as documented alternatives
 Rendered with the D1 tokens by `mockups/make_s10.py` (PIL, no image-gen key needed); it is a
 design reference, not a screenshot of running code. The generator is the source of truth for the
 pixel layout until stage 5 builds the real screen.
+Accepted by UGcraftist 2026-11-14 with one note: the elements are sufficient, the layout will be
+revised after the first working screen; keep the region set, treat the pixel layout as provisional.
 
 ### S-01 wireframe (text)
 
