@@ -4,7 +4,7 @@ Sources: DR-0002 (stack), DR-0003 (data model), requirements.md (NFR-001…), ux
 
 ## Shape
 
-模块化单体（DR-0002）：一个 API 进程 + 一个 SPA，一个 PostgreSQL。R1 无第三方服务，
+模块化单体（DR-0002 + DR-0004）：一个 API 进程 + 一个 SPA，一个 PostgreSQL。R1 无第三方服务，
 无后台任务，无缓存层。所有读操作走 API；PNG 导出在前端 SVG 上完成，不经过服务器。
 
 ## Context
@@ -27,22 +27,19 @@ C4Context
 ```mermaid
 C4Container
   Container(web, "web", "React 19 + Vite + TS", "三视图、详情、录入台；D3/SVG")
-  Container(api, "api", "Node 22 + Fastify + TS", "REST/JSON，OpenAPI 契约")
+  Container(api, "api", "Python 3.12 + FastAPI", "REST/JSON，OpenAPI 契约")
   ContainerDb(pg, "PostgreSQL 16", "单库", "org/person/fact/source + 注册表")
-  Container(shared, "shared", "TS 包", "类型、时间精度格式化、词表校验")
 
   Rel(web, api, "JSON over HTTPS")
-  Rel(web, shared, "import")
   Rel(api, pg, "SQL + 递归 CTE")
-  Rel(api, shared, "import")
 ```
 
 | Container | 职责 | 关键约束 |
 |---|---|---|
-| `apps/web` | S-01…S-10；URL 状态；SVG 导出 PNG | NFR-001（首屏 ≤3s）、NFR-004（放大不重叠）、NFR-002（无硬编码颜色） |
-| `apps/api` | 读 API + 编辑 API；发布校验（来源/时间精度）；审计写入 | NFR-003（≤200ms/事实）；服务端鉴权 |
+| `web/` | S-01…S-10；URL 状态；SVG 导出 PNG | NFR-001（首屏 ≤3s）、NFR-004（放大不重叠）、NFR-002（无硬编码颜色） |
+| `api/` | 读 API + 编辑 API；发布校验（来源/时间精度）；审计写入 | NFR-003（≤200ms/事实）；服务端鉴权 |
 | PostgreSQL | 唯一事实源；递归 CTE 出树 | 迁移只向前（DR-0003） |
-| `packages/shared` | 词表与类型单一来源 | 前端/后端不得各自定义时间精度文案 |
+| 契约 `openapi.yaml` | 词表与类型的单一来源（非容器） | web 由它生成类型（T-004）；后端 Pydantic 模型对应同一份契约 |
 
 ## 关键流程
 

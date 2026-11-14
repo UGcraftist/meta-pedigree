@@ -15,7 +15,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 
 | ID | Task | Milestone | Assignee | Requirement | Design (S-/API/TH-) | decision record | Estimate | Depends on | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| T-001 | Scaffold repo per code organization: `api/` (FastAPI, `/healthz`, pytest), `web/` (Vite/React skeleton), venv bootstrap, README run/test; `db/`+`seed/` land in T-002 | M1 | UGcraftist | NFR-07 | — | DR-0002 | 0.5 | — | done |
+| T-001 | Scaffold repo per code organization: `api/` (FastAPI, `/healthz`, pytest), `web/` (Vite/React skeleton), venv bootstrap, README run/test; `db/`+`seed/` land in T-002, CI in T-022 (CR-002) | M1 | UGcraftist | NFR-07 | — | DR-0002, DR-0004 | 0.5 | — | done |
 | T-002 | Migrations + core tables (orgs, persons, facts, fact_relations, sources, fact_sources, stance_axis, relation_type, revision, conflicts); seed importer CLI | M1 | none | FR-003,009,010,011,014 | data-model.md | DR-0003 | 0.75 | T-001 | todo |
 | T-003 | Research + seed 20 orgs (tree skeleton for preview) from sources into seed JSON; validation script | M1 | none | FR-024 | — | — | 0.5 | T-002 | todo |
 | T-004 | API read endpoints: `GET /tree` (root + children), `GET /entities/{id}` (facts+relations+sources) | M1 | none | — | api.md GET /tree, /entities/{id} | DR-0002 | 0.5 | T-002 | todo |
@@ -33,10 +33,13 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | T-019 | Deploy + backups + restore runbook (local first, then hosted) | M2 | none | NFR-07 | — | — | 0.5 | T-018 | todo |
 | T-020 | NFR validation: perf at 100 orgs (pan/zoom ≥30 fps), WCAG AA contrast, target browsers | M2 | none | NFR-02…06, FR-026 | — | — | 0.5 | T-017 | todo |
 | T-021 | Review passes (stage 6 on two walkthroughs: first-time visitor, data editor) + fixes | M2 | none | — | — | — | 2.0 | T-020 | todo |
+| T-022 | CI pipeline (GitHub Actions: build, typecheck, `make check`) once a git remote exists; blocked on remote (CR-002) | M1 | none | NFR-07 | — | DR-0004 | 0.25 | T-001 | blocked |
 
-### T-001 acceptance criteria
-- `web/`, `api/`, `db/`, `seed/` exist with the structure allowed by `docs/decisions/` code organization; CI runs build + typecheck + structure check on push.
+### T-001 acceptance criteria (rescoped by CR-002)
+- `api/`, `web/` exist per DR-0004 code layout; `GET /healthz` returns 200 + version; `make test` green; `make venv` works from a clean checkout (self-bootstraps pip).
+- `web/` compiles (`npm run build`).
 - Root `README.md` has run, build, test and deploy steps that a stranger can follow.
+- `db/` + `seed/` are T-002; CI is T-022 (needs a git remote, which does not exist yet).
 
 ### T-002 acceptance criteria
 - `db/migrate` applies cleanly on an empty database; ER matches `data-model.md`.

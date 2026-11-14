@@ -9,4 +9,4 @@ import os
 APP_VERSION = "0.1.0"
 APP_ENV = os.environ.get("APP_ENV", "development")
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
-EDITOR_TOKEN = os.environ.get("APP_EDITOR_TOKEN", "")
+EDITOR_TOKEN = os.environ.get("EDITOR_TOKEN", "")

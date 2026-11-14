@@ -16,16 +16,16 @@ Last updated: 2026-11-14 by UGcraftist
 
 ## Current focus
 - **M1 walking skeleton → internal preview 2026-11-18**: T-001…T-006 (tree over 20 seed orgs + URL state). Then M2 → R1 Must 2026-12-13.
-- T-001 done (`api/` + `web/` scaffold, `/healthz`, pytest green, README quickstart); branch `chore/T-001-scaffold`, merged locally (no git remote yet, so no PR — flagged).
+- T-001: scaffold on branch `chore/T-001-scaffold`; round-1 review requested changes (DR-0002 runtime mismatch, rescope); fixes + DR-0004 + CR-002 applied, round-2 review pending. No git remote → no PR; merge locally after review passes (flagged).
 - Next action: **T-002** migrations + core tables + seed importer, branch from main, per [implementation skill](../.dsh/skills/implementation/SKILL.md).
 
 ## Open questions (blocking the current gate)
-- Stage-4 gate: plan.md draft for review; approve by naming the plan read-through → [project/plan.md](project/plan.md)
 - R2 auth (SSO + hosted accounts) is not designed yet: tracked as risk in risks.md, must close before the R2 public site.
 
 ## Resolved (recorded in stories.md, ux.md, changes.md)
 - Q1 scope: US/EU embodied-AI companies, ≤100 orgs, persons as collected; production target is political parties, so the model stays domain-neutral (US-024, FR-011/FR-024 party slots).
 - Q2 data model: deferred to stage 3; **DR-0003** now fixes it (fact-centered, registry-driven, five time precisions).
+- T-001 review: **CR-002 + DR-0004** — backend runtime is Python 3.12 + FastAPI (`api/` + `web/`); T-001 rescoped, CI = T-022 (needs remote).
 - Stack/shape: **DR-0002** accepted (modular monolith, React SPA, PostgreSQL + recursive CTE, REST/OpenAPI), all menu defaults, 2026-11-14.
 - S-10 mockup: elements accepted, pixel layout provisional (revise after the real screen exists).
 - Q3 views: pedigree tree, timeline and relation network all ship in v1 (CR-001 option B keeps the network view).
