@@ -4,7 +4,7 @@
 
 | ID | Raised by | Date | Description | Affects stage | Decision | Status |
 |---|---|---|---|---|---|---|
-| CR-001 | UGcraftist | 2026-11-14 | Solo developer with fixed dates (preview 2026-11-18, R1 2026-11-22/23). The stage-1 Must scope (20 FRs, 12 screens, incl. curator UI and three graph views) is roughly twice the realistic single-developer effort, so R1 must be re-cut. | 2 requirements, 4 plan | Options A/B/C below; product owner picks | proposed |
+| CR-001 | UGcraftist | 2026-11-14 | Solo developer with fixed dates (preview 2026-11-18, R1 2026-11-22/23). The stage-1 Must scope (20 FRs, 12 screens, incl. curation UI and three graph views) is roughly twice the realistic single-developer effort, so R1 must be re-cut. | 2 requirements, 4 plan | **B — keep the full Must scope; R1 target moves to ≈ 2026-12-13** (preview stays internal) | decided 2026-11-14 |
 
 ### CR-001 detail — R1 re-cut options
 
@@ -37,9 +37,14 @@
 
 **Consequences if A is chosen:** Q3 ("three views in v1") is amended — the network view becomes an R2 view, recorded here as the amendment; S-10 curator UI moves to R2 and R1 editing is file-based; S-08 comparison keeps only the basic two-object mode. Preview 2026-11-18 would show tree view + 40 seed orgs, read-only, with detail and sources working.
 
-**Q9 dependency:** the party field list is still open. Under A the party slots ship empty in R1 regardless (FR-024), so Q9 can land during stage 3 without blocking implementation.
+**Q9 dependency:** the party field list is still open. Under A and B the party slots ship empty in R1 regardless (FR-024), so Q9 can land during stage 3 without blocking implementation.
+
+**Decision 2026-11-14 (UGcraftist): Option B.** Rationale: the owner is available ≈40 h/week and time is no longer the binding constraint, so no Must item is cut — the network view (S-04, Q3) and the curation UI (S-10) stay in R1. Consequence: R1 target moves to ≈ 2026-12-13; the 2026-11-18 preview is an internal demo (tree view + seed orgs, read-only), not a public release. Option A stays here as the fallback if the time budget turns out lower than confirmed.
+
+**Q9 dependency for B:** none blocking; party slots stay empty in R1.
 
 ## Change log
 
 - 2026-11-14: project initialized with the team workflow.
 - 2026-11-14: CR-001 raised (solo-developer schedule vs. Must scope).
+- 2026-11-14: CR-001 decided by UGcraftist — option B, full scope, R1 ≈ 2026-12-13; preview 2026-11-18 internal.

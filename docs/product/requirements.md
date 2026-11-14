@@ -97,7 +97,7 @@ Data owning rule: one dataset, one edition; every field value is a claim with a 
 - General-purpose graph editor for arbitrary entity types.
 
 ## Constraints
-- Team: **one developer** (UGcraftist, part-time); no designer, no Figma (DR-0001). Fixed dates from the product owner: **preview 2026-11-18**, **R1 2026-11-22/23**. A-07 was closed by this and turned into a hard constraint; the resulting scope re-cut is CR-001.
+- Team: **one developer** (UGcraftist, commitment ≈40 h/week confirmed 2026-11-14); no designer, no Figma (DR-0001). **Preview 2026-11-18 (internal, not public)**; **R1 target ≈ 2026-12-13** with the full stage-1 Must scope (CR-001 option B, 2026-11-14).
 - Web only, desktop first; single machine in R1; budget ≤ US$30/month.
 - No commercial graph database; rendering library choice deferred to stage 3.
 - Sources are copyrighted third-party material: citations and short excerpts only.
@@ -113,7 +113,7 @@ Data owning rule: one dataset, one edition; every field value is a claim with a 
 | A-04 | Single curator is enough for R1; public launch waits for R2 | Scope grows; R2 pulls ahead | project owner |
 | A-05 | Mid-range laptop is the performance reference device | NFR-001 numbers guessed | project owner |
 | A-06 | Figma or equivalent is unavailable; design stays text + Mermaid until stage 3 | Screens are reviewed late | project owner |
-| A-07 | *(closed 2026-11-14)* Team effort was unmeasured | Now a constraint: one developer, fixed dates (see Constraints) → R1 scope re-cut in [project/changes.md](../project/changes.md#cr-001) | UGcraftist |
+| A-07 | *(closed 2026-11-14)* Team effort was unmeasured | Closed by UGcraftist: one developer committing ≈40 h/week → **full Must scope kept**, R1 target ≈ 2026-12-13, preview 2026-11-18 internal (CR-001 option B) | UGcraftist |
 
 ## Interfaces and ownership
 

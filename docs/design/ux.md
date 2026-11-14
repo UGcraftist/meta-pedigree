@@ -57,16 +57,16 @@ and type below are therefore final for R1; D2/D3 stay as documented alternatives
 
 | ID | Screen | Stories | States covered | Status |
 |---|---|---|---|---|
-| S-01 | 画布主界面：左搜索/筛选，中视图，右详情；**一个画布 + 视图切换器**（树/时间轴/关系网共用同一状态） | US-013, US-017 | default, loading, empty dataset, error, partial data, long labels | in review |
-| S-02 | 谱系树视图（聚焦、分支、五类关系编码） | US-004, US-005, US-006, US-014 | focused, unfocused-dim, unknown-type fallback, no lineage | proposal |
-| S-03 | 时间轴视图（时间刷、精度带、区间） | US-002, US-004, US-015 | year-only bands, ranges, conflicts, empty period | proposal |
-| S-04 | 关系网视图（聚合、标签抽稀、性能态） | US-017, US-018, US-024 | 1,500-relation load, paused layout, hover-neighbourhood | proposal |
-| S-05 | 搜索与别名结果 | US-016 | results, alias hit, no result, person vs org groups | proposal |
-| S-06 | 筛选面板（时间/地区/类型/置信/来源） | US-015 | combined filters, zero-result, reset | proposal |
-| S-07 | 对象详情与来源（出处、截至、引文、无来源、冲突并列） | US-001, US-002, US-009, US-010 | sourced, no source, conflicting values, missing fields | proposal |
-| S-08 | 对比托盘（2–3 对象对齐） | US-014, US-008 | two vs three, no overlap, mixed precision | proposal |
-| S-09 | 分享与导出（链接、PNG/SVG、CSV/JSON、出处附录） | US-019, US-020 | copied, export running, export done, licence notes | proposal |
-| S-10 | 策展录入台（实体、关系、来源、词语表） | US-003, US-006, US-024 | create, edit, dangling-ref error, audit trail, registry edit | proposal |
+| S-01 | 画布主界面：左搜索/筛选，中视图，右详情；**一个画布 + 视图切换器**（树/时间轴/关系网共用同一状态） | US-013, US-017 | default, loading, empty dataset, error, partial data, long labels | ready |
+| S-02 | 谱系树视图（聚焦、分支、五类关系编码） | US-004, US-005, US-006, US-014 | focused, unfocused-dim, unknown-type fallback, no lineage | ready |
+| S-03 | 时间轴视图（时间刷、精度带、区间） | US-002, US-004, US-015 | year-only bands, ranges, conflicts, empty period | ready |
+| S-04 | 关系网视图（聚合、标签抽稀、性能态） | US-017, US-018, US-024 | 1,500-relation load, paused layout, hover-neighbourhood | ready |
+| S-05 | 搜索与别名结果 | US-016 | results, alias hit, no result, person vs org groups | ready |
+| S-06 | 筛选面板（时间/地区/类型/置信/来源） | US-015 | combined filters, zero-result, reset | ready |
+| S-07 | 对象详情与来源（出处、截至、引文、无来源、冲突并列） | US-001, US-002, US-009, US-010 | sourced, no source, conflicting values, missing fields | ready |
+| S-08 | 对比托盘（2–3 对象对齐） | US-014, US-008 | two vs three, no overlap, mixed precision | ready |
+| S-09 | 分享与导出（链接、PNG/SVG、CSV/JSON、出处附录） | US-019, US-020 | copied, export running, export done, licence notes | ready |
+| S-10 | 数据录入与核验台（实体、关系、来源、词语表；曾称“策展录入台”） | US-003, US-006, US-024 | create, edit, dangling-ref error, audit trail, registry edit | ready |
 | S-11 | 审核队列（R2） | US-023 | pending, rejected with comment, published | R2 |
 | S-12 | 公开站点（R2，只读快照、版本号、署名） | US-021, US-022 | public, limited object hidden, stale edition banner | R2 |
 
@@ -114,12 +114,22 @@ no permission (R2 only) · narrow width (1024 px). Canvas screens additionally: 
 - Relation type and precision are encoded by shape + text, never colour alone.
 - Keyboard: `/` search, `f` focus, `Esc` exit focus, `Tab` cycles panel → canvas → panel.
 
+## Vocabulary: 数据录入 vs 策展
+
+"策展 (curation)" was the working name borrowed from the archive world. The owner's correction is
+adopted: user-facing copy says **数据录入与核验** (data entry and verification), because the core
+daily work is entering facts and checking them, not exhibiting them. The concept still covers
+three steps that "录入" alone would lose — entry, verification (source/conflict/gap checks) and
+visibility (who may see it) — so the screen is titled 数据录入与核验台, not 数据录入台. The word
+"策展" remains only as an alias in this line and in historical decision records; P4 is renamed
+**数据编辑** in stories.md.
+
 ## Resolved at the stage-2 review
 - Art direction: **D1 档案桌** (UGcraftist, 2026-11-14).
+- **Stage-2 gate approved by UGcraftist on 2026-11-14** — S-01 … S-10 ready (DR-0001).
 - S-01: **one canvas + view switcher**, not three pages; focus/filters/time survive switching.
 - 无来源 facts: **allowed in the R1 test set**, always labelled `无来源` and never rendered as a
   normal sourced fact (FR-001, S-07). The detail panel shows the gap instead of hiding the node.
 
-## Open items before the stage-2 gate
-- URL state: confirm or reject the proposal above (one line from UGcraftist).
-- Wireframes: S-01–S-10 and S-12 flip from `in review` to `ready` on owner approval (DR-0001).
+## Open items carried into stage 3
+- None blocking. Wireframes are `ready`; URL state is decided. S-11/S-12 stay R2.
