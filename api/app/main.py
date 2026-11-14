@@ -1,4 +1,4 @@
-"""Meta Pedigree API — modular monolith (DR-0002).
+"""Meta Pedigree API — modular monolith (DR-0002, runtime DR-0004).
 
 One process serves the JSON API and the built SPA; PostgreSQL holds the
 history (DR-0003). T-001 only provides the walking skeleton: app factory,

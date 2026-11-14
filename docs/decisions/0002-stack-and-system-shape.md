@@ -5,6 +5,7 @@
 - Category: system-shape, rendering, data-storage, api-style, code-organization, testing, observability
 - Reversibility: one-way (shape, storage, API style); two-way (testing, observability)
 - Decided by: UGcraftist (menu defaults accepted as a bundle, 2026-11-14)
+- Superseded by: DR-0004 (runtime and repo layout only; storage, API style, testing, observability still apply)
 
 ## Context
 

@@ -1,6 +1,6 @@
 # Architecture
 Audience: engineers · Last updated: 2026-11-14 by UGcraftist
-Sources: DR-0002 (stack), DR-0003 (data model), requirements.md (NFR-001…), ux.md
+Sources: DR-0002 (stack; runtime/layout superseded by DR-0004), DR-0004 (backend runtime, layout), DR-0003 (data model), requirements.md (NFR-001…), ux.md
 
 ## Shape
 
