@@ -70,6 +70,14 @@ and type below are therefore final for R1; D2/D3 stay as documented alternatives
 | S-11 | 审核队列（R2） | US-023 | pending, rejected with comment, published | R2 |
 | S-12 | 公开站点（R2，只读快照、版本号、署名） | US-021, US-022 | public, limited object hidden, stale edition banner | R2 |
 
+### S-10 mockup
+
+![S-10 数据录入与核验台](../../mockups/s-10-data-entry.png)
+
+Rendered with the D1 tokens by `mockups/make_s10.py` (PIL, no image-gen key needed); it is a
+design reference, not a screenshot of running code. The generator is the source of truth for the
+pixel layout until stage 5 builds the real screen.
+
 ### S-01 wireframe (text)
 
 ```
