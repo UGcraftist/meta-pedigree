@@ -102,7 +102,7 @@ Stable human-readable IDs (FR-004); an unknown or stale reference is dropped wit
 guessed. This is exactly the string S-09 "复制链接" copies. Without URL state, sharing means the
 reader has to re-navigate by hand and sees a different picture — which breaks US-019.
 
-**Proposed: carry state in the URL** (awaiting UGcraftist confirmation at the stage-2 gate).
+**Decided 2026-11-14 (UGcraftist): carry state in the URL**, minimal set only (view, focus, time, filters, comparison) — every screen stays on one route, no per-screen routing. S-09 "复制链接" copies this exact string; unknown IDs in an old link are dropped with a one-line notice.
 
 ## States checklist (Must screens)
 Every Must screen must cover: default · loading · empty · error · partial data · long content ·

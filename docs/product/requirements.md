@@ -97,7 +97,7 @@ Data owning rule: one dataset, one edition; every field value is a claim with a 
 - General-purpose graph editor for arbitrary entity types.
 
 ## Constraints
-- Team: 1–2 people part-time; no dedicated designer, no Figma seat confirmed.
+- Team: **one developer** (UGcraftist, part-time); no designer, no Figma (DR-0001). Fixed dates from the product owner: **preview 2026-11-18**, **R1 2026-11-22/23**. A-07 was closed by this and turned into a hard constraint; the resulting scope re-cut is CR-001.
 - Web only, desktop first; single machine in R1; budget ≤ US$30/month.
 - No commercial graph database; rendering library choice deferred to stage 3.
 - Sources are copyrighted third-party material: citations and short excerpts only.
@@ -113,7 +113,7 @@ Data owning rule: one dataset, one edition; every field value is a claim with a 
 | A-04 | Single curator is enough for R1; public launch waits for R2 | Scope grows; R2 pulls ahead | project owner |
 | A-05 | Mid-range laptop is the performance reference device | NFR-001 numbers guessed | project owner |
 | A-06 | Figma or equivalent is unavailable; design stays text + Mermaid until stage 3 | Screens are reviewed late | project owner |
-| A-07 | Team effort is unmeasured (part-time, 1–2 people) | "Must fits ~60 % effort" cannot be verified | project owner |
+| A-07 | *(closed 2026-11-14)* Team effort was unmeasured | Now a constraint: one developer, fixed dates (see Constraints) → R1 scope re-cut in [project/changes.md](../project/changes.md#cr-001) | UGcraftist |
 
 ## Interfaces and ownership
 
@@ -126,7 +126,7 @@ Data owning rule: one dataset, one edition; every field value is a claim with a 
 
 ## Prioritization
 
-Method: MoSCoW (default). Must = 20 FRs, all in R1; effort estimate is invalid until the plan (stage 4), so the "Must ≈60 %" check is deferred and flagged as A-07.
+Method: MoSCoW (default). Must = 20 FRs, originally all in R1. With one developer and the fixed dates in Constraints the Must list does not fit (~45–55 h as scoped vs ~40–50 h available), so R1 is being re-cut in **CR-001**; until that decision lands the release slices below are provisional.
 
 - **Must**: FR-001–014, FR-017, FR-021, FR-023–026 + NFR-001, 003, 005–008, 010–014.
 - **Should**: FR-015, 016, 018–020, 022, 027, 028.
