@@ -42,7 +42,7 @@ erDiagram
 ## Temporal columns (FR-014)
 
 `start_date`, `start_precision` ∈ {day,month,year,unknown}, `end_date`, `end_precision`,
-`qualifier` ∈ {exact,circa,before,after,between,unknown}。展示文案由 `packages/shared/format` 生成。
+`qualifier` ∈ {exact,circa,before,after,between,unknown}。展示文案由 `web/` 的格式化模块统一生成（DR-0004）；后端只出结构化日期 + precision，不出文案。
 CHECK：precision=unknown ⇒ date IS NULL；precision=year ⇒ date = date_trunc('year', date)。
 
 ## 立场轴（政党槽位）
