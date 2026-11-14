@@ -15,7 +15,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 
 | ID | Task | Milestone | Assignee | Requirement | Design (S-/API/TH-) | decision record | Estimate | Depends on | Status |
 |---|---|---|---|---|---|---|---|---|---|
-| T-001 | Scaffold repo per code organization: `api/` (FastAPI, `/healthz`, pytest), `web/` (Vite/React skeleton), venv bootstrap, README run/test; `db/`+`seed/` land in T-002, CI in T-022 (CR-002) | M1 | UGcraftist | NFR-07 | — | DR-0002, DR-0004 | 0.5 | — | in review |
+| T-001 | Scaffold repo per code organization: `api/` (FastAPI, `/healthz`, pytest), `web/` (Vite/React skeleton), venv bootstrap, README run/test; `db/`+`seed/` land in T-002, CI in T-022 (CR-002) | M1 | UGcraftist | NFR-07 | — | DR-0002, DR-0004 | 0.5 | — | done |
 | T-002 | Migrations + core tables (orgs, persons, facts, fact_relations, sources, fact_sources, stance_axis, relation_type, revision, conflicts); seed importer CLI | M1 | none | FR-003,009,010,011,014 | data-model.md | DR-0003 | 0.75 | T-001 | todo |
 | T-003 | Research + seed 20 orgs (tree skeleton for preview) from sources into seed JSON; validation script | M1 | none | FR-024 | — | — | 0.5 | T-002 | todo |
 | T-004 | API read endpoints: `GET /tree` (root + children), `GET /entities/{id}` (facts+relations+sources) | M1 | none | — | api.md GET /tree, /entities/{id} | DR-0002 | 0.5 | T-002 | todo |

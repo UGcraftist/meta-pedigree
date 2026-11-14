@@ -1,6 +1,6 @@
 # DR-0002: 模块化单体 + React SPA + PostgreSQL，R1 的栈与形态
 
-- Status: accepted
+- Status: accepted (runtime and repo layout superseded by DR-0004)
 - Date: 2026-11-14
 - Category: system-shape, rendering, data-storage, api-style, code-organization, testing, observability
 - Reversibility: one-way (shape, storage, API style); two-way (testing, observability)

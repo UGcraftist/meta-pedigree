@@ -16,8 +16,8 @@ Last updated: 2026-11-14 by UGcraftist
 
 ## Current focus
 - **M1 walking skeleton → internal preview 2026-11-18**: T-001…T-006 (tree over 20 seed orgs + URL state). Then M2 → R1 Must 2026-12-13.
-- T-001: scaffold on branch `chore/T-001-scaffold`; round-1 review requested changes (DR-0002 runtime mismatch, rescope); fixes + DR-0004 + CR-002 applied, round-2 review pending. No git remote → no PR; merge locally after review passes (flagged).
-- Next action: **T-002** migrations + core tables + seed importer, branch from master, per [implementation skill](../.dsh/skills/implementation/SKILL.md).
+- T-001 **merged** (review round 3: no blocking comments; `f0c89ba`). Branch `chore/T-001-scaffold` kept for audit. No git remote yet, so the PR step was substituted by branch review (flagged).
+- Next action: **T-002** migrations + core tables + seed importer (`db/migrations`, `seed/`), branch `feat/T-002-schema` from master.
 
 ## Open questions (blocking the current gate)
 - R2 auth (SSO + hosted accounts) is not designed yet: tracked as risk in risks.md, must close before the R2 public site.
