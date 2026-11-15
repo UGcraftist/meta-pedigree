@@ -88,8 +88,8 @@ operators and error shapes.
 `org_detail` resolves **both** ends of each fact server-side: `subject_kind/id/name` and
 `object_kind/id/name`. The `*_id` and `*_name` of an end are `null` when that end is not
 `visibility='public'` (security.md:33); a fact with no object end (e.g. `founded`) has
-`object_kind = null`. Clients must render the subject end first and must not resolve names from
-`tree_nodes` (that map is tree-only and misses persons and gated orgs).
+`object_kind = null`. Clients must render the subject end first; fact ends must not be resolved from `tree_nodes`
+(that map is tree-only and misses persons and gated orgs), though it may still label the drawer title.
 
 ## Coverage
 

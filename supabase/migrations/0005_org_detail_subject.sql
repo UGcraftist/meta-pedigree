@@ -95,7 +95,7 @@ from public.orgs o
 where o.visibility = 'public';
 
 comment on view public.org_detail is
-  'One public org + its published facts as JSON. T-006: each fact carries subject_kind/subject_id/subject_name and object_kind/object_id/object_name, both ends resolved server-side and NULL when the counterpart is not public (security.md:33); relations_type.label_zh is the raw predicate, so callers render the full subject-predicate-object triple. Service/authenticated read model; anon is denied by grant.';
+  'One public org + its published facts as JSON. T-006: each fact carries subject_kind/subject_id/subject_name and object_kind/object_id/object_name, both ends resolved server-side and NULL when the counterpart is not public (security.md:33); relations_type.label_zh is the localized predicate label (e.g. 受控于) while predicate_code is the raw code, so callers render the full subject-predicate-object triple. Service/authenticated read model; anon is denied by grant.';
 
 grant select on public.org_detail to authenticated;
 grant select on public.tree_edges to authenticated;

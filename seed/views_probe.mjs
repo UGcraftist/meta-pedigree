@@ -77,7 +77,11 @@ if (founded.object_kind !== null || founded.object_id !== null) {
 }
 // security.md:33 — an anon caller must not read org_detail at all.
 if (!anon) {
-  console.log("  anon org_detail access: SKIPPED (SUPABASE_ANON_KEY not set)");
+  if (!process.argv.includes("--allow-anon-skip")) {
+    console.error("FAIL: SUPABASE_ANON_KEY is not set; anon denial is unchecked (pass --allow-anon-skip to skip)");
+    process.exit(1);
+  }
+  console.log("  anon org_detail access: SKIPPED (--allow-anon-skip)");
 } else {
   let anonStatus = 0;
   try {

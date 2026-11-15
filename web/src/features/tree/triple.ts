@@ -30,7 +30,7 @@ export interface FactView {
   object: FactSegment | null;
 }
 
-export const HIDDEN_END = '（未公开的对象）';
+export const HIDDEN_END = '（未公开）';
 
 
 function segment(role: 'subject' | 'object', end: FactEnd, orgId: string): FactSegment {

@@ -90,6 +90,7 @@ th { background: var(--paper-2); font-weight: 600; }
 .fact-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
 .fact-head strong { font-weight: 600; }
 .linklike { border: 0; background: none; padding: 0; color: var(--oxblood); text-decoration: underline; font-size: 13px; }
+.self-end { font-weight: 600; }
 .fact-when { color: var(--muted); font-size: 12px; }
 .fact-when .precision { margin-left: 4px; }
 .badge { display: inline-block; font-size: 11px; line-height: 16px; padding: 0 5px; border-radius: 3px; }
