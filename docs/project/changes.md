@@ -6,6 +6,7 @@
 |---|---|---|---|---|---|---|
 | CR-002 | UGcraftist (from T-001 round-1 review) | 2026-11-14 | T-001 implemented Python/FastAPI in `api/` while DR-0002 fixed Node 22 + Fastify + `apps/` monorepo; T-001 also dropped `db/`, `seed/` and CI from its acceptance criteria. | 3 architecture, 4 plan, 5 implementation | **DR-0004 supersedes DR-0002's runtime and repo layout (Python 3.12 + FastAPI, `api/` + `web/`); T-001 rescoped: `db/`+`seed/` move to T-002, CI becomes T-022 (blocked on a git remote).** | decided 2026-11-14 |
 | CR-001 | UGcraftist | 2026-11-14 | Solo developer with fixed dates (preview 2026-11-18, R1 2026-11-22/23). The stage-1 Must scope (20 FRs, 12 screens, incl. curation UI and three graph views) is roughly twice the realistic single-developer effort, so R1 must be re-cut. | 2 requirements, 4 plan | **B — keep the full Must scope; R1 target moves to ≈ 2026-12-13** (preview stays internal) | decided 2026-11-14 |
+| CR-004 | Agent (per advisor verdict, T-006 review prep) | 2026-11-15 | No git remote: step 8 of `implementation/SKILL.md` cannot open a PR, so its PR review has nothing to comment on; T-022 (CI in `plan.md`) is blocked on the same cause. | 5 implementation, 6 quality-review | **Branch review substitutes for the PR**: a fresh reviewer (not the author's session) reviews the branch diff against the task's acceptance criteria; notes stored as a `docs(review):` commit on the branch, pointed to from STATE.md. | raised — awaiting UGcraftist |
 
 ### CR-001 detail — R1 re-cut options
 
@@ -56,4 +57,7 @@
 - docs/decisions/0002-stack-and-system-shape.md, 0004-python-fastapi-backend.md — status updated (superseded in part / wholly)
 - docs/design/architecture.md — containers and flows rewritten
 - docs/project/plan.md — T-002/T-004/T-007/T-014/T-018/T-019 rescoped; missing T-007…T-009 rows added
+- 2026-11-15: **CR-004 raised** — no git remote → step 8 PR review substituted by fresh-reviewer branch review; notes stored as `docs(review):` commits on the branch; T-022 (CI) stays blocked until a remote exists. Awaiting UGcraftist.
+- 2026-11-15: found deviation recorded (history not rewritten): T-005 was committed on `feat/T-004-read-model` rather than its own branch (one-branch-per-task rule broken at the time).
+- 2026-11-15: migration numbering corrected — T-007 uses `0005_write_rpc`, T-013 uses `0006_search` (`0003_tree_direction` / `0004_tree_nodes_dedup` already exist; DR-0006's >5-migration revisit trigger fires after T-007).
 - 2026-11-15: T-002 in progress — `supabase/migrations/0001_init.sql`, `seed/` importer + validation, `api/` (FastAPI) removed per DR-0005; docs (architecture layout, data-model table names/keys, security RLS) updated in the same branch. Supabase **dev** project connected (URL + anon key); **prod** project also created by the owner on 2026-11-15 but stays unused until stage 7.

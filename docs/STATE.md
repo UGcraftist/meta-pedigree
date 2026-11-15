@@ -1,7 +1,7 @@
 # Project state: Meta Pedigree
 
 Current stage: 5 implementation — T-001–T-006 done (M1 walking skeleton complete); preview 2026-11-18
-Last updated: 2026-11-15 by UGcraftist
+Last updated: 2026-11-15 by UGcraftist (review debt + CR-004 recorded)
 
 ## Gates
 | Stage | Status | Approved by | Date | Artifact |
@@ -22,7 +22,8 @@ Last updated: 2026-11-15 by UGcraftist
 - T-004 **done**: `0002_read_model` + `0003_tree_direction` pasted to dev; `tree_edges`/`tree_nodes`/`org_detail` views live; `api.md` rewritten as the PostgREST contract. `0004_tree_nodes_dedup` **applied 2026-11-15** (min-depth dedupe + restored grants); `make views-probe` green: tree_nodes 24 rows / 24 distinct orgs, tree_edges 5, org_detail 24 orgs with 34 sourced facts; anon still refused on all three views (42501).
 - T-005 **done** (branch `feat/T-004-read-model`): S-01 tree screen — editor login gate, component-packed SVG/D3 tree (24 orgs readable at 1260px), expand/collapse, year/precision labels, multi-parent badge, table view (24 rows, no duplicates after client-side dedupe), light/dark theme toggle; verified with real Chromium screenshots (local build/preview/, not committed).
 - T-006 **done** (branch `feat/T-006-detail-drawer`, stacked on `feat/T-004-read-model`; PR step still substituted by branch review — no remote): S-02 minimal detail drawer reads `org_detail` (facts + sources + locator + `无来源`), `?focus=<id>` in the address bar via `history.replaceState`, reload restores focus, `Esc`/× closes and clears the param, copy-link button, unknown/stale id dropped with a one-line banner; focused node highlighted. Verified in real Chromium: deep link → Boston Dynamics drawer with 3 sourced facts; click MIT → URL + drawer switch; Esc → param cleared; bogus uuid → banner + param removed; copy → `已复制`. 18 vitest tests green (urlState, format, layout).
-- Next action: **T-007** — write path RPC (`submit_fact`/`upsert_stance`/`merge_source`) + migration `0003_write_rpc`; then T-008 test ladder and T-009 full URL-state hook. Repo still has no remote: 3 stacked branches (`feat/T-002-supabase-schema` → `feat/T-003-seed-data` → `feat/T-004-read-model` → `feat/T-006-detail-drawer`) need a home before CI/T-022.
+- **Review debt (open)**: T-004/T-005/T-006 were never independently reviewed (step 8). One cumulative fresh-reviewer branch review is planned; scope is T-004/T-005/T-006 only (S-01/S-02; S-03 is T-011, not built), one verdict block per task.
+- Next action: **T-007** — write path RPC (`submit_fact`/`upsert_stance`/`merge_source`) + migration `0005_write_rpc` (0003/0004 taken), `make write-probe` target, second non-editor test user for the read-only-denied criterion, `merge_source` normalization per api.md; branch off `feat/T-006-detail-drawer`. Then T-008 test ladder and T-009 full URL-state hook. Repo still has no remote (CR-004): stacked branches (`feat/T-002-supabase-schema` → `feat/T-003-seed-data` → `feat/T-004-read-model` → `feat/T-006-detail-drawer`) need a home before CI/T-022.
 - Supabase dev project: `https://gwjyptxnlhbzzzqbpwbg.supabase.co` (anon key in `web/.env.local`, gitignored). Prod project `uuujfqygazlmtmiyxnkc` exists but is not used until stage 7.
 
 ## Open questions (blocking the current gate)
