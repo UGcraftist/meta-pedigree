@@ -1,7 +1,7 @@
 # Project state: Meta Pedigree
 
-Current stage: 5 implementation — T-001–T-004 done; T-005 S-01 tree screen in progress
-Last updated: 2026-11-14 by UGcraftist
+Current stage: 5 implementation — T-001–T-006 done (M1 walking skeleton complete); preview 2026-11-18
+Last updated: 2026-11-15 by UGcraftist
 
 ## Gates
 | Stage | Status | Approved by | Date | Artifact |
@@ -19,9 +19,10 @@ Last updated: 2026-11-14 by UGcraftist
 - T-001 **merged** (review round 3: no blocking comments; `f0c89ba`). Branch `chore/T-001-scaffold` kept for audit. No git remote yet, so the PR step was substituted by branch review (flagged).
 - T-002 **done**: `0001_init.sql` applied to `meta-pedigree-dev` from the SQL Editor (DR-0006 route, no `DATABASE_URL`); `make probe` 8/8 — anon denied on all four verbs (table GRANTs absent → 42501), service_role inserts/reads/updates/deletes its fixture. 13 pytest green. Branch `feat/T-002-supabase-schema` for review; PR step still substituted by branch review (no remote).
 - T-003 **done**: `seed/data/010-orgs-us-eu.json` + `020-facts.json` — 24 orgs (10 US + 10 EU + DLR/MIT/Midea/Hyundai as parents the tree needs), 29 facts with sources (wiki/official + Reuters/KUKA/Agile press), 6 relation facts: Agile→Franka (2023-11-02), Franka→DLR, BD→MIT, Hyundai→BD (80%), Midea→KUKA. Imported to dev: 24 orgs / 29 facts / 27 sources. Data years cross-checked against Wikipedia/REST + web snippets.
-- T-004 **done**: `0002_read_model` + `0003_tree_direction` pasted to dev; `tree_edges`/`tree_nodes`/`org_detail` views live; `api.md` rewritten as the PostgREST contract. `0004_tree_nodes_dedup` drafted for the tree_nodes fan-out fix (paste pending).
+- T-004 **done**: `0002_read_model` + `0003_tree_direction` pasted to dev; `tree_edges`/`tree_nodes`/`org_detail` views live; `api.md` rewritten as the PostgREST contract. `0004_tree_nodes_dedup` **applied 2026-11-15** (min-depth dedupe + restored grants); `make views-probe` green: tree_nodes 24 rows / 24 distinct orgs, tree_edges 5, org_detail 24 orgs with 34 sourced facts; anon still refused on all three views (42501).
 - T-005 **done** (branch `feat/T-004-read-model`): S-01 tree screen — editor login gate, component-packed SVG/D3 tree (24 orgs readable at 1260px), expand/collapse, year/precision labels, multi-parent badge, table view (24 rows, no duplicates after client-side dedupe), light/dark theme toggle; verified with real Chromium screenshots (local build/preview/, not committed).
-- Next action: **T-006** — S-02 minimal detail drawer + URL state (`?focus=` in address bar, copyable); then paste `0004_tree_nodes_dedup` and run `make views-probe`.
+- T-006 **done** (branch `feat/T-006-detail-drawer`, stacked on `feat/T-004-read-model`; PR step still substituted by branch review — no remote): S-02 minimal detail drawer reads `org_detail` (facts + sources + locator + `无来源`), `?focus=<id>` in the address bar via `history.replaceState`, reload restores focus, `Esc`/× closes and clears the param, copy-link button, unknown/stale id dropped with a one-line banner; focused node highlighted. Verified in real Chromium: deep link → Boston Dynamics drawer with 3 sourced facts; click MIT → URL + drawer switch; Esc → param cleared; bogus uuid → banner + param removed; copy → `已复制`. 18 vitest tests green (urlState, format, layout).
+- Next action: **T-007** — write path RPC (`submit_fact`/`upsert_stance`/`merge_source`) + migration `0003_write_rpc`; then T-008 test ladder and T-009 full URL-state hook. Repo still has no remote: 3 stacked branches (`feat/T-002-supabase-schema` → `feat/T-003-seed-data` → `feat/T-004-read-model` → `feat/T-006-detail-drawer`) need a home before CI/T-022.
 - Supabase dev project: `https://gwjyptxnlhbzzzqbpwbg.supabase.co` (anon key in `web/.env.local`, gitignored). Prod project `uuujfqygazlmtmiyxnkc` exists but is not used until stage 7.
 
 ## Open questions (blocking the current gate)
