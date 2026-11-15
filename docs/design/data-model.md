@@ -91,14 +91,16 @@ stateDiagram-v2
 
 | 迁移 | 任务 | 内容 | 改表？ |
 |---|---|---|---|
-| `0001_init` | T-002 | 10 张表 + 枚举 + RLS + 审计触发器 | 建表 |
-| `0002_read_model` | T-004 | `tree_nodes`/`tree_edges`/`org_detail` 视图（PostgREST 不能执行递归 CTE） | 否，新增视图 |
-| `0003_write_rpc` | T-007 | `submit_fact`/`upsert_stance`/`merge_source` | 否，新增函数 |
-| `0004_search` | T-013 | `pg_trgm` + `search_orgs` + 检索索引 | 否，新增函数/索引 |
-| `0005+` | T-005/T-007 期间 | 视图字段微调、RLS 补丁（预计 ≤2 条） | 补丁 |
+| `0001_init` | T-002 | 10 张表 + 枚举 + RLS + 审计触发器 | 建表（已应用 2026-11-15） |
+| `0002_read_model` | T-004 | `tree_nodes`/`tree_edges`/`org_detail` 视图（PostgREST 不能执行递归 CTE） | 否，新增视图（已应用 2026-11-15） |
+| `0003_tree_direction` | T-004 | `split_from`/`controlled_by`/`merged_into` 的父子极性归一 | 否，视图重定义（已应用 2026-11-15） |
+| `0004_tree_nodes_dedup` | T-004 | 每个组织一行（min-depth 去重）+ 恢复 grants | 否，视图重定义（已应用 2026-11-15） |
+| `0005_org_detail_subject` | T-006 fix | `org_detail` 增 subject 侧（按可见性过滤），供抽屉渲染完整三元组 | 否，视图重定义（计划） |
+| `0006_write_rpc` | T-007 | `submit_fact`/`upsert_stance`/`merge_source` | 否，新增函数（计划） |
+| `0007_search` | T-013 | `pg_trgm` + `search_orgs` + 检索索引 | 否，新增函数/索引（计划） |
 
-迁移超过 5 份、或同一周连续修改 schema、或 T-022 需要 CI 自动应用迁移、或发布前要 dev↔prod diff 时，
-按 DR-0006 切到 session pooler 直连；在此之前保持编辑器路线。
+**迁移编号只在本台账分配**；其他文档按名字引用（`write_rpc`、`search`），不写数字。
+复核触发条件以 DR-0006 §Revisit triggers 为准；本文件不复述。
 
 ## Keys
 

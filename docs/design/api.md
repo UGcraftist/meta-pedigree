@@ -42,7 +42,7 @@ operators and error shapes.
 | `GET audit_log?entity=eq.fact&entity_id=eq.<id>` | editor-only audit trail | US-021 |
 | `GET timeline_events?order=start_date` | timeline view (view lands with T-009) | US-010 |
 
-## Write surface (Must, T-007 · migration 0005_write_rpc)
+## Write surface (Must, T-007 · migration `write_rpc`，编号见 data-model.md 迁移台账)
 
 | Call | Purpose |
 |---|---|

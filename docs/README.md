@@ -31,8 +31,7 @@ Defined in `docs/structure.yml` (the source of truth); the tree below is drawn f
     │   ├── architecture.md  parts and connections
     │   ├── diagrams/        Mermaid sources
     │   ├── data-model.md    entities, data types, DB
-    │   ├── api.md           API contract summary
-    │   ├── api/             full API spec
+    │   ├── api.md           the API contract (PostgREST)
     │   ├── ux.md            art direction, screens
     │   ├── security.md      threats, admins, keys
     │   └── performance.md   budgets, optimization log
