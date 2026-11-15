@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import { useAuth } from '../../auth/AuthProvider';
 import type { TreeData } from '../../lib/api';
 import { buildForest, PREDICATE_LABEL, type ForestNode } from './layout';
+import { useTheme } from '../../lib/theme';
 
 interface LaidNode {
   id: string;
@@ -27,6 +28,7 @@ function treeChildren(n: ForestNode, collapsed: Set<string>): ForestNode[] {
 
 export function TreeScreen({ data }: { data: TreeData }) {
   const { signOut } = useAuth();
+  const [theme, toggleTheme] = useTheme();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [table, setTable] = useState(false);
   const [zoomReset, setZoomReset] = useState(0);
@@ -147,6 +149,9 @@ export function TreeScreen({ data }: { data: TreeData }) {
           <button className="ghost" onClick={() => { setCollapsed(new Set()); setZoomReset((v) => v + 1); }}>全部展开</button>
           <button className="ghost" onClick={() => { setCollapsed(new Set(forest.all.keys())); setZoomReset((v) => v + 1); }}>全部收起</button>
           <button className="ghost" onClick={() => setTable((v) => !v)}>{table ? '返回图表' : '表格视图'}</button>
+          <button className="ghost" onClick={toggleTheme} title="切换深浅色">
+            {theme === 'dark' ? '浅色' : '深色'}
+          </button>
           <button className="ghost" onClick={() => void signOut()}>退出</button>
         </div>
       </header>
