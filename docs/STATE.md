@@ -1,6 +1,6 @@
 # Project state: Meta Pedigree
 
-Current stage: 5 implementation — T-001–T-006 done (M1 walking skeleton complete); preview 2026-11-18
+Current stage: 5 implementation — T-001–T-004 done; T-005/T-006 in review fixes (round 1 blocking, advisor verdict 2026-11-15); M1 walking skeleton NOT complete; preview 2026-11-18 at risk
 Last updated: 2026-11-15 by UGcraftist (review debt + CR-004 recorded)
 
 ## Gates
