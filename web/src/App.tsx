@@ -37,7 +37,7 @@ function Gate() {
   if (loading) return <main className="panel"><p className="muted">检查登录状态…</p></main>;
   if (error && !session) return <main className="panel"><p className="error">{error}</p></main>;
   if (!session) return <LoginScreen />;
-  if (!appUser) {
+  if (!appUser || (appUser.role !== 'editor' && appUser.role !== 'admin')) {
     return (
       <main className="panel">
         <h2>无访问权限</h2>

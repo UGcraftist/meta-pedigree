@@ -29,5 +29,6 @@ export interface TreeEdgeRow {
 export interface AppUserRow {
   id: string;
   email: string;
-  role: 'admin' | 'editor' | 'reader';
+  /** editor/admin come from auth.users.app_metadata.role (is_editor), not this row. */
+  role: 'admin' | 'editor' | 'reader' | string | undefined;
 }

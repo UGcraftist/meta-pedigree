@@ -14,11 +14,15 @@ export async function fetchAppUser(): Promise<AppUserRow | null> {
   if (!auth.user) return null;
   const { data, error } = await supabase
     .from('app_users')
-    .select('id,email,role')
+    .select('id,email')
     .eq('id', auth.user.id)
     .maybeSingle();
   if (error) throw new ApiError(`读取 app_users 失败: ${error.message}`);
-  return (data as AppUserRow | null) ?? null;
+  if (!data) return null;
+  return {
+    ...(data as { id: string; email: string }),
+    role: (auth.user.app_metadata?.role as string | undefined) ?? undefined,
+  };
 }
 
 export interface TreeData {
