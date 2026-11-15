@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { AppUserRow, TreeEdgeRow, TreeNodeRow } from './types';
+import type { AppUserRow, OrgDetailRow, TreeEdgeRow, TreeNodeRow } from './types';
 
 export class ApiError extends Error {
   constructor(message: string) {
@@ -44,4 +44,19 @@ export async function fetchTree(): Promise<TreeData> {
     if (!byId.has(n.id)) byId.set(n.id, n);
   }
   return { nodes: [...byId.values()], edges: edges.data as TreeEdgeRow[] };
+}
+
+/**
+ * One org with its published facts and sources, for the S-02 detail drawer
+ * (T-006). Returns null when the id is unknown or hidden by RLS — the caller
+ * must not guess another object (ux.md, URL state).
+ */
+export async function fetchOrgDetail(id: string): Promise<OrgDetailRow | null> {
+  const { data, error } = await supabase
+    .from('org_detail')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw new ApiError(`读取 org_detail 失败: ${error.message}`);
+  return (data as OrgDetailRow | null) ?? null;
 }

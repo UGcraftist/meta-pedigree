@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { useAuth } from '../../auth/AuthProvider';
 import type { TreeData } from '../../lib/api';
+import { applyFocus, readFocus } from '../../lib/urlState';
 import { buildForest, PREDICATE_LABEL, type ForestNode } from './layout';
+import { DetailDrawer } from './DetailDrawer';
 import { useTheme } from '../../lib/theme';
 
 interface LaidNode {
@@ -32,12 +34,41 @@ export function TreeScreen({ data }: { data: TreeData }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [table, setTable] = useState(false);
   const [zoomReset, setZoomReset] = useState(0);
+  const [focusId, setFocusId] = useState<string | null>(() => readFocus(window.location.search));
+  const [focusNotice, setFocusNotice] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const [box, setBox] = useState({ width: 900, height: 600 });
 
   const forest = useMemo(() => buildForest(data.nodes, data.edges), [data]);
+
+  const nameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const n of data.nodes) map.set(n.id, n.name);
+    return map;
+  }, [data.nodes]);
+
+  const focusNode = useCallback((id: string | null) => {
+    setFocusId(id);
+    applyFocus(id);
+  }, []);
+
+  // A stale or unknown deep link is dropped with a one-line notice, never
+  // guessed or silently re-pointed at another object (ux.md, URL state).
+  useEffect(() => {
+    if (!focusId || forest.all.has(focusId)) return;
+    setFocusNotice(`链接里的对象 ${focusId} 不在当前可见数据中，已忽略该焦点。`);
+    focusNode(null);
+  }, [focusId, forest, focusNode]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && focusId) focusNode(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [focusId, focusNode]);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -208,7 +239,15 @@ export function TreeScreen({ data }: { data: TreeData }) {
         </div>
       </header>
 
-      {table ? (
+      {focusNotice && (
+        <div className="banner" role="status">
+          <span>{focusNotice}</span>
+          <button className="ghost" onClick={() => setFocusNotice(null)}>知道了</button>
+        </div>
+      )}
+
+      <div className={`screen-body${focusId ? ' with-drawer' : ''}`}>
+        {table ? (
         <div className="table-wrap">
           <table>
             <caption>谱系数据（与图表同一数据源；无障碍替代）</caption>
@@ -239,7 +278,7 @@ export function TreeScreen({ data }: { data: TreeData }) {
             width="100%"
             height={box.height}
             role="img"
-            aria-label="组织谱系树：点击节点展开或收起"
+            aria-label="组织谱系树：点击节点查看详情，节点上的 + / − 展开或收起"
             className="tree-svg"
           >
             <g className="canvas">
@@ -259,19 +298,25 @@ export function TreeScreen({ data }: { data: TreeData }) {
               {laid.map((n) => (
                 <g
                   key={n.id}
-                  className="node"
+                  className={`node${focusId === n.id ? ' focused' : ''}`}
                   transform={`translate(${n.x},${n.y})`}
                   tabIndex={0}
                   role="button"
+                  aria-pressed={focusId === n.id}
                   aria-expanded={n.childCount > 0 ? !n.collapsed : undefined}
-                  onClick={() => toggle(n.id)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(n.id); } }}
+                  onClick={() => focusNode(n.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      focusNode(n.id);
+                    }
+                  }}
                 >
                   <title>
                     {n.label}
                     {n.parents.length > 1 ? `\n全部父组织：${n.parents.map((p) => `${p.parentName}（${PREDICATE_LABEL[p.predicate] ?? p.predicate}）`).join('；')}` : ''}
                   </title>
-                  <circle r={7} />
+                  <circle className="dot" r={7} />
                   {n.founded && (
                     <text className="year" dy={-13} textAnchor="middle">
                       {n.founded.slice(0, 4)}{n.precision === 'year' ? '' : n.precision === 'month' ? '·M' : n.precision === 'day' ? '·D' : '?'}
@@ -279,7 +324,21 @@ export function TreeScreen({ data }: { data: TreeData }) {
                   )}
                   <text className="name" dy={20} textAnchor="middle">{n.label}</text>
                   {n.childCount > 0 && (
-                    <g className="toggle" transform={`translate(0,9)`}>
+                    <g
+                      className="toggle"
+                      transform={`translate(0,9)`}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={n.collapsed ? `展开 ${n.label} 的子组织` : `收起 ${n.label} 的子组织`}
+                      onClick={(e) => { e.stopPropagation(); toggle(n.id); }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggle(n.id);
+                        }
+                      }}
+                    >
                       <circle r={5.5} />
                       <text dy={3.2} textAnchor="middle">{n.collapsed ? '+' : '−'}</text>
                     </g>
@@ -290,10 +349,19 @@ export function TreeScreen({ data }: { data: TreeData }) {
             </g>
           </svg>
           <p className="legend">
-            实心边 = 直接亲缘；多父节点（蓝点）在表格视图中列出全部父边。树按控制权优先归属（Franka 归 Agile Robots，DLR 边保留在数据中）。
+            点击节点 = 查看详情（Esc 关闭）；节点上的 + / − = 展开或收起。多父节点（蓝点）在表格视图中列出全部父边。树按控制权优先归属（Franka 归 Agile Robots，DLR 边保留在数据中）。
           </p>
         </div>
       )}
+        {focusId && (
+          <DetailDrawer
+            orgId={focusId}
+            nameById={nameById}
+            onClose={() => focusNode(null)}
+            onFocus={focusNode}
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -72,3 +72,34 @@ th { background: var(--paper-2); font-weight: 600; }
 .panel { max-width: 640px; margin: 18vh auto; padding: 24px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
 .error { color: var(--oxblood); }
 .error-panel { border-color: var(--oxblood); }
+
+/* T-006: focus notice + S-02 detail drawer */
+.banner { margin-top: 12px; display: flex; gap: 12px; align-items: center; justify-content: space-between; border: 1px solid var(--rust); background: var(--paper-2); border-radius: 4px; padding: 8px 12px; font-size: 13px; }
+.screen-body { margin-top: 12px; }
+.screen-body .canvas-wrap, .screen-body .table-wrap { margin-top: 0; }
+.screen-body.with-drawer { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+.drawer { border: 1px solid var(--line); border-radius: 6px; background: var(--paper); padding: 14px 16px; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
+.drawer-head { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.drawer-head h2 { margin: 0 0 2px; font-size: 18px; }
+.drawer-head .ghost { padding: 1px 8px; font-size: 16px; line-height: 1.3; }
+.drawer .meta { color: var(--muted); font-size: 12.5px; margin: 2px 0 8px; }
+.drawer-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0 4px; }
+.drawer h3 { font-size: 14px; margin: 14px 0 6px; }
+.facts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.fact { border-top: 1px dashed var(--line); padding-top: 8px; font-size: 13px; }
+.fact-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+.fact-head strong { font-weight: 600; }
+.linklike { border: 0; background: none; padding: 0; color: var(--oxblood); text-decoration: underline; font-size: 13px; }
+.fact-when { color: var(--muted); font-size: 12px; }
+.fact-when .precision { margin-left: 4px; }
+.badge { display: inline-block; font-size: 11px; line-height: 16px; padding: 0 5px; border-radius: 3px; }
+.badge.nosource { color: var(--rust); border: 1px solid var(--rust); }
+.sources { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; }
+.sources a { color: var(--oxblood); }
+.sources .quote { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+.node.focused .dot { stroke: var(--oxblood); stroke-width: 2.6; }
+.node.focused .name { font-weight: 700; }
+@media (max-width: 1099px) {
+  .screen-body.with-drawer { grid-template-columns: minmax(0, 1fr); }
+  .drawer { position: static; max-height: none; }
+}

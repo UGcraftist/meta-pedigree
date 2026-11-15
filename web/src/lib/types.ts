@@ -26,6 +26,46 @@ export interface TreeEdgeRow {
   amount: number | null;
 }
 
+/** One source attached to a fact (org_detail.facts[].sources[]). */
+export interface OrgSourceRow {
+  title: string;
+  url: string | null;
+  kind: string | null;
+  quote: string | null;
+  locator: string | null;
+}
+
+/** One published fact where the org is subject or object (org_detail.facts[]). */
+export interface OrgFactRow {
+  id: string;
+  predicate: string;
+  label_zh: string | null;
+  label_en: string | null;
+  object_kind: string;
+  object_id: string;
+  start_date: string | null;
+  start_precision: string;
+  end_date: string | null;
+  end_precision: string | null;
+  qualifier: string | null;
+  amount: number | null;
+  certainty: string | null;
+  no_source: boolean;
+  sources: OrgSourceRow[];
+}
+
+/** Row of the org_detail view: org + its chronology of published facts. */
+export interface OrgDetailRow {
+  id: string;
+  name: string;
+  kind: string;
+  country_code: string | null;
+  founded_date: string | null;
+  founded_precision: string;
+  notes: string | null;
+  facts: OrgFactRow[];
+}
+
 export interface AppUserRow {
   id: string;
   email: string;
