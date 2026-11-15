@@ -36,13 +36,13 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | T-019 | Deploy: Cloudflare Pages (`wrangler pages deploy`, env vars) + Supabase project (dev/prod separation, backup/restore runbook) | M2 | none | NFR-07 | — | DR-0005 | 0.5 | T-018 | todo |
 | T-020 | NFR validation: perf at 100 orgs (pan/zoom ≥30 fps), WCAG AA contrast, target browsers | M2 | none | NFR-02…06, FR-026 | — | — | 0.5 | T-017 | todo |
 | T-021 | Review passes (stage 6 on two walkthroughs: first-time visitor, data editor) + fixes | M2 | none | — | — | — | 2.0 | T-020 | todo |
-| T-022 | CI pipeline (GitHub Actions: build, typecheck, `make check`) once a git remote exists; also needed for Cloudflare Pages Git integration; blocked on remote (CR-002) | M1 | none | NFR-07 | — | DR-0004, DR-0005 | 0.25 | T-001 | blocked |
+| T-022 | CI pipeline (GitHub Actions: build, typecheck, `make check`); also needed for Cloudflare Pages Git integration; remote exists now (`github.com/UGcraftist/meta-pedigree`, PR #1–#4) so CR-004/T-022 are unblocked | M1 | none | NFR-07 | — | DR-0004, DR-0005 | 0.25 | T-001 | todo |
 
 ### T-001 acceptance criteria (rescoped by CR-002)
 - `api/`, `web/` exist per DR-0004 code layout; `GET /healthz` returns 200 + version; `make test` green; `make venv` works from a clean checkout (self-bootstraps pip).
 - `web/` compiles (`npm run build`).
 - Root `README.md` has run, build, test and deploy steps that a stranger can follow.
-- `db/` + `seed/` are T-002; CI is T-022 (needs a git remote, which does not exist yet).
+- `db/` + `seed/` are T-002; CI is T-022 (remote now exists).
 
 ### T-002 acceptance criteria
 - dev 空库从 SQL 编辑器应用 `0001_init.sql` 后 `make probe` 全绿（anon 写被拒、service_role 自建自删）；ER 与 `data-model.md` 一致。
