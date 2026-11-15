@@ -50,51 +50,103 @@ export function TreeScreen({ data }: { data: TreeData }) {
   }, []);
 
   const { laid, links, contentWidth, contentHeight } = useMemo(() => {
-    const fake = { id: '__root__', name: '', children: forest.roots } as unknown as ForestNode;
-    const root = d3.hierarchy<ForestNode>(fake, (n) => treeChildren(n, collapsed));
-    const layout = d3.tree<ForestNode>().nodeSize([180, 118]);
-    layout(root);
+    // Each connected component (a root and its descendants) is laid out as its
+    // own small tree, then components are packed into rows that fit the canvas
+    // width. Packing keeps ~20 isolated roots readable instead of forcing one
+    // 4000px-wide row that the SVG scales down to unreadable text.
+    const NODE_W = 210;
+    const NODE_H = 132;
+    const PAD = 48;
+    const GAP_X = 152;
+    const GAP_Y = 72;
 
-    let minX = Infinity;
-    let maxDepth = 0;
-    root.each((d) => {
-      if (!d.data.id) return; // fake root
-      minX = Math.min(minX, d.x ?? 0);
-      maxDepth = Math.max(maxDepth, d.depth ?? 0);
-    });
-    const shift = minX === Infinity ? 0 : -minX;
-    const nodes: LaidNode[] = root.descendants()
-      .filter((d) => d.data.id !== '__root__')
-      .map((d) => ({
-        id: d.data.id,
-        label: d.data.name,
-        kind: d.data.kind,
-        country: d.data.country,
-        founded: d.data.founded,
-        precision: d.data.foundedPrecision,
-        x: (d.x ?? 0) + shift,
-        y: (d.depth ?? 0) * 118 + 60,
-        depth: d.depth ?? 0,
-        parents: d.data.parents,
-        childCount: d.data.children.length,
-        collapsed: collapsed.has(d.data.id),
-      }));
+    interface Component {
+      root: ForestNode;
+      nodes: { data: ForestNode; x: number; depth: number }[];
+      width: number;
+      height: number;
+    }
 
+    const components: Component[] = [];
+    for (const root of forest.roots) {
+      const h = d3.hierarchy<ForestNode>(root, (n) => treeChildren(n, collapsed));
+      d3.tree<ForestNode>().nodeSize([NODE_W, NODE_H])(h);
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let maxDepth = 0;
+      h.each((d) => {
+        minX = Math.min(minX, d.x ?? 0);
+        maxX = Math.max(maxX, d.x ?? 0);
+        maxDepth = Math.max(maxDepth, d.depth ?? 0);
+      });
+      const shift = minX === Infinity ? 0 : -minX;
+      components.push({
+        root,
+        nodes: h
+          .descendants()
+          .map((d) => ({ data: d.data, x: (d.x ?? 0) + shift, depth: d.depth ?? 0 })),
+        width: maxX - minX,
+        height: maxDepth * NODE_H,
+      });
+    }
+
+    const avail = Math.max(box.width - PAD * 2, 640);
+    const placed: { comp: Component; ox: number; oy: number }[] = [];
+    let cursorX = PAD;
+    let cursorY = PAD;
+    let rowHeight = 0;
+    for (const comp of components) {
+      const span = comp.width + NODE_W;
+      if (cursorX > PAD && cursorX + span > PAD + avail) {
+        cursorX = PAD;
+        cursorY += rowHeight + GAP_Y;
+        rowHeight = 0;
+      }
+      placed.push({ comp, ox: cursorX + NODE_W / 2, oy: cursorY + NODE_H / 2 });
+      cursorX += span + GAP_X;
+      rowHeight = Math.max(rowHeight, comp.height);
+    }
+
+    const nodes: LaidNode[] = [];
     const l: { from: LaidNode; to: LaidNode; label: string }[] = [];
-    const byId = new Map(nodes.map((n) => [n.id, n]));
-    for (const n of nodes) {
-      for (const child of forest.all.get(n.id)?.children ?? []) {
-        const to = byId.get(child.id);
-        if (!to) continue;
-        const edge = to.parents.find((p) => p.parentName === n.label);
-        l.push({ from: n, to, label: edge ? (PREDICATE_LABEL[edge.predicate] ?? edge.predicate) : '' });
+    for (const { comp, ox, oy } of placed) {
+      const local = new Map<string, LaidNode>();
+      for (const { data, x, depth } of comp.nodes) {
+        const node: LaidNode = {
+          id: data.id,
+          label: data.name,
+          kind: data.kind,
+          country: data.country,
+          founded: data.founded,
+          precision: data.foundedPrecision,
+          x: ox + x,
+          y: oy + depth * NODE_H,
+          depth,
+          parents: data.parents,
+          childCount: data.children.length,
+          collapsed: collapsed.has(data.id),
+        };
+        local.set(data.id, node);
+        nodes.push(node);
+      }
+      for (const node of local.values()) {
+        for (const child of forest.all.get(node.id)?.children ?? []) {
+          const to = local.get(child.id);
+          if (!to) continue;
+          const edge = to.parents.find((p) => p.parentName === node.label);
+          l.push({ from: node, to, label: edge ? (PREDICATE_LABEL[edge.predicate] ?? edge.predicate) : '' });
+        }
       }
     }
 
-    const width = Math.max(box.width, (nodes.length ? Math.max(...nodes.map((n) => n.x)) : 0) + 160);
-    const height = (maxDepth + 1) * 118 + 60;
-    return { laid: nodes, links: l, contentWidth: width, contentHeight: height };
-  }, [forest, collapsed, box.width]);
+    const rightmost = placed.reduce(
+      (m, p) => Math.max(m, p.ox - NODE_W / 2 + p.comp.width + NODE_W + PAD),
+      box.width,
+    );
+    const bottom =
+      placed.length === 0 ? box.height : cursorY + rowHeight + NODE_H * 2 + PAD;
+    return { laid: nodes, links: l, contentWidth: rightmost, contentHeight: bottom };
+  }, [forest, collapsed, box.width, box.height]);
 
   const zoomTo = useCallback((k: number) => {
     const svg = svgRef.current;

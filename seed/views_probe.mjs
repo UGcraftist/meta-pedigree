@@ -45,8 +45,16 @@ console.log(`  orgs with facts: ${withFacts}/${detail.length}`);
 const sourced = detail.flatMap((o) => o.factsR ?? o.facts ?? []).filter((f) => f.sources?.some((s) => s.url));
 console.log(`  facts with a URL source: ${sourced.length}`);
 const missing = Number(detail.find((o) => o.name === "Boston Dynamics")?.facts?.length ?? 0) === 0;
-if (nodes.length < 20 || edges.length < 5 || missing) {
-  console.error("FAIL: expected ≥20 nodes, ≥5 edges, Boston Dynamics facts");
+const ids = new Set(nodes.map((n) => n.id));
+const duped = ids.size !== nodes.length;
+const frankaId = nodes.find((n) => n.name === "Franka Emika")?.id;
+const franka = edges.filter((e) => e.child_org_id === frankaId).length; // Franka Emika has two parent edges
+if (duped) {
+  console.error(`FAIL: tree_nodes has duplicate rows (${nodes.length} rows, ${ids.size} distinct orgs)`);
+  process.exit(1);
+}
+if (nodes.length < 20 || edges.length < 5 || missing || franka < 2) {
+  console.error("FAIL: expected ≥20 distinct nodes, ≥5 edges, Boston Dynamics facts, Franka 2 parent edges");
   process.exit(1);
 }
 console.log("views ok");

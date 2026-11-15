@@ -37,5 +37,11 @@ export async function fetchTree(): Promise<TreeData> {
   ]);
   if (nodes.error) throw new ApiError(`读取 tree_nodes 失败: ${nodes.error.message}`);
   if (edges.error) throw new ApiError(`读取 tree_edges 失败: ${edges.error.message}`);
-  return { nodes: nodes.data as TreeNodeRow[], edges: edges.data as TreeEdgeRow[] };
+  // tree_nodes joins edges for depth/parent_count, which fans out one row per
+  // parent edge (Boston Dynamics, Franka Emika). Collapse to one row per org.
+  const byId = new Map<string, TreeNodeRow>();
+  for (const n of (nodes.data ?? []) as TreeNodeRow[]) {
+    if (!byId.has(n.id)) byId.set(n.id, n);
+  }
+  return { nodes: [...byId.values()], edges: edges.data as TreeEdgeRow[] };
 }
