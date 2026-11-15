@@ -1,6 +1,6 @@
 # Project state: Meta Pedigree
 
-Current stage: 5 implementation — T-001 and T-002 done; T-003 seed data (20 orgs) in progress
+Current stage: 5 implementation — T-001, T-002 and T-003 done; T-004 read views + RPC surface next
 Last updated: 2026-11-14 by UGcraftist
 
 ## Gates
@@ -18,7 +18,8 @@ Last updated: 2026-11-14 by UGcraftist
 - **M1 walking skeleton → internal preview 2026-11-18**: T-001…T-006 (tree over 20 seed orgs + URL state). Then M2 → R1 Must 2026-12-13.
 - T-001 **merged** (review round 3: no blocking comments; `f0c89ba`). Branch `chore/T-001-scaffold` kept for audit. No git remote yet, so the PR step was substituted by branch review (flagged).
 - T-002 **done**: `0001_init.sql` applied to `meta-pedigree-dev` from the SQL Editor (DR-0006 route, no `DATABASE_URL`); `make probe` 8/8 — anon denied on all four verbs (table GRANTs absent → 42501), service_role inserts/reads/updates/deletes its fixture. 13 pytest green. Branch `feat/T-002-supabase-schema` for review; PR step still substituted by branch review (no remote).
-- Next action: **T-003** — curating 20 orgs (10 US + 10 EU embodied-AI) into `seed/data/`, every org with at least one sourced fact (official site / Wikipedia), relations grounded in official statements (Agile Robots ← DLR 2018, Franka ← Agile Robots 2023), then `make seed`.
+- T-003 **done**: `seed/data/010-orgs-us-eu.json` + `020-facts.json` — 24 orgs (10 US + 10 EU + DLR/MIT/Midea/Hyundai as parents the tree needs), 29 facts with sources (wiki/official + Reuters/KUKA/Agile press), 6 relation facts: Agile→Franka (2023-11-02), Franka→DLR, BD→MIT, Hyundai→BD (80%), Midea→KUKA. Imported to dev: 24 orgs / 29 facts / 27 sources. Data years cross-checked against Wikipedia/REST + web snippets.
+- Next action: **T-004** — migration `0002_read_model` (`tree_nodes`/`tree_edges`/`org_detail` views, editor sees all tiers, anon sees public), RPC surface per api.md, then paste 0002 into the dev SQL editor (DR-0006).
 - Supabase dev project: `https://gwjyptxnlhbzzzqbpwbg.supabase.co` (anon key in `web/.env.local`, gitignored). Prod project `uuujfqygazlmtmiyxnkc` exists but is not used until stage 7.
 
 ## Open questions (blocking the current gate)

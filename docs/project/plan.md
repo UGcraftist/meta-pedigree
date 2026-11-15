@@ -17,7 +17,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 |---|---|---|---|---|---|---|---|---|---|
 | T-001 | Scaffold repo per code organization: `api/` (FastAPI, `/healthz`, pytest), `web/` (Vite/React skeleton), venv bootstrap, README run/test; `db/`+`seed/` land in T-002, CI in T-022 (CR-002) | M1 | UGcraftist | NFR-07 | — | DR-0002, DR-0004 | 0.5 | — | done |
 | T-002 | `supabase/migrations/*.sql` core schema (orgs, persons, facts, sources, fact_sources, relation_types, stance_axes, stances, audit_log, app_users) + RLS; Python seed importer via service_role → PostgREST（DR-0006）; `api/` removed | M1 | none | FR-003,009,010,011,014 | data-model.md | DR-0003, DR-0005, DR-0006 | 0.75 | T-001 | done |
-| T-003 | Research + seed 20 orgs (tree skeleton for preview) from sources into seed JSON; validation script | M1 | none | FR-024 | — | — | 0.5 | T-002 | todo |
+| T-003 | Research + seed 20 orgs (tree skeleton for preview) from sources into seed JSON; validation script. **Done:** 24 orgs (20 target + DLR/MIT/Midea/Hyundai as pedigree parents), 29 sourced facts, 27 sources; `make seed` imported | M1 | none | FR-024 | — | — | 0.5 | T-002 | done |
 | T-004 | Read views + RPC surface: `tree_nodes`/`tree_edges`, `org_detail` (facts+relations+sources), PostgREST 视图与 `openapi.yaml` 一致; migration `0002_read_model` | M1 | none | — | api.md, openapi.yaml | DR-0005 | 0.5 | T-002 | todo |
 | T-005 | S-01 tree screen: SVG/D3 render, expand/collapse, view switcher stub, diff shade | M1 | none | FR-013,025,026 | S-01 | DR-0001 | 0.75 | T-004 | todo |
 | T-006 | S-02 minimal detail drawer + URL state (node focus in address bar, copyable) | M1 | none | FR-023(partial) | S-01, S-02 | DR-0001 | 0.25 | T-005 | todo |
