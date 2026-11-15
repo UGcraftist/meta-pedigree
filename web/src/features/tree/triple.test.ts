@@ -1,18 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import type { OrgFactRow } from '../../lib/types';
-import { counterpartLabel, counterpartOf, HIDDEN_COUNTERPART, selfEndOf } from './triple';
+import { factView, HIDDEN_END } from './triple';
 
-const base: OrgFactRow = {
+// The seed fact: "Boston Dynamics · controlled_by · Hyundai Motor Group".
+// Boston Dynamics is the SUBJECT; viewing Hyundai means the viewed org is the
+// OBJECT end. The drawer must still render subject first.
+const bdControlledByHyundai: OrgFactRow = {
   id: 'f1',
-  predicate: 'subsidiary_of',
-  label_zh: '收购',
+  predicate: 'controlled_by',
+  label_zh: '受控于',
   label_en: null,
   subject_kind: 'org',
-  subject_id: 'hyundai',
-  subject_name: 'Hyundai',
+  subject_id: 'bd',
+  subject_name: 'Boston Dynamics',
   object_kind: 'org',
-  object_id: 'bd',
-  object_name: 'Boston Dynamics',
+  object_id: 'hyundai',
+  object_name: 'Hyundai Motor Group',
   start_date: '2021-06-01',
   start_precision: 'month',
   end_date: null,
@@ -24,38 +27,60 @@ const base: OrgFactRow = {
   sources: [],
 };
 
-describe('counterpartOf', () => {
-  it('returns the object side when the viewed org is the subject (Hyundai → BD)', () => {
-    expect(counterpartOf(base, 'hyundai')).toEqual({
-      kind: 'org',
-      id: 'bd',
-      name: 'Boston Dynamics',
-    });
+describe('factView order', () => {
+  it('renders the subject first even when the viewed org is the object end (BD | Hyundai)', () => {
+    const view = factView(bdControlledByHyundai, 'hyundai');
+    expect(view.subject.role).toBe('subject');
+    expect(view.subject.text).toBe('Boston Dynamics');
+    expect(view.subject.emphasized).toBe(false);
+    expect(view.object?.role).toBe('object');
+    expect(view.object?.text).toBe('Hyundai Motor Group');
+    expect(view.object?.emphasized).toBe(true);
   });
 
-  it('returns the subject side when the viewed org is the object side', () => {
-    expect(counterpartOf(base, 'bd')).toEqual({ kind: 'org', id: 'hyundai', name: 'Hyundai' });
-  });
-});
-
-describe('selfEndOf', () => {
-  it('is the subject when the viewed org is the subject side', () => {
-    expect(selfEndOf(base, 'hyundai').name).toBe('Hyundai');
-  });
-
-  it('is the object when the viewed org is the object side', () => {
-    expect(selfEndOf(base, 'bd').name).toBe('Boston Dynamics');
+  it('keeps the same order when the viewed org is the subject end', () => {
+    const view = factView(bdControlledByHyundai, 'bd');
+    expect(view.subject.text).toBe('Boston Dynamics');
+    expect(view.subject.emphasized).toBe(true);
+    expect(view.object?.text).toBe('Hyundai Motor Group');
   });
 });
 
-describe('counterpartLabel', () => {
-  it('never drops a hidden counterpart silently', () => {
-    expect(
-      counterpartLabel(counterpartOf({ ...base, object_kind: 'org', object_id: null, object_name: null }, 'hyundai')),
-    ).toBe(HIDDEN_COUNTERPART);
+describe('factView ends', () => {
+  it('has no object segment when the fact has no object end (founded)', () => {
+    const view = factView(
+      { ...bdControlledByHyundai, predicate: 'founded', object_kind: null, object_id: null, object_name: null },
+      'bd',
+    );
+    expect(view.object).toBeNull();
   });
 
-  it('uses the server-side name for a visible counterpart', () => {
-    expect(counterpartLabel(counterpartOf(base, 'bd'))).toBe('Hyundai');
+  it('marks a gated object end hidden and non-focusable, with explicit text', () => {
+    const view = factView({ ...bdControlledByHyundai, object_id: null, object_name: null }, 'bd');
+    expect(view.object).not.toBeNull();
+    expect(view.object?.hidden).toBe(true);
+    expect(view.object?.text).toBe(HIDDEN_END);
+    expect(view.object?.focusable).toBe(false);
+  });
+
+  it('marks a gated subject end hidden when the viewed org is the object side', () => {
+    const view = factView({ ...bdControlledByHyundai, subject_id: null, subject_name: null }, 'hyundai');
+    expect(view.subject.hidden).toBe(true);
+    expect(view.subject.text).toBe(HIDDEN_END);
+  });
+
+  it('a person counterpart is not navigable from the tree', () => {
+    const view = factView(
+      { ...bdControlledByHyundai, subject_kind: 'person', subject_id: 'p1', subject_name: 'Marc Raibert' },
+      'hyundai',
+    );
+    expect(view.subject.focusable).toBe(false);
+    expect(view.object?.focusable).toBe(true);
+  });
+
+  it('only a public org with an id is focusable', () => {
+    const view = factView(bdControlledByHyundai, 'bd');
+    expect(view.subject.focusable).toBe(true);
+    expect(view.object?.focusable).toBe(true);
   });
 });

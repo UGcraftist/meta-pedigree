@@ -9,8 +9,10 @@
 --   * BOTH ends are gated on the counterpart's own visibility = 'public'
 --     (security.md:33: visibility is filtered in the query layer). A raw id for
 --     a hidden counterpart would otherwise be inherited by the T-015 anon share.
--- 0003 dropped org_detail's grant and comment; 0004 restored them, so this
--- drop/create must re-issue both again.
+-- Grants: 0003 dropped the tree_* grants and 0004 re-granted tree_nodes only,
+-- so tree_edges carries no explicit select grant (it works only through the
+-- default privileges); re-issue it here alongside org_detail's own grant and
+-- comment after the drop/create.
 begin;
 
 drop view if exists public.org_detail;
@@ -96,5 +98,6 @@ comment on view public.org_detail is
   'One public org + its published facts as JSON. T-006: each fact carries subject_kind/subject_id/subject_name and object_kind/object_id/object_name, both ends resolved server-side and NULL when the counterpart is not public (security.md:33); relations_type.label_zh is the raw predicate, so callers render the full subject-predicate-object triple. Service/authenticated read model; anon is denied by grant.';
 
 grant select on public.org_detail to authenticated;
+grant select on public.tree_edges to authenticated;
 
 commit;

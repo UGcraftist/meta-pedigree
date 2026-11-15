@@ -60,6 +60,8 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 
 ### T-006 acceptance criteria
 - Reload with a node id in the URL restores that focus; address bar state is copyable and pasteable.
+- 抽屉把每条事实渲染成 `subject · 谓词 · object`：**始终 subject 在前**，查看对象端（如 Boston Dynamics 的 `controlled_by`）也不反转；无 object 的事实（`founded`）只渲染 subject 与谓词，不追加隐藏对象尾巴；被 visibility 过滤的一端显示显式占位且不可导航；person 端不可导航（S-02 没有人物屏）。
+- `triple.test.ts` 覆盖：对象端查看、无 object、隐藏对象、隐藏 subject、person 不可导航。
 
 ### T-007 acceptance criteria
 - `submit_fact` 单事务：校验（来源或显式无来源、时间精度非空、关系类型必须已注册、悬空 id 拒绝并命名）→ 关闭旧修订 → 插入新修订 → 写 audit_log；失败时全部回滚（TH-02）。

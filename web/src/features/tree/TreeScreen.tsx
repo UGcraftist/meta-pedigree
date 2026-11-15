@@ -78,7 +78,7 @@ export function TreeScreen({ data }: { data: TreeData }) {
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [table]);
 
   const { laid, links, contentWidth, contentHeight } = useMemo(() => {
     // Each connected component (a root and its descendants) is laid out as its

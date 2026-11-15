@@ -3,7 +3,7 @@
 export interface TreeNodeRow {
   id: string;
   name: string;
-  kind: 'company' | 'laboratory' | 'university' | 'fund' | 'other' | 'person';
+  kind: 'company' | 'lab' | 'program' | 'team' | 'government' | 'other';
   country_code: string | null;
   founded_date: string | null;
   founded_precision: 'day' | 'month' | 'year' | 'unknown';

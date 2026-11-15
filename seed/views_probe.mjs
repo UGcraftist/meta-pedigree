@@ -43,37 +43,56 @@ console.log(`org_detail:    ${detail.length} rows`);
 
 const withFacts = detail.filter((o) => o.facts?.length > 0).length;
 console.log(`  orgs with facts: ${withFacts}/${detail.length}`);
-const sourced = detail.flatMap((o) => o.factsR ?? o.facts ?? []).filter((f) => f.sources?.some((s) => s.url));
+const sourced = detail.flatMap((o) => o.facts ?? []).filter((f) => f.sources?.some((s) => s.url));
 console.log(`  facts with a URL source: ${sourced.length}`);
 const missing = Number(detail.find((o) => o.name === "Boston Dynamics")?.facts?.length ?? 0) === 0;
 // T-006 (0005): both ends of a fact are resolved in the view, not by the client.
-// The seed has Hyundai acquiring Boston Dynamics, and Boston Dynamics is the
-// object side of that fact — so its drawer must be able to render the triple.
+// Seed fact: "Boston Dynamics · controlled_by · Hyundai Motor Group" — Boston
+// Dynamics is the SUBJECT, so its drawer is the object-side case that round 2
+// blocked on. Assert the resolved ends on BD's own row.
 const bd = detail.find((o) => o.name === "Boston Dynamics");
-const hyundaiSide = (bd?.facts ?? []).find(
-  (f) => f.subject_name === "Hyundai" && f.object_name === "Boston Dynamics",
+const controlled = (bd?.facts ?? []).find(
+  (f) =>
+    f.predicate === "controlled_by" &&
+    f.subject_name === "Boston Dynamics" &&
+    f.object_name === "Hyundai Motor Group",
 );
-if (!hyundaiSide) {
-  console.error("FAIL: org_detail has no fact with subject_name=Hyundai and object_name=Boston Dynamics (0005 not applied?)");
+if (!controlled) {
+  console.error("FAIL: org_detail lacks Boston Dynamics controlled_by Hyundai Motor Group (0005 not applied?)");
   process.exit(1);
 }
-if (!hyundaiSide.subject_id || !hyundaiSide.object_id) {
-  console.error(`FAIL: both ends must be visible here (subject_id=${hyundaiSide.subject_id}, object_id=${hyundaiSide.object_id})`);
+if (!controlled.subject_id || !controlled.object_id) {
+  console.error(`FAIL: both ends must be visible here (subject_id=${controlled.subject_id}, object_id=${controlled.object_id})`);
+  process.exit(1);
+}
+// A fact with no object end must not fabricate one (founded has object_kind null).
+const founded = (bd?.facts ?? []).find((f) => f.predicate === "founded");
+if (!founded) {
+  console.error("FAIL: org_detail lacks a founded fact for Boston Dynamics");
+  process.exit(1);
+}
+if (founded.object_kind !== null || founded.object_id !== null) {
+  console.error(`FAIL: founded fact must have no object end (object_kind=${founded.object_kind}, object_id=${founded.object_id})`);
   process.exit(1);
 }
 // security.md:33 — an anon caller must not read org_detail at all.
-let anonStatus = 0;
-try {
-  const res = await fetch(`${url}/rest/v1/org_detail?select=id&limit=1`, {
-    headers: { apikey: anon, authorization: `Bearer ${anon}` },
-  });
-  anonStatus = res.status;
-} catch {
-  anonStatus = -1;
-}
-if (anonStatus !== 401 && anonStatus !== 403) {
-  console.error(`FAIL: anon read org_detail returned ${anonStatus}, expected 401/403 (grant regression)`);
-  process.exit(1);
+if (!anon) {
+  console.log("  anon org_detail access: SKIPPED (SUPABASE_ANON_KEY not set)");
+} else {
+  let anonStatus = 0;
+  try {
+    const res = await fetch(`${url}/rest/v1/org_detail?select=id&limit=1`, {
+      headers: { apikey: anon, authorization: `Bearer ${anon}` },
+    });
+    anonStatus = res.status;
+  } catch {
+    anonStatus = -1;
+  }
+  if (anonStatus !== 401 && anonStatus !== 403) {
+    console.error(`FAIL: anon read org_detail returned ${anonStatus}, expected 401/403 (grant regression)`);
+    process.exit(1);
+  }
+  console.log(`  anon org_detail access: ${anonStatus} (denied, as required)`);
 }
 const ids = new Set(nodes.map((n) => n.id));
 const duped = ids.size !== nodes.length;
@@ -87,5 +106,4 @@ if (nodes.length < 20 || edges.length < 5 || missing || franka < 2) {
   console.error("FAIL: expected ≥20 distinct nodes, ≥5 edges, Boston Dynamics facts, Franka 2 parent edges");
   process.exit(1);
 }
-console.log(`  anon org_detail access: ${anonStatus} (denied, as required)`);
 console.log("views ok");
