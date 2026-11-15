@@ -1,0 +1,52 @@
+#!/usr/bin/env node
+// Sanity check for the 0002 read-model views (T-004). Run after pasting
+// 0002_read_model.sql into the dev SQL editor: `make views-probe`.
+// Uses service_role (bypasses RLS) to prove the view SQL itself works —
+// RLS is enforced by security_invoker and covered by `make probe`.
+import { readFileSync } from "node:fs";
+
+const env = {};
+try {
+  for (const line of readFileSync(new URL("../.env", import.meta.url), "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+    if (m) env[m[1]] = m[2].replace(/^"|"$/g, "");
+  }
+} catch {
+  console.error("no .env at repo root");
+  process.exit(1);
+}
+const url = (env.SUPABASE_URL ?? "").replace(/\/$/, "");
+const key = env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+if (!url || !key) {
+  console.error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required");
+  process.exit(1);
+}
+
+async function get(path) {
+  const res = await fetch(`${url}/rest/v1/${path}`, {
+    headers: { apikey: key, authorization: `Bearer ${key}` },
+  });
+  if (!res.ok) throw new Error(`${path}: HTTP ${res.status} ${await res.text()}`);
+  return res.json();
+}
+
+const nodes = await get("tree_nodes?select=id,name,depth,is_root,child_count&order=depth.asc,name.asc&limit=200");
+const edges = await get("tree_edges?select=parent_org_id,child_org_id,predicate_code,relation_date&limit=200");
+const detail = await get("org_detail?select=id,name,facts&limit=50");
+
+console.log(`tree_nodes:    ${nodes.length} rows (roots: ${nodes.filter((n) => n.is_root).length})`);
+for (const n of nodes) console.log(`  ${"  ".repeat(n.depth)}${n.name} [d${n.depth}]`);
+console.log(`tree_edges:    ${edges.length} rows`);
+for (const e of edges) console.log(`  ${e.predicate_code} ${e.relation_date ?? "?"} → child ${e.child_org_id}`);
+console.log(`org_detail:    ${detail.length} rows`);
+
+const withFacts = detail.filter((o) => o.facts?.length > 0).length;
+console.log(`  orgs with facts: ${withFacts}/${detail.length}`);
+const sourced = detail.flatMap((o) => o.factsR ?? o.facts ?? []).filter((f) => f.sources?.some((s) => s.url));
+console.log(`  facts with a URL source: ${sourced.length}`);
+const missing = Number(detail.find((o) => o.name === "Boston Dynamics")?.facts?.length ?? 0) === 0;
+if (nodes.length < 20 || edges.length < 5 || missing) {
+  console.error("FAIL: expected ≥20 nodes, ≥5 edges, Boston Dynamics facts");
+  process.exit(1);
+}
+console.log("views ok");

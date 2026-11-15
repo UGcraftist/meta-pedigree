@@ -1,6 +1,6 @@
 PY := .venv/bin/python
 
-.PHONY: venv test seed seed-dry probe check
+.PHONY: venv test seed seed-dry probe views-probe check
 
 venv:
 	-python3 -m venv .venv
@@ -22,6 +22,10 @@ seed:
 # Prove RLS through the REST API: anon is refused, service_role may write.
 probe:
 	node seed/rls_probe.mjs
+
+# Check the 0002 read-model views return the tree (run after pasting the migration).
+views-probe:
+	node seed/views_probe.mjs
 
 check:
 	python3 .dsh/skills/project-flow/scripts/structure.py check && $(MAKE) test
