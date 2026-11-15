@@ -14,11 +14,12 @@ Facts embed their sources inline:
 Validation runs without a database (``--dry-run``) so it can gate seed data in CI;
 a bundle that fails validation is never written. The importer is idempotent:
 rows are upserted by id and re-running the same bundle is a no-op except the
-audit_log row.
+audit_log row. Writes go through PostgREST with the service role key (DR-0006),
+so no PostgreSQL password or direct connection is needed.
 
 Usage:
     python -m seed.importer --data seed/data --dry-run
-    DATABASE_URL=postgres://... python -m seed.importer --data seed/data
+    python -m seed.importer --data seed/data     # needs SUPABASE_URL + service role key
 """
 
 from __future__ import annotations
@@ -313,185 +314,246 @@ def errors(issues: Iterable[Issue]) -> list[Issue]:
     return [issue for issue in issues if issue.severity == "error"]
 
 
-# ── Database import ──────────────────────────────────────────────────────────
+# ── REST import (service_role) ───────────────────────────────────────────────
+#
+# The importer talks to PostgREST instead of opening a PostgreSQL connection:
+# the curator holds exactly one privileged secret (the service role key), and
+# PostgreSQL takes no external connections for DDL. Migrations are applied by
+# pasting supabase/migrations/*.sql into the dashboard SQL editor (DR-0006).
+# Writes are idempotent upserts, so a failed run is fixed by re-running the same
+# bundle; there is no cross-table transaction (PostgREST cannot offer one), and
+# the bundle is validated in full before the first request.
+
+BATCH = 200
 
 
-SQL_UPSERT_RELATION_TYPE = """
-insert into public.relation_types
-  (code, label_zh, label_en, subject_kinds, object_kinds, implied_parent, attrs_schema, is_active)
-values (%s, %s, %s, %s, %s, %s, %s::jsonb, %s)
-on conflict (code) do update set
-  label_zh = excluded.label_zh, label_en = excluded.label_en,
-  subject_kinds = excluded.subject_kinds, object_kinds = excluded.object_kinds,
-  implied_parent = excluded.implied_parent, attrs_schema = excluded.attrs_schema,
-  is_active = excluded.is_active
-"""
-
-SQL_UPSERT_AXIS = """
-insert into public.stance_axes (code, label_zh, label_en, scale_min, scale_max, anchors)
-values (%s, %s, %s, %s, %s, %s::jsonb)
-on conflict (code) do update set
-  label_zh = excluded.label_zh, label_en = excluded.label_en,
-  scale_min = excluded.scale_min, scale_max = excluded.scale_max, anchors = excluded.anchors
-"""
-
-SQL_UPSERT_ORG = """
-insert into public.orgs
-  (id, name, kind, country_code, founded_date, founded_precision,
-   dissolved_date, dissolved_precision, visibility, notes)
-values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-on conflict (id) do update set
-  name = excluded.name, kind = excluded.kind, country_code = excluded.country_code,
-  founded_date = excluded.founded_date, founded_precision = excluded.founded_precision,
-  dissolved_date = excluded.dissolved_date, dissolved_precision = excluded.dissolved_precision,
-  visibility = excluded.visibility, notes = excluded.notes
-"""
-
-SQL_UPSERT_PERSON = """
-insert into public.persons
-  (id, name, aliases, country_code, birth_date, birth_precision,
-   death_date, death_precision, visibility, notes)
-values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-on conflict (id) do update set
-  name = excluded.name, aliases = excluded.aliases, country_code = excluded.country_code,
-  birth_date = excluded.birth_date, birth_precision = excluded.birth_precision,
-  death_date = excluded.death_date, death_precision = excluded.death_precision,
-  visibility = excluded.visibility, notes = excluded.notes
-"""
-
-SQL_UPSERT_FACT = """
-insert into public.facts
-  (id, subject_kind, subject_id, predicate_code, object_kind, object_id,
-   start_date, start_precision, end_date, end_precision, qualifier, amount, attrs,
-   certainty, status, visibility, revision_of, no_source)
-values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s, %s, %s)
-on conflict (id) do update set
-  subject_kind = excluded.subject_kind, subject_id = excluded.subject_id,
-  predicate_code = excluded.predicate_code, object_kind = excluded.object_kind,
-  object_id = excluded.object_id, start_date = excluded.start_date,
-  start_precision = excluded.start_precision, end_date = excluded.end_date,
-  end_precision = excluded.end_precision, qualifier = excluded.qualifier,
-  amount = excluded.amount, attrs = excluded.attrs, certainty = excluded.certainty,
-  status = excluded.status, visibility = excluded.visibility,
-  revision_of = excluded.revision_of, no_source = excluded.no_source
-"""
-
-SQL_UPSERT_STANCE = """
-insert into public.stances
-  (id, party_org_id, axis_code, value, target_org_id, start_date, start_precision,
-   end_date, end_precision, status, visibility, notes)
-values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-on conflict (id) do update set
-  party_org_id = excluded.party_org_id, axis_code = excluded.axis_code,
-  value = excluded.value, target_org_id = excluded.target_org_id,
-  start_date = excluded.start_date, start_precision = excluded.start_precision,
-  end_date = excluded.end_date, end_precision = excluded.end_precision,
-  status = excluded.status, visibility = excluded.visibility, notes = excluded.notes
-"""
-
-SQL_UPSERT_SOURCE = """
-insert into public.sources
-  (id, kind, title, author, url, page, quote, published_at, accessed_at)
-values (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-on conflict (id) do update set
-  kind = excluded.kind, title = excluded.title, author = excluded.author,
-  url = excluded.url, page = excluded.page, quote = excluded.quote,
-  published_at = excluded.published_at, accessed_at = excluded.accessed_at
-"""
+@dataclass
+class RestConfig:
+    url: str
+    key: str
 
 
-def _dsn() -> str:
-    dsn = os.environ.get("DATABASE_URL") or os.environ.get("SUPABASE_DB_URL")
-    if not dsn:
-        raise SystemExit("DATABASE_URL is not set (Supabase → Connect → Session pooler URI)")
-    return dsn
+def load_dotenv(path: Path | None = None) -> None:
+    """Read the repo-root .env into os.environ without overriding real env vars."""
+    path = path or (Path(__file__).resolve().parents[1] / ".env")
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, value = line.split("=", 1)
+        os.environ.setdefault(name.strip(), value.strip().strip("\"'"))
 
 
-def import_bundle(bundle: Bundle, dsn: str | None = None) -> dict[str, int]:
-    """Write a validated bundle; returns row counts per table."""
-    import psycopg  # imported lazily so --dry-run works without the DB driver
+def rest_config() -> RestConfig:
+    load_dotenv()
+    url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+    key = (os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+           or os.environ.get("SUPABASE_SECRET_KEY") or "")
+    if not url or not key:
+        raise SystemExit(
+            "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set (root .env); "
+            "the service role key never enters the repo, the browser or the build"
+        )
+    return RestConfig(url, key)
 
-    counts = {"relation_types": 0, "stance_axes": 0, "orgs": 0, "persons": 0,
-              "facts": 0, "sources": 0, "fact_sources": 0, "stances": 0}
-    source_ids: set[str] = set()
 
-    with psycopg.connect(dsn or _dsn()) as conn:
-        with conn.cursor() as cur:
-            for rt in bundle.relation_types:
-                cur.execute(SQL_UPSERT_RELATION_TYPE, (
-                    rt["code"], rt["label_zh"], rt["label_en"],
-                    rt.get("subject_kinds") or [], rt.get("object_kinds") or [],
-                    rt.get("implied_parent", False), json.dumps(rt.get("attrs_schema") or {}),
-                    rt.get("is_active", True),
-                ))
-                counts["relation_types"] += 1
-            for ax in bundle.stance_axes:
-                cur.execute(SQL_UPSERT_AXIS, (
-                    ax["code"], ax["label_zh"], ax["label_en"],
-                    ax["scale_min"], ax["scale_max"], json.dumps(ax.get("anchors") or {}),
-                ))
-                counts["stance_axes"] += 1
-            for org in bundle.orgs:
-                cur.execute(SQL_UPSERT_ORG, (
-                    org["id"], org["name"], org.get("kind", "company"), org.get("country_code"),
-                    org.get("founded_date"), org.get("founded_precision", "unknown"),
-                    org.get("dissolved_date"), org.get("dissolved_precision", "unknown"),
-                    org.get("visibility", "public"), org.get("notes"),
-                ))
-                counts["orgs"] += 1
-            for person in bundle.persons:
-                cur.execute(SQL_UPSERT_PERSON, (
-                    person["id"], person["name"], person.get("aliases") or [],
-                    person.get("country_code"), person.get("birth_date"),
-                    person.get("birth_precision", "unknown"), person.get("death_date"),
-                    person.get("death_precision", "unknown"), person.get("visibility", "public"),
-                    person.get("notes"),
-                ))
-                counts["persons"] += 1
-            for fact in bundle.facts:
-                cur.execute(SQL_UPSERT_FACT, (
-                    fact["id"], fact["subject_kind"], fact["subject_id"], fact["predicate_code"],
-                    fact.get("object_kind"), fact.get("object_id"),
-                    fact.get("start_date"), fact.get("start_precision", "unknown"),
-                    fact.get("end_date"), fact.get("end_precision", "unknown"),
-                    fact.get("qualifier", "exact"), fact.get("amount"),
-                    json.dumps(fact.get("attrs") or {}), fact.get("certainty", "exact"),
-                    fact.get("status", "draft"), fact.get("visibility", "public"),
-                    fact.get("revision_of"), bool(fact.get("no_source", False)),
-                ))
-                counts["facts"] += 1
-                for source in fact.get("sources") or []:
-                    source_id = source.get("id") or str(uuid.uuid5(uuid.NAMESPACE_URL, source.get("url") or source["title"]))
-                    if source_id not in source_ids:
-                        cur.execute(SQL_UPSERT_SOURCE, (
-                            source_id, source.get("kind", "article"), source["title"],
-                            source.get("author"), source.get("url"), source.get("page"),
-                            source.get("quote"), source.get("published_at"), source.get("accessed_at"),
-                        ))
-                        source_ids.add(source_id)
-                        counts["sources"] += 1
-                    cur.execute(
-                        "insert into public.fact_sources (fact_id, source_id, locator) "
-                        "values (%s, %s, %s) on conflict do nothing",
-                        (fact["id"], source_id, source.get("locator")),
-                    )
-                    counts["fact_sources"] += 1
-            for stance in bundle.stances:
-                cur.execute(SQL_UPSERT_STANCE, (
-                    stance["id"], stance["party_org_id"], stance["axis_code"], stance["value"],
-                    stance.get("target_org_id"), stance.get("start_date"),
-                    stance.get("start_precision", "unknown"), stance.get("end_date"),
-                    stance.get("end_precision", "unknown"), stance.get("status", "draft"),
-                    stance.get("visibility", "public"), stance.get("notes"),
-                ))
-                counts["stances"] += 1
-            cur.execute(
-                "insert into public.audit_log (entity, action, summary) "
-                "values ('seed', 'seed', %s::jsonb)",
-                (json.dumps(counts),),
-            )
+def _request(cfg: RestConfig, method: str, table: str, *, payload: Any = None,
+             prefer: str | None = None, on_conflict: str | None = None) -> Any:
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+
+    url = f"{cfg.url}/rest/v1/{table}"
+    if on_conflict:
+        url += "?" + urllib.parse.urlencode({"on_conflict": on_conflict})
+    headers = {
+        "apikey": cfg.key,
+        "Authorization": f"Bearer {cfg.key}",
+        "Content-Type": "application/json",
+    }
+    if prefer:
+        headers["Prefer"] = prefer
+    data = None if payload is None else json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    request = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            raw = response.read()
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")[:800]
+        raise SystemExit(f"REST {method} {table} -> {exc.code}: {detail}") from exc
+    except urllib.error.URLError as exc:
+        raise SystemExit(f"cannot reach {cfg.url}: {exc.reason}") from exc
+    return json.loads(raw) if raw else None
+
+
+def _upsert(cfg: RestConfig, table: str, rows: list[dict[str, Any]],
+            *, on_conflict: str = "id") -> None:
+    for start in range(0, len(rows), BATCH):
+        _request(cfg, "POST", table, payload=rows[start:start + BATCH],
+                 prefer="resolution=merge-duplicates,return=minimal",
+                 on_conflict=on_conflict)
+
+
+def relation_type_rows(bundle: Bundle) -> list[dict[str, Any]]:
+    return [{
+        "code": rt["code"],
+        "label_zh": rt["label_zh"],
+        "label_en": rt["label_en"],
+        "subject_kinds": rt.get("subject_kinds") or [],
+        "object_kinds": rt.get("object_kinds") or [],
+        "implied_parent": bool(rt.get("implied_parent", False)),
+        "attrs_schema": rt.get("attrs_schema") or {},
+        "is_active": rt.get("is_active", True),
+    } for rt in bundle.relation_types]
+
+
+def axis_rows(bundle: Bundle) -> list[dict[str, Any]]:
+    return [{
+        "code": ax["code"],
+        "label_zh": ax["label_zh"],
+        "label_en": ax["label_en"],
+        "scale_min": ax["scale_min"],
+        "scale_max": ax["scale_max"],
+        "anchors": ax.get("anchors") or {},
+    } for ax in bundle.stance_axes]
+
+
+def org_rows(bundle: Bundle) -> list[dict[str, Any]]:
+    return [{
+        "id": org["id"],
+        "name": org["name"],
+        "kind": org.get("kind", "company"),
+        "country_code": org.get("country_code"),
+        "founded_date": org.get("founded_date"),
+        "founded_precision": org.get("founded_precision", "unknown"),
+        "dissolved_date": org.get("dissolved_date"),
+        "dissolved_precision": org.get("dissolved_precision", "unknown"),
+        "visibility": org.get("visibility", "public"),
+        "notes": org.get("notes"),
+    } for org in bundle.orgs]
+
+
+def person_rows(bundle: Bundle) -> list[dict[str, Any]]:
+    return [{
+        "id": person["id"],
+        "name": person["name"],
+        "aliases": person.get("aliases") or [],
+        "country_code": person.get("country_code"),
+        "birth_date": person.get("birth_date"),
+        "birth_precision": person.get("birth_precision", "unknown"),
+        "death_date": person.get("death_date"),
+        "death_precision": person.get("death_precision", "unknown"),
+        "visibility": person.get("visibility", "public"),
+        "notes": person.get("notes"),
+    } for person in bundle.persons]
+
+
+def fact_rows(bundle: Bundle) -> list[dict[str, Any]]:
+    return [{
+        "id": fact["id"],
+        "subject_kind": fact["subject_kind"],
+        "subject_id": fact["subject_id"],
+        "predicate_code": fact["predicate_code"],
+        "object_kind": fact.get("object_kind"),
+        "object_id": fact.get("object_id"),
+        "start_date": fact.get("start_date"),
+        "start_precision": fact.get("start_precision", "unknown"),
+        "end_date": fact.get("end_date"),
+        "end_precision": fact.get("end_precision", "unknown"),
+        "qualifier": fact.get("qualifier", "exact"),
+        "amount": fact.get("amount"),
+        "attrs": fact.get("attrs") or {},
+        "certainty": fact.get("certainty", "exact"),
+        "status": fact.get("status", "draft"),
+        "visibility": fact.get("visibility", "public"),
+        "revision_of": fact.get("revision_of"),
+        "no_source": bool(fact.get("no_source", False)),
+    } for fact in bundle.facts]
+
+
+def stance_rows(bundle: Bundle) -> list[dict[str, Any]]:
+    return [{
+        "id": stance["id"],
+        "party_org_id": stance["party_org_id"],
+        "axis_code": stance["axis_code"],
+        "value": stance["value"],
+        "target_org_id": stance.get("target_org_id"),
+        "start_date": stance.get("start_date"),
+        "start_precision": stance.get("start_precision", "unknown"),
+        "end_date": stance.get("end_date"),
+        "end_precision": stance.get("end_precision", "unknown"),
+        "status": stance.get("status", "draft"),
+        "visibility": stance.get("visibility", "public"),
+        "notes": stance.get("notes"),
+    } for stance in bundle.stances]
+
+
+def source_id(source: dict[str, Any]) -> str:
+    """Stable id for a source that carries none: uuid5 over its URL (or title)."""
+    return source.get("id") or str(
+        uuid.uuid5(uuid.NAMESPACE_URL, source.get("url") or source["title"]))
+
+
+def source_rows(bundle: Bundle) -> list[dict[str, Any]]:
+    seen: dict[str, dict[str, Any]] = {}
+    for fact in bundle.facts:
+        for source in fact.get("sources") or []:
+            sid = source_id(source)
+            seen.setdefault(sid, {
+                "id": sid,
+                "kind": source.get("kind", "article"),
+                "title": source["title"],
+                "author": source.get("author"),
+                "url": source.get("url"),
+                "page": source.get("page"),
+                "quote": source.get("quote"),
+                "published_at": source.get("published_at"),
+                "accessed_at": source.get("accessed_at"),
+            })
+    return list(seen.values())
+
+
+def fact_source_rows(bundle: Bundle) -> list[dict[str, Any]]:
+    return [{
+        "fact_id": fact["id"],
+        "source_id": source_id(source),
+        "locator": source.get("locator"),
+    } for fact in bundle.facts for source in fact.get("sources") or []]
+
+
+def import_bundle(bundle: Bundle, cfg: RestConfig | None = None) -> dict[str, int]:
+    """Write a validated bundle through PostgREST; returns row counts per table."""
+    cfg = cfg or rest_config()
+    sources = source_rows(bundle)
+    links = fact_source_rows(bundle)
+    counts = {
+        "relation_types": len(bundle.relation_types),
+        "stance_axes": len(bundle.stance_axes),
+        "orgs": len(bundle.orgs),
+        "persons": len(bundle.persons),
+        "facts": len(bundle.facts),
+        "sources": len(sources),
+        "fact_sources": len(links),
+        "stances": len(bundle.stances),
+    }
+    # Vocabulary first (facts reference predicate codes), then entities, then the
+    # join rows that reference both facts and sources.
+    _upsert(cfg, "relation_types", relation_type_rows(bundle), on_conflict="code")
+    _upsert(cfg, "stance_axes", axis_rows(bundle), on_conflict="code")
+    _upsert(cfg, "orgs", org_rows(bundle))
+    _upsert(cfg, "persons", person_rows(bundle))
+    _upsert(cfg, "facts", fact_rows(bundle))
+    _upsert(cfg, "sources", sources)
+    for start in range(0, len(links), BATCH):
+        _request(cfg, "POST", "fact_sources", payload=links[start:start + BATCH],
+                 prefer="resolution=ignore-duplicates,return=minimal")
+    _upsert(cfg, "stances", stance_rows(bundle))
+    _request(cfg, "POST", "audit_log",
+             payload={"entity": "seed", "action": "seed", "summary": counts},
+             prefer="return=minimal")
     return counts
-
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate and import a Meta Pedigree seed bundle.")

@@ -1,6 +1,6 @@
 PY := .venv/bin/python
 
-.PHONY: venv test seed seed-dry check
+.PHONY: venv test seed seed-dry probe check
 
 venv:
 	-python3 -m venv .venv
@@ -15,9 +15,13 @@ test:
 seed-dry:
 	$(PY) -m seed.importer --data seed/data --dry-run
 
-# Import seed data: needs DATABASE_URL (Supabase → Connect → Session pooler).
+# Import seed data through PostgREST: needs SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (root .env).
 seed:
 	$(PY) -m seed.importer --data seed/data
+
+# Prove RLS through the REST API: anon is refused, service_role may write.
+probe:
+	node seed/rls_probe.mjs
 
 check:
 	python3 .dsh/skills/project-flow/scripts/structure.py check && $(MAKE) test

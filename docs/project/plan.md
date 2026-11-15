@@ -16,7 +16,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | ID | Task | Milestone | Assignee | Requirement | Design (S-/API/TH-) | decision record | Estimate | Depends on | Status |
 |---|---|---|---|---|---|---|---|---|---|
 | T-001 | Scaffold repo per code organization: `api/` (FastAPI, `/healthz`, pytest), `web/` (Vite/React skeleton), venv bootstrap, README run/test; `db/`+`seed/` land in T-002, CI in T-022 (CR-002) | M1 | UGcraftist | NFR-07 | — | DR-0002, DR-0004 | 0.5 | — | done |
-| T-002 | `supabase/migrations/*.sql` core schema (orgs, persons, facts, sources, fact_sources, relation_types, stance_axes, stances, audit_log, app_users) + RLS; Python seed importer via `DATABASE_URL`; `api/` removed | M1 | none | FR-003,009,010,011,014 | data-model.md | DR-0003, DR-0005 | 0.75 | T-001 | in progress |
+| T-002 | `supabase/migrations/*.sql` core schema (orgs, persons, facts, sources, fact_sources, relation_types, stance_axes, stances, audit_log, app_users) + RLS; Python seed importer via service_role → PostgREST（DR-0006）; `api/` removed | M1 | none | FR-003,009,010,011,014 | data-model.md | DR-0003, DR-0005, DR-0006 | 0.75 | T-001 | in progress |
 | T-003 | Research + seed 20 orgs (tree skeleton for preview) from sources into seed JSON; validation script | M1 | none | FR-024 | — | — | 0.5 | T-002 | todo |
 | T-004 | Read views + RPC surface: `tree_nodes`/`tree_edges`, `org_detail` (facts+relations+sources), PostgREST 视图与 `openapi.yaml` 一致 | M1 | none | — | api.md, openapi.yaml | DR-0005 | 0.5 | T-002 | todo |
 | T-005 | S-01 tree screen: SVG/D3 render, expand/collapse, view switcher stub, diff shade | M1 | none | FR-013,025,026 | S-01 | DR-0001 | 0.75 | T-004 | todo |
@@ -45,8 +45,8 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 - `db/` + `seed/` are T-002; CI is T-022 (needs a git remote, which does not exist yet).
 
 ### T-002 acceptance criteria
-- `supabase db push`（或 `psql -f`）在空库上干净应用全部迁移；ER 与 `data-model.md` 一致。
-- 种子导入器拒绝悬空 id 并点名（FR-006 规则）；导入器从 JSON 运行、不需要部署。
+- dev 空库从 SQL 编辑器应用 `0001_init.sql` 后 `make probe` 全绿（anon 写被拒、service_role 自建自删）；ER 与 `data-model.md` 一致。
+- 种子导入器拒绝悬空 id 并点名（FR-006 规则）；导入器从 JSON 运行、只需 service_role、不需要部署。
 
 ### T-003 acceptance criteria
 - 20 orgs with at least one sourced fact each load; every fact carries source + as-of or is explicitly `无来源`.

@@ -136,3 +136,58 @@ def test_unknown_top_level_key_is_rejected(tmp_path: Path):
     bundle, load_issues = load_bundle(write_bundle(tmp_path, files))
     assert any("unknown top-level keys" in str(issue) for issue in load_issues)
     assert len(bundle.orgs) == 2
+
+
+# ── REST import mapping (no network; T-002 / DR-0006) ────────────────────────
+
+from seed import importer as importer_mod  # noqa: E402
+
+
+def test_rows_map_defaults(tmp_path: Path):
+    bundle, _ = load_bundle(write_bundle(tmp_path, base_bundle()))
+    orgs = importer_mod.org_rows(bundle)
+    assert orgs[0]["founded_precision"] == "year"
+    assert orgs[1]["kind"] == "company" and orgs[1]["visibility"] == "public"
+    assert orgs[1]["founded_precision"] == "unknown"
+    facts = importer_mod.fact_rows(bundle)
+    assert facts[0]["attrs"] == {} and facts[0]["no_source"] is False
+    assert facts[0]["start_precision"] == "unknown"
+
+
+def test_sources_are_deduped_by_url_across_facts(tmp_path: Path):
+    files = base_bundle()
+    source = {"kind": "article", "title": "Deal", "url": "https://example.com/a"}
+    files["030-facts.json"]["facts"].append({
+        "id": "01900000-0000-7000-8000-000000000011", "subject_kind": "org", "subject_id": ORG,
+        "predicate_code": "acquired", "object_kind": "org", "object_id": ORG2,
+        "status": "published", "sources": [dict(source)],
+    })
+    bundle, _ = load_bundle(write_bundle(tmp_path, files))
+
+    sources = importer_mod.source_rows(bundle)
+    links = importer_mod.fact_source_rows(bundle)
+    assert len(sources) == 1 and sources[0]["id"] == importer_mod.source_id(source)
+    assert len(links) == 2 and {link["source_id"] for link in links} == {sources[0]["id"]}
+
+
+def test_import_posts_tables_in_dependency_order(tmp_path: Path, monkeypatch):
+    bundle, _ = load_bundle(write_bundle(tmp_path, base_bundle()))
+    calls: list[tuple[str, str]] = []
+
+    def fake_request(cfg, method, table, **kwargs):
+        calls.append((method, table))
+        return None
+
+    monkeypatch.setattr(importer_mod, "_request", fake_request)
+    counts = importer_mod.import_bundle(
+        bundle, importer_mod.RestConfig("https://example.supabase.co", "service-key"))
+
+    tables = [table for _, table in calls]
+    # empty tables are skipped, so "persons" and "stances" make no request here
+    assert tables == ["relation_types", "stance_axes", "orgs", "facts", "sources",
+                      "fact_sources", "audit_log"]
+    assert tables.index("fact_sources") > tables.index("facts")
+    assert tables.index("fact_sources") > tables.index("sources")
+    assert tables[-1] == "audit_log"
+    assert counts == {"relation_types": 1, "stance_axes": 1, "orgs": 2, "persons": 0,
+                      "facts": 1, "sources": 1, "fact_sources": 1, "stances": 0}

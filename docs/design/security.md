@@ -18,7 +18,7 @@ flowchart LR
 - 边界 1：浏览器 ↔ PostgREST。所有授权在数据库里判定（RLS + `SECURITY DEFINER` RPC），
   前端隐藏按钮不构成控制；JWT 由 Supabase Auth 签名。
 - 边界 2：PostgREST ↔ DB。应用角色只有 `authenticated`；写路径不开放表级 INSERT/UPDATE，
-  只走校验过的 RPC（T-007）。`service_role` 仅本机种子导入使用。
+  只走校验过的 RPC（T-007）。`service_role` 仅本机种子导入与 `make probe` 使用。
 - 边界 3：API ↔ 外部来源。R1 只存链接文本，**不抓取、不渲染远程 HTML**，故无 SSRF/远程执行面。
 
 ## STRIDE（R1）
@@ -50,10 +50,10 @@ gate 检查要求每个管理角色两名具名持有人；R1 只有一人，**�
 
 | Name | Used by | Owner | Stored where |
 |---|---|---|---|
-| `DATABASE_URL` | seed 导入、迁移 | UGcraftist | 本机 `.env`（git 忽略）；内容含 DB 密码，泄露即重置 |
-| `SUPABASE_ACCESS_TOKEN`（可选） | 无 psql 时应用迁移 | UGcraftist | 本机 `.env`；可随时在 Supabase 控制台吊销 |
 | `VITE_SUPABASE_ANON_KEY` | web | UGcraftist | `web/.env.local` / Pages 环境变量；**可公开**，安全靠 RLS |
-| `SUPABASE_SERVICE_ROLE_KEY` | 仅本机种子导入 | UGcraftist | 本机 `.env`；**绝不进前端、不进仓库**，等价于 DB 超级用户 |
+| `SUPABASE_SERVICE_ROLE_KEY` | 种子导入、`make probe` | UGcraftist | 本机 `.env`；**绝不进前端、CI、仓库**；绕过 RLS 读写暴露表，但**不能 DDL、不触达 auth schema**；控制台可单独 rotate |
+
+迁移不经网络直连：`supabase/migrations/*.sql` 由人在控制台 SQL 编辑器粘贴（DR-0006），故无 `DATABASE_URL`。
 | `GEMINI_API_KEY`（可选，仅设计稿） | 图像生成 | UGcraftist | 用户本机配置，不进仓库 |
 
 ## Rules
@@ -62,6 +62,7 @@ gate 检查要求每个管理角色两名具名持有人；R1 只有一人，**�
 - 所有输入按 UTF-8 文本转义；前端不用 `dangerouslySetInnerHTML`。
 - 依赖锁定 + `pnpm audit` 进 CI；R1 不引入运行时远程脚本。
 - 日志不写 token、不写完整 URL 查询串。
+- `anon` 的表权限已整体收回，故 anon 请求直接 401/403；若未来只靠策略过滤，UPDATE/DELETE 会返回 **200 + 0 行**（不是报错），`make probe` 两种都按拒绝处理，防止把静默无操作误判为放行。
 
 ## Accepted risks
 

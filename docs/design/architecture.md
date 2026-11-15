@@ -75,7 +75,7 @@ C4Container
 ```
 supabase/migrations/   纯 SQL 迁移（唯一 schema 来源；应用顺序 = 文件名顺序）
 supabase/tests/        SQL 冒烟检查（T-004 起：视图与 RPC 的负向用例）
-seed/                  Python 种子导入器 + 数据包 seed/data/*.json（DATABASE_URL）
+seed/                  Python 种子导入器 + 数据包 seed/data/*.json（service_role → PostgREST）
 web/                   React 19 + Vite + TS SPA（Cloudflare Pages 产物）
 docs/                  工作流文档（见 docs/structure.yml）
 ```
@@ -97,3 +97,13 @@ docs/                  工作流文档（见 docs/structure.yml）
 - 区域：`ap-northeast-1`（东京）或就近区域；创建后不可改，只能迁移。
 - 免费层每组织 2 个项目、无活跃自动暂停——dev 暂停可恢复，不影响数据。
 - 密钥只存本地 `.env`/`.env.local`（gitignore），Pages 环境变量在 Cloudflare 控制台设置；仓库里只有 `.env.example` 占位。
+
+**迁移应用与凭据（DR-0006）**
+
+| 环境 | 迁移如何应用 | 人读记录 |
+|---|---|---|
+| dev | 控制台 SQL 编辑器粘贴 `supabase/migrations/0001_init.sql`，保存为命名查询 | `meta-pedigree-dev:0001_init` |
+| prod | stage 7 重放同一份文件（之前不写入） | `meta-pedigree-prod:0001_init` |
+
+凭据只有两类：`VITE_SUPABASE_ANON_KEY`（公开；RLS 兜底）与 `SUPABASE_SERVICE_ROLE_KEY`（仅本机种子导入与 `make probe`）。
+没有 `DATABASE_URL`：Postgres 不接受外部 DDL 连接，迁移是手工粘贴；`make probe` 用 REST 证明 anon 被拒、service_role 可写。
