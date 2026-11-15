@@ -1,5 +1,5 @@
 # Data model
-Audience: engineers · Last updated: 2026-11-14 by UGcraftist
+Audience: engineers · Last updated: 2026-11-15 by UGcraftist
 Sources: DR-0003 (schema), DR-0002 (storage), requirements.md FR-001…FR-024
 
 ## Stores
@@ -80,9 +80,24 @@ stateDiagram-v2
 
 ## Migrations
 
-`supabase/migrations/NNNN_*.sql`，只向前；CI 在空库 + 上一版快照各跑一次（T-022）。本地/CI 用
-`supabase db push` 或按文件名顺序 `psql -f`。种子数据由 `seed/importer.py` 校验后导入，校验规则
-与本节 CHECK 一一对应（`make seed-dry` 不需要数据库）。
+`supabase/migrations/NNNN_*.sql`，只向前。应用方式：在 Supabase SQL 编辑器粘贴执行，并保存为命名查询
+`meta-pedigree-dev:000N_<name>`；prod 在发布时按序重放。不使用 `DATABASE_URL`、`psql` 或
+`supabase db push`（[DR-0006](../decisions/0006-migrations-via-sql-editor-service-role-only.md)）。种子数据由
+`seed/importer.py` 校验后经 PostgREST + service_role 导入，校验规则与本节 CHECK 一一对应
+（`make seed-dry` 不需要网络）。
+
+计划内的迁移（R1 → M2）：
+
+| 迁移 | 任务 | 内容 | 改表？ |
+|---|---|---|---|
+| `0001_init` | T-002 | 10 张表 + 枚举 + RLS + 审计触发器 | 建表 |
+| `0002_read_model` | T-004 | `tree_nodes`/`tree_edges`/`org_detail` 视图（PostgREST 不能执行递归 CTE） | 否，新增视图 |
+| `0003_write_rpc` | T-007 | `submit_fact`/`upsert_stance`/`merge_source` | 否，新增函数 |
+| `0004_search` | T-013 | `pg_trgm` + `search_orgs` + 检索索引 | 否，新增函数/索引 |
+| `0005+` | T-005/T-007 期间 | 视图字段微调、RLS 补丁（预计 ≤2 条） | 补丁 |
+
+迁移超过 5 份、或同一周连续修改 schema、或 T-022 需要 CI 自动应用迁移、或发布前要 dev↔prod diff 时，
+按 DR-0006 切到 session pooler 直连；在此之前保持编辑器路线。
 
 ## Keys
 
