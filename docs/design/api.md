@@ -42,7 +42,7 @@ operators and error shapes.
 | `GET audit_log?entity=eq.fact&entity_id=eq.<id>` | editor-only audit trail | US-021 |
 | `GET timeline_events?order=start_date` | timeline view (view lands with T-009) | US-010 |
 
-## Write surface (Must, T-007 · migration 0003_write_rpc)
+## Write surface (Must, T-007 · migration 0005_write_rpc)
 
 | Call | Purpose |
 |---|---|
@@ -51,6 +51,19 @@ operators and error shapes.
 | `POST rpc/upsert_stance` | stance upsert (R1 test set stays empty) |
 | `POST rpc/merge_source` | dedupe sources by URL and re-link facts |
 | `POST rpc/publish_fact` (if split out) | publish step for S-10 (exact split decided in T-007) |
+
+### `merge_source` URL normalization (destructive, one-way)
+
+`merge_source(p_from, p_into)` 仅在两个来源的**归一化 URL 完全相同**时视为重复（T-007 实现并测试）：
+
+- 去首尾空白；
+- scheme 与 host 转小写，路径与查询串保留原大小写；
+- 去掉 fragment（`#...`）；
+- 去掉默认端口（`http:80`、`https:443`）；
+- 路径为空时去掉末尾 `/`。
+
+合并会删除重复来源并把其 fact 重新挂到保留来源上，**不可逆**；T-007 必须同时给出正例
+（归一化后相同 → 合并）与负例（路径不同 → 拒绝，不删行）。
 
 ## Response snippets (0002 read model)
 

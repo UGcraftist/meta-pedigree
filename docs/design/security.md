@@ -19,6 +19,8 @@ flowchart LR
   前端隐藏按钮不构成控制；JWT 由 Supabase Auth 签名。
 - 边界 2：PostgREST ↔ DB。应用角色只有 `authenticated`；写路径不开放表级 INSERT/UPDATE，
   只走校验过的 RPC（T-007）。`service_role` 仅本机种子导入与 `make probe` 使用。
+  所有 `SECURITY DEFINER` 函数显式 `SET search_path = pg_catalog, public, pg_temp`，
+  防止函数内对象解析被 schema 劫持（T-007 起对每个函数生效）。
 - 边界 3：API ↔ 外部来源。R1 只存链接文本，**不抓取、不渲染远程 HTML**，故无 SSRF/远程执行面。
 
 ## STRIDE（R1）
