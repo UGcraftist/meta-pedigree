@@ -197,7 +197,13 @@ export function TreeScreen({ data }: { data: TreeData }) {
     zoomRef.current = z;
     d3.select(svg).call(z);
     d3.select(svg).select('g.canvas').attr('transform', d3.zoomIdentity.toString());
-  }, []);
+    return () => {
+      // the tree table/table-view switch detaches the old SVG: drop the behaviour and the
+      // stale ref so a later zoomTo() can never transform a detached node
+      d3.select(svg).on('.zoom', null);
+      zoomRef.current = null;
+    };
+  }, [table]);
 
   useEffect(() => {
     if (zoomReset > 0) zoomTo(1);

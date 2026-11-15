@@ -67,3 +67,6 @@
 - 2026-11-15: found deviation recorded (history not rewritten): T-005 was committed on `feat/T-004-read-model` rather than its own branch (one-branch-per-task rule broken at the time).
 - 2026-11-15: migration numbering corrected — T-007 uses `0005_write_rpc`, T-013 uses `0006_search` (`0003_tree_direction` / `0004_tree_nodes_dedup` already exist; DR-0006's >5-migration revisit trigger fires after T-007).
 - 2026-11-15: T-002 in progress — `supabase/migrations/0001_init.sql`, `seed/` importer + validation, `api/` (FastAPI) removed per DR-0005; docs (architecture layout, data-model table names/keys, security RLS) updated in the same branch. Supabase **dev** project connected (URL + anon key); **prod** project also created by the owner on 2026-11-15 but stays unused until stage 7.
+
+## Implementation log (stage 5)
+- 2026-11-15: **T-006 round-1 fixes** — `supabase/migrations/0005_org_detail_subject.sql` (both fact ends resolved server-side and gated on the counterpart's visibility; grant + comment re-issued); drawer renders the full `subject · predicate · object` triple (`web/src/features/tree/triple.ts`, 6 vitest cases); TreeScreen zoom effect dropped on unmount (`on('.zoom', null)` + `[table]`); `seed/views_probe.mjs` asserts Hyundai→Boston Dynamics ends and anon 401. Applied in the Supabase SQL editor by UGcraftist before `make views-probe` is green.

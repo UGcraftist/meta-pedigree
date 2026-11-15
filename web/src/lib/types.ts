@@ -41,8 +41,14 @@ export interface OrgFactRow {
   predicate: string;
   label_zh: string | null;
   label_en: string | null;
-  object_kind: string;
-  object_id: string;
+  subject_kind: 'org' | 'person' | null;
+  /** null when the subject end is not public (gated in the view, security.md:33). */
+  subject_id: string | null;
+  subject_name: string | null;
+  object_kind: 'org' | 'person' | null;
+  /** null when the object end is absent or not public. */
+  object_id: string | null;
+  object_name: string | null;
   start_date: string | null;
   start_precision: string;
   end_date: string | null;

@@ -17,6 +17,7 @@ try {
 }
 const url = (env.SUPABASE_URL ?? "").replace(/\/$/, "");
 const key = env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+const anon = env.SUPABASE_ANON_KEY ?? "";
 if (!url || !key) {
   console.error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required");
   process.exit(1);
@@ -45,6 +46,35 @@ console.log(`  orgs with facts: ${withFacts}/${detail.length}`);
 const sourced = detail.flatMap((o) => o.factsR ?? o.facts ?? []).filter((f) => f.sources?.some((s) => s.url));
 console.log(`  facts with a URL source: ${sourced.length}`);
 const missing = Number(detail.find((o) => o.name === "Boston Dynamics")?.facts?.length ?? 0) === 0;
+// T-006 (0005): both ends of a fact are resolved in the view, not by the client.
+// The seed has Hyundai acquiring Boston Dynamics, and Boston Dynamics is the
+// object side of that fact — so its drawer must be able to render the triple.
+const bd = detail.find((o) => o.name === "Boston Dynamics");
+const hyundaiSide = (bd?.facts ?? []).find(
+  (f) => f.subject_name === "Hyundai" && f.object_name === "Boston Dynamics",
+);
+if (!hyundaiSide) {
+  console.error("FAIL: org_detail has no fact with subject_name=Hyundai and object_name=Boston Dynamics (0005 not applied?)");
+  process.exit(1);
+}
+if (!hyundaiSide.subject_id || !hyundaiSide.object_id) {
+  console.error(`FAIL: both ends must be visible here (subject_id=${hyundaiSide.subject_id}, object_id=${hyundaiSide.object_id})`);
+  process.exit(1);
+}
+// security.md:33 — an anon caller must not read org_detail at all.
+let anonStatus = 0;
+try {
+  const res = await fetch(`${url}/rest/v1/org_detail?select=id&limit=1`, {
+    headers: { apikey: anon, authorization: `Bearer ${anon}` },
+  });
+  anonStatus = res.status;
+} catch {
+  anonStatus = -1;
+}
+if (anonStatus !== 401 && anonStatus !== 403) {
+  console.error(`FAIL: anon read org_detail returned ${anonStatus}, expected 401/403 (grant regression)`);
+  process.exit(1);
+}
 const ids = new Set(nodes.map((n) => n.id));
 const duped = ids.size !== nodes.length;
 const frankaId = nodes.find((n) => n.name === "Franka Emika")?.id;
@@ -57,4 +87,5 @@ if (nodes.length < 20 || edges.length < 5 || missing || franka < 2) {
   console.error("FAIL: expected ≥20 distinct nodes, ≥5 edges, Boston Dynamics facts, Franka 2 parent edges");
   process.exit(1);
 }
+console.log(`  anon org_detail access: ${anonStatus} (denied, as required)`);
 console.log("views ok");

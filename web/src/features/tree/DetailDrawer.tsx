@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ApiError, fetchOrgDetail } from '../../lib/api';
 import type { OrgDetailRow, OrgFactRow } from '../../lib/types';
 import { focusLink } from '../../lib/urlState';
+import { counterpartLabel, counterpartOf, selfEndOf } from './triple';
 import { formatDate, formatSpan, PRECISION_LABEL } from './format';
 import { PREDICATE_LABEL } from './layout';
 
@@ -24,19 +25,19 @@ interface DetailDrawerProps {
 function FactItem({
   fact,
   orgId,
-  nameById,
   onFocus,
 }: {
   fact: OrgFactRow;
   orgId: string;
-  nameById: Map<string, string>;
   onFocus: (id: string) => void;
 }) {
-  // org_detail only exposes the object side, so the counterpart is shown when
-  // the fact points at another org; facts where this org is the object stay
-  // label-only until T-010 adds the full side-by-side detail.
-  const counterpart =
-    fact.object_kind === 'org' && fact.object_id !== orgId ? nameById.get(fact.object_id) : null;
+  // org_detail (0005) resolves BOTH ends server-side and nulls the id of an
+  // end that is not public. Render the full subject - predicate - object triple
+  // with the org being viewed emphasised, and keep an explicit fallback for a
+  // hidden/unloaded counterpart instead of dropping the end silently.
+  const counterpart = counterpartOf(fact, orgId);
+  const selfName = selfEndOf(fact, orgId).name;
+  const counterpartName = counterpartLabel(counterpart);
   const label = fact.label_zh ?? PREDICATE_LABEL[fact.predicate] ?? fact.predicate;
   const span = formatSpan(fact.start_date, fact.start_precision, fact.end_date, fact.end_precision);
   const precision = PRECISION_LABEL[fact.start_precision];
@@ -45,12 +46,17 @@ function FactItem({
   return (
     <li className="fact">
       <div className="fact-head">
-        <strong>{label}</strong>
-        {counterpart && (
-          <button className="linklike" onClick={() => onFocus(fact.object_id)}>
-            {counterpart}
-          </button>
-        )}
+        <span className="fact-triple">
+          <em className="self-end">{selfName ?? '本组织'}</em>
+          <span className="predicate"> · {label} · </span>
+          {counterpart.id ? (
+            <button className="linklike" onClick={() => onFocus(counterpart.id!)}>
+              {counterpartName}
+            </button>
+          ) : (
+            <span className="fact-when">{counterpartName}</span>
+          )}
+        </span>
         <span className="fact-when">
           {span}
           {span !== '时间未知' && precision && precision !== '未知' && (
@@ -160,7 +166,6 @@ export function DetailDrawer({ orgId, nameById, onClose, onFocus }: DetailDrawer
                   key={fact.id}
                   fact={fact}
                   orgId={orgId}
-                  nameById={nameById}
                   onFocus={onFocus}
                 />
               ))}
