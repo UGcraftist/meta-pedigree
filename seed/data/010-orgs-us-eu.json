@@ -1,0 +1,244 @@
+{
+ "orgs": [
+  {
+   "id": "0f16d0d8-89c7-553f-bb3a-a459652c5f96",
+   "name": "Figure AI",
+   "kind": "company",
+   "country_code": "US",
+   "founded_date": "2022-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Humanoid robots (Figure 01/02/03); HQ San Jose, CA"
+  },
+  {
+   "id": "2434914b-5e93-59ea-a1a4-dc92703da3a8",
+   "name": "Physical Intelligence",
+   "kind": "company",
+   "country_code": "US",
+   "founded_date": "2024-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Robot foundation models (pi-0); HQ San Francisco, CA"
+  },
+  {
+   "id": "f102c86d-f492-524f-8f55-344873bf2632",
+   "name": "Apptronik",
+   "kind": "company",
+   "country_code": "US",
+   "founded_date": "2016-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Humanoid Apollo; spun out of UT Austin; HQ Austin, TX"
+  },
+  {
+   "id": "daef73c4-02df-5602-b2bd-b24e76037ef0",
+   "name": "Agility Robotics",
+   "kind": "company",
+   "country_code": "US",
+   "founded_date": "2015-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Digit humanoid; HQ Corvallis, OR"
+  },
+  {
+   "id": "c413219a-d04e-58db-808e-270c9723d012",
+   "name": "Boston Dynamics",
+   "kind": "company",
+   "country_code": "US",
+   "founded_date": "1992-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Spot / Atlas; MIT spin-off 1992; HQ Waltham, MA"
+  },
+  {
+   "id": "4f9d77c0-d1ff-5675-93d9-20a1cb808c7a",
+   "name": "Covariant",
+   "kind": "company",
+   "country_code": "US",
+   "founded_date": "2017-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Robot foundation model (RFM-1); HQ Emeryville, CA"
+  },
+  {
+   "id": "16523b59-ddfe-58d6-b69d-49ac02ec58ac",
+   "name": "Diligent Robotics",
+   "kind": "company",
+   "country_code": "US",
+   "founded_date": "2017-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Moxi hospital robot; HQ Austin, TX"
+  },
+  {
+   "id": "17d5e6eb-881b-5298-948f-6f19827397d4",
+   "name": "Dexterity",
+   "kind": "company",
+   "country_code": "US",
+   "founded_date": "2017-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Dexterous manipulation robots; HQ Redwood City, CA"
+  },
+  {
+   "id": "31dadbea-2379-5eb6-8fa8-14331e9b8a7d",
+   "name": "Ghost Robotics",
+   "kind": "company",
+   "country_code": "US",
+   "founded_date": "2015-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Quadruped Q-UGV; UPenn spin-off; HQ Philadelphia, PA"
+  },
+  {
+   "id": "6a8a8014-379e-5c93-9486-19f57c526ba5",
+   "name": "Skild AI",
+   "kind": "company",
+   "country_code": "US",
+   "founded_date": "2023-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "General-purpose robot foundation model; HQ Pittsburgh, PA"
+  },
+  {
+   "id": "7aeec42c-53b4-5fd1-9a84-3f6529fab2ee",
+   "name": "Agile Robots",
+   "kind": "company",
+   "country_code": "DE",
+   "founded_date": "2018-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "AI+robotics automation; HQ Munich, Germany"
+  },
+  {
+   "id": "7ac1937f-3dc9-5c71-8d47-73f2bac20c54",
+   "name": "Franka Emika",
+   "kind": "company",
+   "country_code": "DE",
+   "founded_date": "2016-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Collaborative robots (FRANKA); 2016 DLR spin-off, Munich"
+  },
+  {
+   "id": "d5670fb1-2fbb-59dd-ab87-674530351d81",
+   "name": "KUKA",
+   "kind": "company",
+   "country_code": "DE",
+   "founded_date": "1898-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Industrial automation/robotics; HQ Augsburg, Germany"
+  },
+  {
+   "id": "e76b9215-2011-5992-9414-7698f96a66f7",
+   "name": "Neura Robotics",
+   "kind": "company",
+   "country_code": "DE",
+   "founded_date": "2019-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Cognitive robots; HQ Metzingen, Germany"
+  },
+  {
+   "id": "8c41258a-b69a-51a3-84b0-61c918e81454",
+   "name": "PAL Robotics",
+   "kind": "company",
+   "country_code": "ES",
+   "founded_date": "2004-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Service/legged robots; HQ Barcelona, Spain"
+  },
+  {
+   "id": "aaaf80d3-6a39-5758-ab11-e2f8d85b469e",
+   "name": "Wandercraft",
+   "kind": "company",
+   "country_code": "FR",
+   "founded_date": "2012-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Walking exoskeletons (Atalante X, Eve); HQ Paris, France"
+  },
+  {
+   "id": "f3f7e97f-f656-5598-91a7-e5aa5c024e95",
+   "name": "Enchanted Tools",
+   "kind": "company",
+   "country_code": "FR",
+   "founded_date": "2021-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Mirokaï service robots; HQ Paris, France"
+  },
+  {
+   "id": "6b3542bf-af39-5697-981c-1a4ef5c74a51",
+   "name": "Exotec",
+   "kind": "company",
+   "country_code": "FR",
+   "founded_date": "2015-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Warehouse robotics (Skypod); HQ Lille, France"
+  },
+  {
+   "id": "cf8c32e8-b0ef-5825-9d64-ccb2ed91fa33",
+   "name": "Micropsi Industries",
+   "kind": "company",
+   "country_code": "DE",
+   "founded_date": "2014-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "AI vision for robot control (MIRAI); HQ Berlin, Germany"
+  },
+  {
+   "id": "353542e8-de45-557c-aedb-68018d17b147",
+   "name": "1X Technologies",
+   "kind": "company",
+   "country_code": "NO",
+   "founded_date": "2014-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Humanoids NEO/Adam; founded 2014 as Halodi; Moss, Norway"
+  },
+  {
+   "id": "d1139180-8785-5d60-b2a7-ca3949aa88ba",
+   "name": "German Aerospace Center (DLR)",
+   "kind": "government",
+   "country_code": "DE",
+   "founded_date": "1969-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "National research center; robotics institute; Cologne"
+  },
+  {
+   "id": "743297de-a84a-5005-b544-3932e585d3f5",
+   "name": "MIT",
+   "kind": "lab",
+   "country_code": "US",
+   "founded_date": "1861-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Research university; MIT robotics; Cambridge, MA"
+  },
+  {
+   "id": "db7f1926-0a31-5f77-9880-107459c68de7",
+   "name": "Midea Group",
+   "kind": "company",
+   "country_code": "CN",
+   "founded_date": "1968-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Household appliances / KUKA parent since 2016; Foshan"
+  },
+  {
+   "id": "e899926e-9fc2-55a1-8f2c-970f66ad06a6",
+   "name": "Hyundai Motor Group",
+   "kind": "company",
+   "country_code": "KR",
+   "founded_date": "2000-01-01",
+   "founded_precision": "year",
+   "visibility": "public",
+   "notes": "Automotive group / Boston Dynamics parent since 2021; Seoul"
+  }
+ ]
+}
