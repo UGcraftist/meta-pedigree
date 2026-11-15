@@ -1,6 +1,6 @@
 # Project state: Meta Pedigree
 
-Current stage: 5 implementation — T-001, T-002 and T-003 done; T-004 read views + RPC surface next
+Current stage: 5 implementation — T-001–T-004 done; T-005 S-01 tree screen in progress
 Last updated: 2026-11-14 by UGcraftist
 
 ## Gates
