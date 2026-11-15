@@ -70,6 +70,18 @@ C4Container
 | NFR-004 字放大不重叠 | 字体相对单位 + 树节点最小间距可配；ux.md 验收 |
 | 审计 | fact 修订链 + audit_log 行（编辑者、时间、摘要） |
 
+## 仓库布局（DR-0005 取代 DR-0004 的 `api/` + `web/`）
+
+```
+supabase/migrations/   纯 SQL 迁移（唯一 schema 来源；应用顺序 = 文件名顺序）
+supabase/tests/        SQL 冒烟检查（T-004 起：视图与 RPC 的负向用例）
+seed/                  Python 种子导入器 + 数据包 seed/data/*.json（DATABASE_URL）
+web/                   React 19 + Vite + TS SPA（Cloudflare Pages 产物）
+docs/                  工作流文档（见 docs/structure.yml）
+```
+
+`api/`（FastAPI 进程）按 DR-0005 取消，T-002 移除；`make dev` 不再存在，前端用 `npm run dev`。
+
 ## 部署（R1）
 
 | 环境 | 前端 | 数据/API | 说明 |
@@ -81,7 +93,7 @@ C4Container
 **Supabase 项目命名与创建时机**
 
 - 组织 `meta-pedigree`，项目名用连字符：`meta-pedigree-dev`、`meta-pedigree-prod`（Supabase 项目名按 slug 处理，下划线不稳妥；仓库名 `meta-pedigree` 保持一致）。
-- **现在只建 dev**；`meta-pedigree-prod` 在 stage 7 发布时创建（12-13 之前不建）：避免误写生产、避免免费层闲置项目自动暂停，schema 全部由 `supabase/migrations` 重放，建库时间可预期。
+- dev 已于 2026-11-15 创建并接上 T-002；**prod 也已创建（2026-11-15，用户操作），但 stage 7 之前不写入、不部署**：迁移只在 dev 跑，发布时按 `supabase/migrations` 重放到 prod。
 - 区域：`ap-northeast-1`（东京）或就近区域；创建后不可改，只能迁移。
 - 免费层每组织 2 个项目、无活跃自动暂停——dev 暂停可恢复，不影响数据。
 - 密钥只存本地 `.env`/`.env.local`（gitignore），Pages 环境变量在 Cloudflare 控制台设置；仓库里只有 `.env.example` 占位。

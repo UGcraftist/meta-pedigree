@@ -1,6 +1,6 @@
 # Project state: Meta Pedigree
 
-Current stage: 5 implementation — T-001 done; DR-0005 (Supabase + Cloudflare, no app server) applied; next T-002
+Current stage: 5 implementation — T-001 done; T-002 (Supabase schema + seed importer) in progress; blocked on DATABASE_URL to apply migrations to the dev project
 Last updated: 2026-11-14 by UGcraftist
 
 ## Gates
@@ -17,7 +17,8 @@ Last updated: 2026-11-14 by UGcraftist
 ## Current focus
 - **M1 walking skeleton → internal preview 2026-11-18**: T-001…T-006 (tree over 20 seed orgs + URL state). Then M2 → R1 Must 2026-12-13.
 - T-001 **merged** (review round 3: no blocking comments; `f0c89ba`). Branch `chore/T-001-scaffold` kept for audit. No git remote yet, so the PR step was substituted by branch review (flagged).
-- Next action: **T-002** migrations + core tables + seed importer (`db/migrations`, `seed/`), branch `feat/T-002-schema` from master.
+- Next action: **T-002** — branch `feat/T-002-supabase-schema` has `supabase/migrations/0001_init.sql` + `seed/` importer (10 pytest green, `make seed-dry` green). **Blocker:** no `DATABASE_URL` yet, so the migration has not been applied to `meta-pedigree-dev`; ask the owner for the Session-pooler URI (or a Supabase access token) — never paste it into the repo.
+- Supabase dev project: `https://gwjyptxnlhbzzzqbpwbg.supabase.co` (anon key in `web/.env.local`, gitignored). Prod project `uuujfqygazlmtmiyxnkc` exists but is not used until stage 7.
 
 ## Open questions (blocking the current gate)
 - R2 auth (SSO + hosted accounts) is not designed yet: tracked as risk in risks.md, must close before the R2 public site.

@@ -4,28 +4,31 @@
 
 ## Run
 
-需要一个能联网的 Python 3.12（本机系统 Python 没有 pip；venv 用 `get-pip.py` 自举）：
+数据在 **Supabase**（PostgreSQL + PostgREST + Auth），前端是静态 SPA；没有本地后端进程。
 
 ```bash
-make venv      # 建 .venv 并装 api/requirements.txt
-make dev       # http://127.0.0.1:8000/healthz
+cp .env.example .env          # 填 DATABASE_URL（Supabase → Connect → Session pooler）
+cp web/.env.local.example web/.env.local   # 或手写 VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
+make venv                     # 建 .venv 并装 seed/requirements.txt
+cd web && npm install && npm run dev      # http://127.0.0.1:5173
 ```
 
-数据库（PostgreSQL 16）在 T-002 接入，见 `docs/design/architecture.md`。
+## Schema and seed
+
+```bash
+supabase db push                      # 或按文件名顺序 psql -f supabase/migrations/*.sql
+make seed-dry                         # 校验 seed/data/*.json，不连数据库
+make seed                             # 用 DATABASE_URL 导入（可重复执行）
+```
 
 ## Test
 
 ```bash
-make test      # 后端 pytest（不含数据库集成测试）
-make check     # structure check + 后端测试
-```
-
-前端（Vite + React）：
-
-```bash
-cd web && npm install && npm run dev
+make test      # seed 校验器 pytest（不需要数据库）
+make check     # structure check + pytest（= CI 目标，T-022）
 ```
 
 ## Deploy
 
-R1 单机部署，流程见 `docs/design/architecture.md` 的 Deployment 一节（T-014 落地）。
+`npx wrangler pages deploy web/dist`，或 Cloudflare Pages Git 集成；预览/生产环境变量分别指向
+Supabase 的 dev/prod 项目。见 `docs/design/architecture.md` 部署一节。
