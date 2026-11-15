@@ -1,6 +1,6 @@
 # Project state: Meta Pedigree
 
-Current stage: 5 implementation — T-001 done; T-002 (Supabase schema + seed importer) in progress; blocked on DATABASE_URL to apply migrations to the dev project
+Current stage: 5 implementation — T-001 and T-002 done; T-003 seed data (20 orgs) in progress
 Last updated: 2026-11-14 by UGcraftist
 
 ## Gates
@@ -17,7 +17,8 @@ Last updated: 2026-11-14 by UGcraftist
 ## Current focus
 - **M1 walking skeleton → internal preview 2026-11-18**: T-001…T-006 (tree over 20 seed orgs + URL state). Then M2 → R1 Must 2026-12-13.
 - T-001 **merged** (review round 3: no blocking comments; `f0c89ba`). Branch `chore/T-001-scaffold` kept for audit. No git remote yet, so the PR step was substituted by branch review (flagged).
-- Next action: **T-002** — branch `feat/T-002-supabase-schema` has `supabase/migrations/0001_init.sql` + `seed/` importer (10 pytest green, `make seed-dry` green). **Blocker:** no `DATABASE_URL` yet, so the migration has not been applied to `meta-pedigree-dev`; ask the owner for the Session-pooler URI (or a Supabase access token) — never paste it into the repo.
+- T-002 **done**: `0001_init.sql` applied to `meta-pedigree-dev` from the SQL Editor (DR-0006 route, no `DATABASE_URL`); `make probe` 8/8 — anon denied on all four verbs (table GRANTs absent → 42501), service_role inserts/reads/updates/deletes its fixture. 13 pytest green. Branch `feat/T-002-supabase-schema` for review; PR step still substituted by branch review (no remote).
+- Next action: **T-003** — curating 20 orgs (10 US + 10 EU embodied-AI) into `seed/data/`, every org with at least one sourced fact (official site / Wikipedia), relations grounded in official statements (Agile Robots ← DLR 2018, Franka ← Agile Robots 2023), then `make seed`.
 - Supabase dev project: `https://gwjyptxnlhbzzzqbpwbg.supabase.co` (anon key in `web/.env.local`, gitignored). Prod project `uuujfqygazlmtmiyxnkc` exists but is not used until stage 7.
 
 ## Open questions (blocking the current gate)
