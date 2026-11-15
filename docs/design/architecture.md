@@ -72,4 +72,16 @@ C4Container
 
 ## 部署（R1）
 
-本地：`docker compose up db` + `pnpm dev`（api 与 web）。生产部署决策推迟到 stage 7（DR-0002）。
+| 环境 | 前端 | 数据/API | 说明 |
+|---|---|---|---|
+| 本地 | `npm run dev`（Vite，127.0.0.1:5173） | Supabase 云 **dev** 项目（本机无 Docker，不用 `supabase start`） | `.env.local`：`VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` |
+| 分支预览 | Cloudflare Pages 每个分支自动预览 URL | 同上，**dev** 项目 | Pages 的 Preview 环境变量指向 dev |
+| 生产 | Cloudflare Pages`meta-pedigree`（Production） | Supabase **prod** 项目 | Pages Production 环境变量指向 prod；自定义域名待定 |
+
+**Supabase 项目命名与创建时机**
+
+- 组织 `meta-pedigree`，项目名用连字符：`meta-pedigree-dev`、`meta-pedigree-prod`（Supabase 项目名按 slug 处理，下划线不稳妥；仓库名 `meta-pedigree` 保持一致）。
+- **现在只建 dev**；`meta-pedigree-prod` 在 stage 7 发布时创建（12-13 之前不建）：避免误写生产、避免免费层闲置项目自动暂停，schema 全部由 `supabase/migrations` 重放，建库时间可预期。
+- 区域：`ap-northeast-1`（东京）或就近区域；创建后不可改，只能迁移。
+- 免费层每组织 2 个项目、无活跃自动暂停——dev 暂停可恢复，不影响数据。
+- 密钥只存本地 `.env`/`.env.local`（gitignore），Pages 环境变量在 Cloudflare 控制台设置；仓库里只有 `.env.example` 占位。
