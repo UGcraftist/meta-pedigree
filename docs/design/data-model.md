@@ -77,6 +77,7 @@ stateDiagram-v2
 - fact(subject_id, predicate_code), fact(object_id), fact(status) partial where status='published'
 - org(visibility, kind), source(fact_id), stance(party_org_id, axis_code)
 - 树查询：fact(subject_id) include when relation_type.implied_parent and status='published'
+- implied_parent 极性：`split_from` / `controlled_by` / `merged_into` 的 **object 是父**（subject 是子）；其余隐含父关系的 **subject 是父**。`tree_edges` 视图统一归一化为 parent→child（0003 修正）。
 
 ## Migrations
 
