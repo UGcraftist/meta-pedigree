@@ -229,7 +229,7 @@ begin
       v_sid := null;
       if v_url is not null then
         select id into v_sid from public.sources
-        where public.normalize_url(url) = public.normalize_url(v_url)
+        where url = v_url
         order by created_at, id
         limit 1;
       end if;

@@ -309,6 +309,44 @@ ok(`editor created draft fact ${newFact} on ${subject.name}`);
   else fail(`amount scope not enforced: HTTP ${res.status} ${res.text}`);
 }
 
+// 3b2. registry ends: object_kinds empty = no object allowed; non-empty = required
+{
+  const res = await call(anon, "rpc/upsert_fact", {
+    method: "POST",
+    token: editor.token,
+    body: {
+      payload: {
+        subject_kind: "org",
+        subject_id: subject.id,
+        predicate_code: "founded",
+        sources: [],
+      },
+    },
+  });
+  if (res.status === 200) {
+    ok("single-ended predicate (empty object_kinds) accepted without an object");
+    await svc(`facts?id=eq.${res.json}`, { method: "DELETE" });
+  } else {
+    fail(`single-ended predicate rejected (HTTP ${res.status}): ${res.text}`);
+  }
+}
+{
+  const res = await call(anon, "rpc/upsert_fact", {
+    method: "POST",
+    token: editor.token,
+    body: {
+      payload: {
+        subject_kind: "org",
+        subject_id: subject.id,
+        predicate_code: "related_to",
+        sources: [],
+      },
+    },
+  });
+  if (res.json?.code === "23514") ok("predicate with non-empty object_kinds requires an object (23514)");
+  else fail(`missing object not enforced: HTTP ${res.status} ${res.text}`);
+}
+
 // 3c. publish without a source must be refused and write nothing
 {
   const bare = await call(anon, "rpc/upsert_fact", {
@@ -453,7 +491,7 @@ async function insertSource(u) {
     body: { p_from: a.id, p_into: b.id },
   });
   if (res.json?.code === "22023") ok("merge_source refuses different paths (22023)");
-  else fail(`merge_source negative case returned HTTP ${res.status}, expected 400/403`);
+  else fail(`merge_source negative case returned HTTP ${res.status}, expected 22023`);
   const both = await svc(`sources?select=id&id=in.(${a.id},${b.id})`);
   if (Array.isArray(both.json) && both.json.length === 2) ok("both non-duplicate sources survive");
   else fail("a non-duplicate source was deleted");
