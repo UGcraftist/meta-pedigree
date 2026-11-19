@@ -72,3 +72,34 @@
 ## Implementation log (stage 5)
 - 2026-11-15: **CR-006 decided (staged)** — owner accepted Phase 1 SQL editor + Phase 2 CLI task (DR-0008); `role_table_grants` showed Supabase default privileges had given anon SELECT/write on all three views and authenticated ALL, so 0005 now revokes anon and grants authenticated SELECT-only.
 - 2026-11-15: **T-006 round-1 fixes** — `supabase/migrations/0005_org_detail_subject.sql` (both fact ends resolved server-side and gated on the counterpart's visibility; grant + comment re-issued); drawer renders the full `subject · predicate · object` triple (`web/src/features/tree/triple.ts`, 7 vitest cases; round-2 review added the object-side regression); TreeScreen zoom effect dropped on unmount (`on('.zoom', null)`); the ResizeObserver effect now re-subscribes on `[table]`; `seed/views_probe.mjs` asserts the seeded `Boston Dynamics · controlled_by · Hyundai Motor Group` ends plus a no-object `founded` fact, and anon 401. **Not yet applied** — UGcraftist must paste it to the Supabase SQL editor, then `make views-probe` runs.
+
+- 2026-11-19: **T-007 plan corrected** (advisor: change) — `ensure_app_user()` added (nothing else provisions
+  `app_users`, so the audit FK would fail on the first real call); `upsert_fact` nests `sources[]` and dedupes
+  by `normalize_url` (the schema had no source write path); predicate validation now checks
+  `relation_types.is_active` + `subject_kinds`/`object_kinds` instead of repeating table CHECKs; `attrs` vs
+  `attrs_schema` deferral stated; denial assertions accept 403/42501/404 **and** assert row counts unchanged;
+  credentials docs extended with editor/readonly accounts; CR-007 raised for the plan AC wording.
+
+## CR-007 — T-007 acceptance wording drifts from the corrected write contract (raised 2026-11-19, awaiting UGcraftist)
+
+**Why.** The advisor review of the T-007 plan (`0006_write_rpc`) found the plan's acceptance criteria
+(`plan.md` §T-007) no longer match what the corrected contract does, and that one requirement row is
+attributed to the wrong task. Both came from files the plan already cited; this is a plan-text defect,
+not a new requirement.
+
+1. **AC bullet 1** says `submit_fact` does “关闭旧修订 → 插入新修订 → 写 audit_log”. The implementation
+   inserts the new revision in `upsert_fact` (a draft must exist before anyone can publish it) and
+   `submit_fact` then requires a source or `no_source`, supersedes the old revision, publishes, and writes
+   one audit row with `from_status`/`to_status`. Proposed wording is in the PR.
+2. **AC bullet 1 / `api.md`** imply `in_review` in R1. FR-031 is *Won't (R1) · R2* (`requirements.md`), so
+   R1 collapses the state: `submit_fact` publishes directly; `in_review` stays in the schema for R2.
+   Recorded in `api.md` and the audit summary already.
+3. **Requirement row**: `T-007` lists FR-014 (same-name orgs stay separate until a curator decides), but
+   nothing in T-007 creates orgs — `merge_source` dedupes *sources*. FR-014 belongs to T-014 (S-10 UI),
+   which already lists it. Proposed: drop FR-014 from the T-007 row.
+
+**Recommendation.** Accept all three: reword AC bullet 1 as above, note the R1 `in_review` collapse, and
+remove FR-014 from the T-007 row (T-014 keeps it). The code already follows the corrected contract.
+
+**Status:** raised — awaiting UGcraftist. Until decided, `api.md`/`data-model.md`/`security.md` describe the
+corrected contract and `plan.md` keeps its original wording.
