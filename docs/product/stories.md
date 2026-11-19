@@ -289,7 +289,9 @@
 
 ## Bugs
 
-暂无。
+| ID | Found | Where | What | Status |
+|---|---|---|---|---|
+| BUG-001 | 2026-11-19 (T-008 plan review) | `web/src/lib/treeData.ts:12-18` vs `supabase/migrations/0004_tree_nodes_dedup.sql` | 客户端按 PostgREST 返回顺序取首行，服务端按 `min(depth)` 去重；两者语义不一致，若返回顺序变化客户端可能保留非 min-depth 行。当前视图已去重所以不可复现；`treeData.test.ts` 固定了客户端一侧的行为。 | open — 待契约（`api.md`/T-009）统一 `depth` 语义 |
 
 ## Open questions and assumptions
 

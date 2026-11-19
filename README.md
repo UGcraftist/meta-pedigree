@@ -9,8 +9,8 @@
 ```bash
 cp .env.example .env          # 填 SUPABASE_URL + service role key（种子导入/RLS 探针）
 cp web/.env.local.example web/.env.local   # 或手写 VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
-make venv                     # 建 .venv 并装 seed/requirements.txt
-cd web && npm install && npm run dev      # http://127.0.0.1:5173
+make setup                    # 建 .venv + `npm --prefix web ci`（Node 版本见 web/.nvmrc）
+cd web && npm run dev         # http://127.0.0.1:5173
 ```
 
 ## Schema and seed
@@ -25,9 +25,11 @@ make probe                            # 证明 RLS：anon 被拒、service_role 
 ## Test
 
 ```bash
-make test      # seed 校验器 pytest（不需要数据库）
-make check     # structure check + pytest（= CI 目标，T-022）
+make test      # 只跑 seed 校验器 pytest（不需要数据库）
+make check     # 干净 checkout 的质量门禁，无凭据：structure + pytest + eslint + tsc + vitest（= T-022 的 CI 目标）
 ```
+
+从零开始：`make setup && make check`。TH 探针（`make probe` / `views-probe` / `write-probe`）需要 Supabase 凭据，故意不在 `check` 里。
 
 ## Deploy
 
