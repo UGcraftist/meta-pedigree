@@ -50,6 +50,7 @@ operators and error shapes.
 | `POST rpc/submit_fact` | draft → published (R1 collapses `in_review`, FR-031 is R2; no separate `publish_fact` — T-007 decided not to split); refuses a publish without a source or `no_source`, supersedes the old revision, writes one audit row |
 | `POST rpc/upsert_stance` | stance upsert (R1 test set stays empty) |
 | `POST rpc/merge_source` | dedupe sources by URL and re-link facts (destructive) |
+写路径按注册表执行两端规则：`subject_kinds` 空 = 任意；`object_kinds` 空 = 不得带 object，非空 = 必须带且种类在列内（`data-model.md` 注册表一节）。
 
 R1 折叠 `in_review`：`submit_fact` 直接发布（FR-031 的 editor→reviewer 流程属 R2）。
 `audit_log.summary` 记 `from_status`/`to_status`，R2 恢复状态机时读回即可。

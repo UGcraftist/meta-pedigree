@@ -19,8 +19,7 @@ begin;
 create or replace function public.normalize_url(p_url text) returns text
 language plpgsql
 immutable
-security definer
-set search_path = pg_catalog, pg_temp
+set search_path = pg_catalog, public, pg_temp
 as $$
 declare
   v text;
@@ -142,7 +141,9 @@ begin
     end if;
   end if;
 
-  -- registry says which entity kinds may sit on each end (empty = none allowed)
+  -- registry ends (documented in data-model.md): subject_kinds empty = any kind;
+  -- object_kinds empty = this relation takes no object (single-ended fact),
+  -- non-empty = object required and its kind must be listed.
   if v_rt.subject_kinds is not null and array_length(v_rt.subject_kinds, 1) > 0
      and not (v_subject_kind = any (v_rt.subject_kinds)) then
     raise exception 'predicate % does not accept % subjects', v_predicate, v_subject_kind
@@ -224,7 +225,7 @@ begin
   -- sources travel with the fact in the same transaction; dedupe by normalized URL
   if payload ? 'sources' and jsonb_typeof(payload -> 'sources') = 'array' then
     for v_src in select * from jsonb_array_elements(payload -> 'sources') loop
-      v_url := nullif(v_src ->> 'url', '');
+      v_url := public.normalize_url(nullif(v_src ->> 'url', ''));
       v_sid := null;
       if v_url is not null then
         select id into v_sid from public.sources

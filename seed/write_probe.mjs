@@ -134,7 +134,7 @@ function normUrl(u) {
 }
 
 async function sourceCountFor(rawUrl) {
-  const res = await svc("sources?select=id,url");
+  const res = await svc("sources?select=id,url&limit=10000");
   if (!Array.isArray(res.json)) return -1;
   const target = normUrl(rawUrl);
   return res.json.filter((s) => normUrl(s.url) === target).length;
@@ -218,6 +218,16 @@ if (create.status !== 200 || typeof create.json !== "string") {
 const newFact = create.json;
 ok(`editor created draft fact ${newFact} on ${subject.name}`);
 
+// the stored URL is the normalized key (F7), so a first-sighting variant cannot
+// hit the case-sensitive sources.url CHECK
+{
+  const stored = await svc(
+    "sources?select=url&url=eq." + encodeURIComponent("https://example.com/write-probe"),
+  );
+  if (Array.isArray(stored.json) && stored.json.length === 1) ok("source stored normalized");
+  else fail(`normalized source row missing (${JSON.stringify(stored.json)})`);
+}
+
 // second variant of the same URL must reuse the source row (dedupe by normalized URL)
 {
   const res = await call(anon, "rpc/upsert_fact", {
@@ -253,10 +263,14 @@ ok(`editor created draft fact ${newFact} on ${subject.name}`);
     token: editor.token,
     body: { payload: { ...payload, start_date: "2020-05-01", sources: [] } },
   });
-  if (res.status === 400 || res.json?.code === "23514") ok("date without precision rejected (23514)");
+  if (res.json?.code === "23514") ok("date without precision rejected (23514)");
   else fail(`date/precision pairing not enforced: HTTP ${res.status} ${res.text}`);
 }
 {
+  // TH-02: the failure must land AFTER a successful source insert, otherwise a
+  // half-write proves nothing. Element 1 is a valid http source; element 2
+  // violates sources.url ~ '^https?://' (0001:203), so a surviving row 1 is
+  // real evidence of a half-committed statement.
   const unique = `https://example.com/rollback-${randomUUID()}`;
   const res = await call(anon, "rpc/upsert_fact", {
     method: "POST",
@@ -264,16 +278,30 @@ ok(`editor created draft fact ${newFact} on ${subject.name}`);
     body: {
       payload: {
         ...payload,
-        amount: 51,
-        sources: [{ url: unique, title: "rollback probe" }],
+        sources: [
+          { url: unique, title: "rollback probe" },
+          { url: "ftp://nope", title: "invalid scheme" },
+        ],
       },
     },
   });
-  if (res.status === 400 || res.json?.code === "23514") ok("amount outside controlled_by rejected (23514)");
-  else fail(`amount scope not enforced: HTTP ${res.status} ${res.text}`);
+  if (res.json?.code === "23514") ok("invalid source URL rejected (23514)");
+  else fail(`invalid source URL not enforced: HTTP ${res.status} ${res.text}`);
   const leaked = await sourceCountFor(unique);
-  if (leaked === 0) ok("no source row leaked from the failed insert (TH-02)");
+  if (leaked === 0) ok("first source rolled back with the failed statement (TH-02)");
   else fail(`failed insert still wrote ${leaked} source row(s)`);
+}
+{
+  const unique = `https://example.com/amount-${randomUUID()}`;
+  const res = await call(anon, "rpc/upsert_fact", {
+    method: "POST",
+    token: editor.token,
+    body: {
+      payload: { ...payload, amount: 51, sources: [{ url: unique, title: "amount probe" }] },
+    },
+  });
+  if (res.json?.code === "23514") ok("amount outside controlled_by rejected (23514)");
+  else fail(`amount scope not enforced: HTTP ${res.status} ${res.text}`);
 }
 
 // 3c. publish without a source must be refused and write nothing
@@ -292,7 +320,7 @@ ok(`editor created draft fact ${newFact} on ${subject.name}`);
       token: editor.token,
       body: { p_fact: bare.json },
     });
-    if (res.status === 400 || res.status === 403 || res.json?.code === "23514") {
+    if (res.json?.code === "23514") {
       ok("publish without source or no_source refused");
     } else {
       fail(`publish without source returned HTTP ${res.status}, expected 23514`);
@@ -419,7 +447,7 @@ async function insertSource(u) {
     token: editor.token,
     body: { p_from: a.id, p_into: b.id },
   });
-  if (res.status === 400 || res.status === 403) ok("merge_source refuses different paths");
+  if (res.json?.code === "22023") ok("merge_source refuses different paths (22023)");
   else fail(`merge_source negative case returned HTTP ${res.status}, expected 400/403`);
   const both = await svc(`sources?select=id&id=in.(${a.id},${b.id})`);
   if (Array.isArray(both.json) && both.json.length === 2) ok("both non-duplicate sources survive");
@@ -429,7 +457,7 @@ async function insertSource(u) {
 
 // ── cleanup: facts + sources (audit rows stay by design) ──────────────────
 await svc(`facts?id=eq.${newFact}`, { method: "DELETE" });
-await svc(`sources?url=eq.${encodeURIComponent(PROBE_URL)}`, { method: "DELETE" });
+await svc(`sources?url=eq.${encodeURIComponent("https://example.com/write-probe")}`, { method: "DELETE" });
 console.log("  note: audit_log rows from this probe are kept (append-only by design)");
 
 if (failures.length) {

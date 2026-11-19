@@ -24,6 +24,13 @@ SQL 表名用复数（PostgREST 约定）：`orgs`、`persons`、`facts`、`sour
 | stance_axis | code, label, scale_min/max, anchors | api/registry | public | 永久 | FR-016, US-024 |
 | stance | id, party_org_id, axis_code, value, target_*, period_*, status | api/stances | public/hidden | 永久 | US-024 |
 | audit_log | id, actor_id, entity, entity_id, action, summary, at | api/audit | private | 2 年 | US-021, NFR |
+
+关系类型的两端是注册表数据（US-024），`0006` 的写路径执行这条合同：
+
+- `subject_kinds` 为空 = **任意主体种类**；非空 = 主体种类必须在列内。
+- `object_kinds` 为空 = **该关系不允许 object**（`founded` 这类单端事实）；非空 = **必须带 object**，且种类在列内。
+
+改谓词只改注册表行，不改代码（FR-009）；新增谓词时按上面的语义填数组。
 | app_user | id (= auth.users.id), email, display_name；**role 在 Auth JWT `app_metadata.role`**（DR-0005），表里不重复存 | Supabase Auth | private | 在职期间 | security.md |
 
 ## ER
