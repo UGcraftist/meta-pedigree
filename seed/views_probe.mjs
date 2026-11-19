@@ -37,6 +37,9 @@ const detail = await get("org_detail?select=*&limit=50");
 
 // DR-0007:48 — the retired OpenAPI documented these payloads; the contract now
 // lives in api.md, so the live response shape is asserted here and in write-probe.
+// assertShape requires the named keys and their types but allows extra columns
+// (additive changes are fine); depth/is_root are nullable because 0004's left
+// join can emit null for an org unreachable from any root.
 function fail(msg) {
   console.error(`FAIL: ${msg}`);
   process.exit(1);

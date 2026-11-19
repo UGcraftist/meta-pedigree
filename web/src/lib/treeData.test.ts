@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dedupeNodes } from './treeData';
+import { dedupeNodes, toTreeData } from './treeData';
 import type { TreeNodeRow } from './types';
 
 function row(id: string, name: string, depth: number): TreeNodeRow {
@@ -32,5 +32,28 @@ describe('dedupeNodes', () => {
   it('keeps the input order of first appearances', () => {
     const rows = [row('a', 'Agile', 0), row('b', 'Boston', 0), row('a', 'Agile', 1)];
     expect(dedupeNodes(rows).map((n) => n.name)).toEqual(['Agile', 'Boston']);
+  });
+});
+
+describe('toTreeData', () => {
+  it('wires the dedupe and passes edges through untouched', () => {
+    const nodes = [row('f', 'Franka Emika', 1), row('f', 'Franka Emika', 1), row('b', 'Boston Dynamics', 0)];
+    const edges = [
+      {
+        fact_id: 'e1',
+        parent_org_id: 'b',
+        child_org_id: 'f',
+        predicate_code: 'acquired',
+        relation_date: '2023-11-02',
+        start_precision: 'day',
+        end_date: null,
+        end_precision: 'unknown',
+        qualifier: 'exact',
+        amount: null,
+      },
+    ];
+    const data = toTreeData(nodes, edges);
+    expect(data.nodes.map((n) => n.id)).toEqual(['f', 'b']);
+    expect(data.edges).toBe(edges);
   });
 });

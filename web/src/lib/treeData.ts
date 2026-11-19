@@ -1,11 +1,11 @@
 import type { TreeEdgeRow, TreeNodeRow } from './types';
 
 /**
- * `tree_nodes` fans out one row per parent edge (Boston Dynamics, Franka Emika),
- * so the client collapses to one row per org. First row in PostgREST order wins;
- * the view itself already dedupes by `min(depth)` server-side
- * (`0004_tree_nodes_dedup.sql`). If the two disagree the client can keep a
- * non-min-depth row — tracked as BUG-001 in docs/product/stories.md.
+ * Defensive client-side collapse of `tree_nodes` to one row per org. The view
+ * already dedupes by `min(depth)` server-side (`0004_tree_nodes_dedup.sql`), so
+ * this only matters if the view regresses to the old per-parent-edge fan-out.
+ * First row in PostgREST order wins, which can differ from the view's min-depth
+ * choice — tracked as BUG-001 in docs/product/stories.md.
  */
 export function dedupeNodes(rows: TreeNodeRow[]): TreeNodeRow[] {
   const byId = new Map<string, TreeNodeRow>();
