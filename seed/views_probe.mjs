@@ -31,9 +31,54 @@ async function get(path) {
   return res.json();
 }
 
-const nodes = await get("tree_nodes?select=id,name,depth,is_root,child_count&order=depth.asc,name.asc&limit=200");
-const edges = await get("tree_edges?select=parent_org_id,child_org_id,predicate_code,relation_date&limit=200");
-const detail = await get("org_detail?select=id,name,facts&limit=50");
+const nodes = await get("tree_nodes?select=*&order=depth.asc,name.asc&limit=200");
+const edges = await get("tree_edges?select=*&limit=200");
+const detail = await get("org_detail?select=*&limit=50");
+
+// DR-0007:48 — the retired OpenAPI documented these payloads; the contract now
+// lives in api.md, so the live response shape is asserted here and in write-probe.
+// assertShape requires the named keys and their types but allows extra columns
+// (additive changes are fine); depth/is_root are nullable because 0004's left
+// join can emit null for an org unreachable from any root.
+function fail(msg) {
+  console.error(`FAIL: ${msg}`);
+  process.exit(1);
+}
+function checkValue(path, value, type) {
+  const ok =
+    type === "string|null"
+      ? value === null || typeof value === "string"
+      : type === "number|null"
+        ? value === null || typeof value === "number"
+        : type === "boolean|null"
+          ? value === null || typeof value === "boolean"
+          : typeof value === type;
+  if (!ok) fail(`${path}: expected ${type}, got ${value === null ? "null" : typeof value} (${JSON.stringify(value)})`);
+}
+function assertShape(name, row, shape) {
+  if (row === null || typeof row !== "object") fail(`${name}: not an object`);
+  for (const key of Object.keys(shape)) {
+    if (!(key in row)) fail(`${name}: missing key ${key}`);
+    checkValue(`${name}.${key}`, row[key], shape[key]);
+  }
+}
+const NODE_SHAPE = { id: "string", name: "string", kind: "string", country_code: "string|null", founded_date: "string|null", founded_precision: "string", depth: "number|null", is_root: "boolean|null", child_count: "number", parent_count: "number" };
+const EDGE_SHAPE = { fact_id: "string", parent_org_id: "string", child_org_id: "string", predicate_code: "string", relation_date: "string|null", start_precision: "string", end_date: "string|null", end_precision: "string", qualifier: "string", amount: "number|null" };
+const DETAIL_SHAPE = { id: "string", name: "string", kind: "string", country_code: "string|null", founded_date: "string|null", founded_precision: "string", notes: "string|null" };
+const FACT_SHAPE = { id: "string", predicate: "string", label_zh: "string|null", label_en: "string|null", subject_kind: "string|null", subject_id: "string|null", subject_name: "string|null", object_kind: "string|null", object_id: "string|null", object_name: "string|null", start_date: "string|null", start_precision: "string", end_date: "string|null", end_precision: "string|null", qualifier: "string|null", amount: "number|null", certainty: "string|null", no_source: "boolean" };
+const SOURCE_SHAPE = { title: "string", url: "string|null", kind: "string|null", quote: "string|null", locator: "string|null" };
+for (const n of nodes) assertShape(`tree_nodes[${n.name}]`, n, NODE_SHAPE);
+for (const e of edges) assertShape(`tree_edges[${e.fact_id}]`, e, EDGE_SHAPE);
+for (const o of detail) {
+  assertShape(`org_detail[${o.name}]`, o, DETAIL_SHAPE);
+  if (!Array.isArray(o.facts)) fail(`org_detail[${o.name}].facts: not an array`);
+  for (const f of o.facts) {
+    assertShape(`org_detail[${o.name}].facts[${f.id}]`, f, FACT_SHAPE);
+    if (!Array.isArray(f.sources)) fail(`org_detail[${o.name}].facts[${f.id}].sources: not an array`);
+    f.sources.forEach((s, i) => assertShape(`org_detail[${o.name}].facts[${f.id}].sources[${i}]`, s, SOURCE_SHAPE));
+  }
+}
+console.log("response shapes: contract keys/types ok");
 
 console.log(`tree_nodes:    ${nodes.length} rows (roots: ${nodes.filter((n) => n.is_root).length})`);
 for (const n of nodes) console.log(`  ${"  ".repeat(n.depth)}${n.name} [d${n.depth}]`);

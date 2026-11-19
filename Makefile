@@ -1,6 +1,12 @@
 PY := .venv/bin/python
+WEB := web
 
-.PHONY: venv test seed seed-dry probe views-probe write-probe web-dev check
+.PHONY: setup venv test seed seed-dry probe views-probe write-probe web-dev lint typecheck web-test check web-deps
+
+setup: venv
+	@test -f $(WEB)/package-lock.json || { echo "web/package-lock.json missing"; exit 1; }
+	npm --prefix $(WEB) ci --no-audit --no-fund
+	@node --version
 
 venv:
 	-python3 -m venv .venv
@@ -32,8 +38,29 @@ views-probe:
 write-probe:
 	node seed/write_probe.mjs
 
+# Fail loudly instead of silently skipping the web checks when setup was never run.
+web-deps:
+	@test -d $(WEB)/node_modules || { echo "web/node_modules missing — run 'make setup'"; exit 1; }
+
+lint: web-deps
+	npm --prefix $(WEB) run lint
+
+typecheck: web-deps
+	npm --prefix $(WEB) run typecheck
+
+web-test: web-deps
+	npm --prefix $(WEB) run test
+
+# Credential-free quality gate. Clean checkout: `make setup && make check`.
+# TH probes (seed/views/write-probe) stay out: they need service_role and accounts.
 check:
-	python3 .dsh/skills/project-flow/scripts/structure.py check && $(MAKE) test
+	@echo "--- structure"
+	python3 .dsh/skills/project-flow/scripts/structure.py check
+	$(MAKE) -s test
+	$(MAKE) -s lint
+	$(MAKE) -s typecheck
+	$(MAKE) -s web-test
+	@echo "check ok: structure + pytest + eslint + tsc + vitest"
 
 # Vite dev server for S-01 (needs web/.env.local; login: dev editor account).
 web-dev:

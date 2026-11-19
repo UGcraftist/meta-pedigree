@@ -22,7 +22,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | T-005 | S-01 tree screen: SVG/D3 render, expand/collapse, view switcher stub, per-edge predicate text label (visual encoding + legend is T-012). **In review (round 2: approve on the shared commit, PR #3 open; CR-005 decided):** login gate (email/password), component-packed D3 layout, year labels, multi-parent badge, table view, light/dark theme toggle; verified in a real browser (screenshots under `build/preview/`, not committed) | M1 | none | FR-013,025,026 | S-01 | DR-0001 | 0.75 | T-004 | done (merged via PR #3) |
 | T-006 | S-02 minimal detail drawer + URL state (node focus in address bar, copyable). **In review (round 2 approved by the reviewer on 9b4a969; person approval pending after 0005 + views-probe):** `org_detail` drawer (facts/sources/`无来源`), `?focus=` deep link restores on reload, Esc clears, unknown id banner, copy link, focused-node highlight | M1 | none | FR-023(partial) | S-01, S-02 | DR-0001 | 0.25 | T-005 | done (merged via PR #4) |
 | T-007 | Write path: RPC `upsert_fact`（内嵌 `sources[]` 同事务写来源）、`submit_fact`（源或显式无源 → 旧修订 superseded → published → 一条 audit 记 old→new + actor）、`upsert_stance`、`merge_source`（归一化 URL 相等才合并）；`ensure_app_user` 保证审计 FK 可写；全部 `security definer` + pinned `search_path`，execute 只给 authenticated；migration `write_rpc`（编号见 data-model.md 台账）; 新增 `make write-probe` | M1 | none | FR-006,007,008,009,017 | data-model.md, TH-02 | DR-0003, DR-0005 | 1.0 | T-002 | todo |
-| T-008 | Test ladder: pytest (seed validation, RPC negative cases), vitest (tree layout, URL state, timeline scale), `make check` from clean checkout | M1 | none | NFR-07 | — | DR-0005 | 0.5 | T-004 | todo |
+| T-008 | Test ladder: lint（ESLint 9 flat，0 error；Prettier 已配置但未进 gate，待独立 `chore(format)` 提交后启用）+ typecheck（`tsc -b`，与 `npm run build` 共用）+ vitest（树布局/D3 布局/URL 状态/api 去重）+ pytest 种子校验；`make setup && make check` 从干净 checkout 通过且无需凭据；契约形状由 `views-probe` 对真实响应断言（DR-0007:48），RPC 负例与回滚在 `write-probe`（DR-0005:25）。**Deviations:** lint/typecheck 是 DR-0002:39 已有的要求、不需 CR；时间轴刻度测试移交 T-011（CR-008） | M1 | none | NFR-07 | — | DR-0002, DR-0005, DR-0007 | 0.5 | T-005, T-006 | todo |
 | T-009 | Shared URL-state hook: view/focus/t/filters/compare in address bar, unknown id degrades gracefully | M1 | none | FR-023 | S-01 | DR-0001 | 0.5 | T-005 | todo |
 | T-010 | S-02 full detail: facts, sources + locator + as-of, citation copy, "无来源" label, conflicts side by side, person roles over time | M2 | none | FR-001,002,004,005,017 | S-02 | DR-0001 | 1.0 | T-006 | todo |
 | T-011 | S-03 timeline screen: episodes grouped, anchor years, year-band rendering, stable enter from S-01/S-04 | M2 | none | FR-003,025 | S-03 | DR-0001 | 1.5 | T-005 | todo |
@@ -72,8 +72,9 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 - `merge_source` 归一化正例（相同 → 合并）与负例（路径不同 → 拒绝、不删行）各有测试，按 `api.md` 的归一化规则；合并是单次审计的 one-way 操作。
 
 ### T-008 acceptance criteria
-- `make check` 在干净 checkout 通过：pytest（种子校验 + RPC 负例）+ vitest（树布局/URL 状态/时间轴刻度）+ structure check。
-- 至少一个测试断言 SQL 函数失败时回滚（不留半写状态）。
+- `make setup && make check` 在干净 checkout 通过、不需要任何密钥：structure check + pytest（种子校验）+ ESLint（0 error）+ `tsc -b` + vitest（树布局/D3 布局/URL 状态/api 去重）。
+- 契约形状由 `make views-probe` 断言真实响应（`tree_nodes`/`tree_edges`/`org_detail` 的字段与可空性），而不是提交的手写 OpenAPI（DR-0007:48）。
+- SQL 层负例与回滚由 `make write-probe` 断言（DR-0005:25：pytest 只保留种子校验；`db/verify.sql` 已不存在）。**已知缺口**：该探针需要 service_role 与账号，进不了 CI（DR-0006:38），T-023 前不得声称 CI 覆盖回滚。
 
 ### T-009 acceptance criteria
 - 视图/聚焦/时间窗/筛选/对比组写进 URL；未知 id 时页面不崩、丢弃该状态并提示（NFR-05）。
@@ -83,6 +84,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 
 ### T-011 acceptance criteria
 - Timeline shows 3–4 episodes; a year-only event renders as a band, not a point; entering from the tree lands on the same node in the timeline; at 100 orgs it stays interactive (no full relayout on scroll).
+- 时间轴刻度：年份带与年份标签在 vitest 中有断言（由 T-008 移交，CR-008）。
 
 ### T-012 acceptance criteria
 - Click an org → its lineage chain highlighted, rest dimmed; Esc restores the exact previous view (pan/zoom/filters); each of the five relation types has its own encoding in the legend.
