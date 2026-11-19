@@ -1,6 +1,6 @@
 PY := .venv/bin/python
 
-.PHONY: venv test seed seed-dry probe check
+.PHONY: venv test seed seed-dry probe views-probe web-dev check
 
 venv:
 	-python3 -m venv .venv
@@ -23,5 +23,13 @@ seed:
 probe:
 	node seed/rls_probe.mjs
 
+# Check the 0002 read-model views return the tree (run after pasting the migration).
+views-probe:
+	node seed/views_probe.mjs
+
 check:
 	python3 .dsh/skills/project-flow/scripts/structure.py check && $(MAKE) test
+
+# Vite dev server for S-01 (needs web/.env.local; login: dev editor account).
+web-dev:
+	cd web && npm run dev

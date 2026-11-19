@@ -31,8 +31,7 @@ Defined in `docs/structure.yml` (the source of truth); the tree below is drawn f
     │   ├── architecture.md  parts and connections
     │   ├── diagrams/        Mermaid sources
     │   ├── data-model.md    entities, data types, DB
-    │   ├── api.md           API contract summary
-    │   ├── api/             full API spec
+    │   ├── api.md           the API contract (PostgREST)
     │   ├── ux.md            art direction, screens
     │   ├── security.md      threats, admins, keys
     │   └── performance.md   budgets, optimization log
@@ -81,7 +80,7 @@ W = writes · U = updates · R = reads · `docs/` paths unless noted
 | project-flow | W all stubs | W README.md | W all stubs | W all stubs | W README.md, structure.yml, STATE.md · root AGENTS.md, CLAUDE.md · runs check |
 | user-stories | W stories.md | | | | U STATE.md |
 | requirements | R stories · W requirements.md | | W ux.md | U risks.md | U STATE.md · Figma |
-| architecture-decision | R | W records + README.md | W architecture.md, data-model.md, api.md, api/, security.md | U risks.md | U STATE.md |
+| architecture-decision | R | W records + README.md | W architecture.md, data-model.md, api.md, security.md | U risks.md | U STATE.md |
 | task-breakdown | R | R | R | W plan.md · R risks.md | U STATE.md |
 | implementation | R | R | U per update triggers | U plan.md, changes.md | W `<code>/` · Figma status |
 | quality-review | R | R | W performance.md | U changes.md | R `<code>/` · W for optimization |
