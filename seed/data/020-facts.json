@@ -1,0 +1,546 @@
+{
+ "facts": [
+  {
+   "id": "c2e88544-577e-54a0-9b5e-21ae62d38502",
+   "subject_kind": "org",
+   "subject_id": "0f16d0d8-89c7-553f-bb3a-a459652c5f96",
+   "predicate_code": "founded",
+   "start_date": "2022-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Figure AI – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Figure_AI"
+    }
+   ]
+  },
+  {
+   "id": "c0d5f2c7-ff5b-5410-9dd2-64471de4b28e",
+   "subject_kind": "org",
+   "subject_id": "2434914b-5e93-59ea-a1a4-dc92703da3a8",
+   "predicate_code": "founded",
+   "start_date": "2024-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Physical Intelligence – Sequoia Capital company profile",
+     "url": "https://www.sequoiacap.com/companies/physical-intelligence/"
+    }
+   ]
+  },
+  {
+   "id": "82f43002-af50-515b-848c-2c0156a79bc2",
+   "subject_kind": "org",
+   "subject_id": "f102c86d-f492-524f-8f55-344873bf2632",
+   "predicate_code": "founded",
+   "start_date": "2016-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Apptronik – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Apptronik"
+    }
+   ]
+  },
+  {
+   "id": "49168c23-55ec-5a51-b1b8-48714743f06b",
+   "subject_kind": "org",
+   "subject_id": "daef73c4-02df-5602-b2bd-b24e76037ef0",
+   "predicate_code": "founded",
+   "start_date": "2015-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Agility Robotics – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Agility_Robotics"
+    }
+   ]
+  },
+  {
+   "id": "9a13bd2e-7492-577e-ae0d-2d4b3b63ecd8",
+   "subject_kind": "org",
+   "subject_id": "c413219a-d04e-58db-808e-270c9723d012",
+   "predicate_code": "founded",
+   "start_date": "1992-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Boston Dynamics – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Boston_Dynamics"
+    }
+   ]
+  },
+  {
+   "id": "d1e9f695-a375-5c2e-b4d7-e9b1262238e0",
+   "subject_kind": "org",
+   "subject_id": "4f9d77c0-d1ff-5675-93d9-20a1cb808c7a",
+   "predicate_code": "founded",
+   "start_date": "2017-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Covariant – About",
+     "url": "https://covariant.ai/about-us"
+    }
+   ]
+  },
+  {
+   "id": "e25a9aab-3e7a-5cca-8486-d5f717eea22e",
+   "subject_kind": "org",
+   "subject_id": "16523b59-ddfe-58d6-b69d-49ac02ec58ac",
+   "predicate_code": "founded",
+   "start_date": "2017-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Diligent Robotics – About",
+     "url": "https://www.diligentrobots.com/about"
+    }
+   ]
+  },
+  {
+   "id": "f41360ae-23e1-511a-a68d-bdfaff37f531",
+   "subject_kind": "org",
+   "subject_id": "17d5e6eb-881b-5298-948f-6f19827397d4",
+   "predicate_code": "founded",
+   "start_date": "2017-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Dexterity – About",
+     "url": "https://dexterity.ai/about"
+    }
+   ]
+  },
+  {
+   "id": "75b02a64-3dd5-5904-b2eb-293cc6100f1b",
+   "subject_kind": "org",
+   "subject_id": "31dadbea-2379-5eb6-8fa8-14331e9b8a7d",
+   "predicate_code": "founded",
+   "start_date": "2015-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Ghost Robotics – About",
+     "url": "https://www.ghostrobotics.io/about-us"
+    }
+   ]
+  },
+  {
+   "id": "ffb2d876-5ab5-5a57-a60a-c4962ac00800",
+   "subject_kind": "org",
+   "subject_id": "6a8a8014-379e-5c93-9486-19f57c526ba5",
+   "predicate_code": "founded",
+   "start_date": "2023-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Skild AI – Announcing our $300M Series A (founded 2023)",
+     "url": "https://www.skild.ai/blogs/announcing-our-300m-series-a"
+    }
+   ]
+  },
+  {
+   "id": "fc4e1ba4-8c57-57d2-8653-f0b2e8b066dd",
+   "subject_kind": "org",
+   "subject_id": "7aeec42c-53b4-5fd1-9a84-3f6529fab2ee",
+   "predicate_code": "founded",
+   "start_date": "2018-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Agile Robots – Our story",
+     "url": "https://www.agile-robots.com/en/about-us/our-story"
+    }
+   ]
+  },
+  {
+   "id": "be58dae0-eddc-5194-9c66-42a54f6c161f",
+   "subject_kind": "org",
+   "subject_id": "7ac1937f-3dc9-5c71-8d47-73f2bac20c54",
+   "predicate_code": "founded",
+   "start_date": "2016-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Franka Emika – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Franka_Emika"
+    }
+   ]
+  },
+  {
+   "id": "66e2837d-067d-51c5-a2a6-781d542207cc",
+   "subject_kind": "org",
+   "subject_id": "d5670fb1-2fbb-59dd-ab87-674530351d81",
+   "predicate_code": "founded",
+   "start_date": "1898-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "KUKA – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/KUKA"
+    }
+   ]
+  },
+  {
+   "id": "436a6558-a522-5353-9f24-d47c217f48ad",
+   "subject_kind": "org",
+   "subject_id": "e76b9215-2011-5992-9414-7698f96a66f7",
+   "predicate_code": "founded",
+   "start_date": "2019-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "NEURA Robotics – Company about us",
+     "url": "https://neura-robotics.com/company-about-us"
+    }
+   ]
+  },
+  {
+   "id": "641231d9-3bf7-5b94-8753-4b29c22f2af5",
+   "subject_kind": "org",
+   "subject_id": "8c41258a-b69a-51a3-84b0-61c918e81454",
+   "predicate_code": "founded",
+   "start_date": "2004-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "PAL Robotics – About us (since 2004)",
+     "url": "https://pal-robotics.com/about-us"
+    }
+   ]
+  },
+  {
+   "id": "903c5be4-01c0-5bfa-b6d1-a0ffb1d2ff90",
+   "subject_kind": "org",
+   "subject_id": "aaaf80d3-6a39-5758-ab11-e2f8d85b469e",
+   "predicate_code": "founded",
+   "start_date": "2012-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Wandercraft – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Wandercraft"
+    }
+   ]
+  },
+  {
+   "id": "9706f72c-78a6-5ec4-8672-451a5edd1114",
+   "subject_kind": "org",
+   "subject_id": "f3f7e97f-f656-5598-91a7-e5aa5c024e95",
+   "predicate_code": "founded",
+   "start_date": "2021-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Enchanted Tools – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Enchanted_Tools"
+    }
+   ]
+  },
+  {
+   "id": "c1f5cd5b-a30f-5332-a5e1-88e90fb3d575",
+   "subject_kind": "org",
+   "subject_id": "6b3542bf-af39-5697-981c-1a4ef5c74a51",
+   "predicate_code": "founded",
+   "start_date": "2015-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Exotec – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Exotec"
+    }
+   ]
+  },
+  {
+   "id": "d0727223-fead-555a-a2b2-5da286a7a609",
+   "subject_kind": "org",
+   "subject_id": "cf8c32e8-b0ef-5825-9d64-ccb2ed91fa33",
+   "predicate_code": "founded",
+   "start_date": "2014-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Micropsi Industries – Company",
+     "url": "https://webmigration.micropsi-industries.com/company.html"
+    }
+   ]
+  },
+  {
+   "id": "01af0632-170a-5398-81b3-cb588288480a",
+   "subject_kind": "org",
+   "subject_id": "353542e8-de45-557c-aedb-68018d17b147",
+   "predicate_code": "founded",
+   "start_date": "2014-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "1X Technologies – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/1X_Technologies"
+    }
+   ]
+  },
+  {
+   "id": "335aaa63-9582-5604-b060-aae34a3d017f",
+   "subject_kind": "org",
+   "subject_id": "d1139180-8785-5d60-b2a7-ca3949aa88ba",
+   "predicate_code": "founded",
+   "start_date": "1969-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "German Aerospace Center – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/German_Aerospace_Center"
+    }
+   ]
+  },
+  {
+   "id": "5ad40138-6b2a-5576-bc0a-6b11a0d6301c",
+   "subject_kind": "org",
+   "subject_id": "743297de-a84a-5005-b544-3932e585d3f5",
+   "predicate_code": "founded",
+   "start_date": "1861-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Massachusetts Institute of Technology – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Massachusetts_Institute_of_Technology"
+    }
+   ]
+  },
+  {
+   "id": "f0adb8aa-7335-529b-b40c-8085f25bff5a",
+   "subject_kind": "org",
+   "subject_id": "db7f1926-0a31-5f77-9880-107459c68de7",
+   "predicate_code": "founded",
+   "start_date": "1968-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Midea Group – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Midea"
+    }
+   ]
+  },
+  {
+   "id": "af8688f0-c1a9-58f2-b794-918fd0336d9a",
+   "subject_kind": "org",
+   "subject_id": "e899926e-9fc2-55a1-8f2c-970f66ad06a6",
+   "predicate_code": "founded",
+   "start_date": "2000-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Hyundai Motor Group – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Hyundai_Motor_Group"
+    }
+   ]
+  },
+  {
+   "id": "00d7c153-03d2-5c7d-90d8-8d30ec930d9c",
+   "subject_kind": "org",
+   "subject_id": "7aeec42c-53b4-5fd1-9a84-3f6529fab2ee",
+   "predicate_code": "acquired",
+   "object_kind": "org",
+   "object_id": "7ac1937f-3dc9-5c71-8d47-73f2bac20c54",
+   "start_date": "2023-11-02",
+   "start_precision": "day",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "Agile Robots AG acquires robotics specialist Franka Emika",
+     "url": "https://www.agile-robots.com/en/news/detail/agile-robots-ag-acquires-robotics-specialist-franka-emika"
+    }
+   ],
+   "attrs": {
+    "note": "Munich, 2 Nov 2023: Agile Robots took over the business operations of Franka Emika GmbH."
+   }
+  },
+  {
+   "id": "127f4998-b5fb-55a3-be4b-c7e4cb630e9b",
+   "subject_kind": "org",
+   "subject_id": "7ac1937f-3dc9-5c71-8d47-73f2bac20c54",
+   "predicate_code": "split_from",
+   "object_kind": "org",
+   "object_id": "d1139180-8785-5d60-b2a7-ca3949aa88ba",
+   "start_date": "2016-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "article",
+     "title": "Franka Emika – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Franka_Emika"
+    }
+   ],
+   "attrs": {
+    "note": "Founded 2016 as a spin-off from the DLR Institute of Robotics and Mechatronics."
+   }
+  },
+  {
+   "id": "b37f7e54-1a80-5e67-8261-08e22ae38760",
+   "subject_kind": "org",
+   "subject_id": "c413219a-d04e-58db-808e-270c9723d012",
+   "predicate_code": "split_from",
+   "object_kind": "org",
+   "object_id": "743297de-a84a-5005-b544-3932e585d3f5",
+   "start_date": "1992-01-01",
+   "start_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "article",
+     "title": "Boston Dynamics – Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Boston_Dynamics"
+    }
+   ]
+  },
+  {
+   "id": "3bbae82f-8ccd-5f03-8762-9d7dd0f86fd9",
+   "subject_kind": "org",
+   "subject_id": "c413219a-d04e-58db-808e-270c9723d012",
+   "predicate_code": "controlled_by",
+   "object_kind": "org",
+   "object_id": "e899926e-9fc2-55a1-8f2c-970f66ad06a6",
+   "start_date": "2021-06-21",
+   "start_precision": "day",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "article",
+     "title": "Hyundai completes Boston Dynamics purchase from SoftBank",
+     "url": "https://www.reuters.com/technology/hyundai-completes-boston-dynamics-purchase-softbank-2021-06-21"
+    }
+   ],
+   "amount": 80
+  },
+  {
+   "id": "637d0522-b03f-5a57-9576-50d659b1b870",
+   "subject_kind": "org",
+   "subject_id": "d5670fb1-2fbb-59dd-ab87-674530351d81",
+   "predicate_code": "controlled_by",
+   "object_kind": "org",
+   "object_id": "db7f1926-0a31-5f77-9880-107459c68de7",
+   "start_date": "2016-06-28",
+   "start_precision": "day",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "other",
+     "title": "KUKA signs investor agreement with Midea",
+     "url": "https://www.kuka.com/en-de/company/press/news/2016/06/investor-agreement-midea"
+    }
+   ],
+   "attrs": {
+    "note": "Investor agreement signed 28 Jun 2016; takeover completed in 2017."
+   }
+  }
+ ]
+}

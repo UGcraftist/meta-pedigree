@@ -8,7 +8,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 
 | ID | Goal | Includes | Target date | Status |
 |---|---|---|---|---|
-| M1 | Walking skeleton + internal preview: tree view over 20 seed orgs, URL state, runnable locally | T-001…T-006 | 2026-11-18 | planned |
+| M1 | Walking skeleton + internal preview: tree view over 20 seed orgs, URL state, runnable locally | T-001…T-006 | 2026-11-18 | in progress |
 | M2 | R1: all Must scope — timeline, focus/provenance, search/filter, missing markers, entry & verify station, party fixture | T-010…T-021 | 2026-12-13 | planned |
 
 ## Tasks
@@ -16,18 +16,18 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | ID | Task | Milestone | Assignee | Requirement | Design (S-/API/TH-) | decision record | Estimate | Depends on | Status |
 |---|---|---|---|---|---|---|---|---|---|
 | T-001 | Scaffold repo per code organization: `api/` (FastAPI, `/healthz`, pytest), `web/` (Vite/React skeleton), venv bootstrap, README run/test; `db/`+`seed/` land in T-002, CI in T-022 (CR-002) | M1 | UGcraftist | NFR-07 | — | DR-0002, DR-0004 | 0.5 | — | done |
-| T-002 | `supabase/migrations/*.sql` core schema (orgs, persons, facts, fact_relations, sources, fact_sources, stance_axis, relation_type, revision, conflicts); Python seed importer via `DATABASE_URL` | M1 | none | FR-003,009,010,011,014 | data-model.md | DR-0003, DR-0005 | 0.75 | T-001 | todo |
-| T-003 | Research + seed 20 orgs (tree skeleton for preview) from sources into seed JSON; validation script | M1 | none | FR-024 | — | — | 0.5 | T-002 | todo |
-| T-004 | Read views + RPC surface: `tree_nodes`/`tree_edges`, `org_detail` (facts+relations+sources), PostgREST 视图与 `openapi.yaml` 一致 | M1 | none | — | api.md, openapi.yaml | DR-0005 | 0.5 | T-002 | todo |
-| T-005 | S-01 tree screen: SVG/D3 render, expand/collapse, view switcher stub, diff shade | M1 | none | FR-013,025,026 | S-01 | DR-0001 | 0.75 | T-004 | todo |
-| T-006 | S-02 minimal detail drawer + URL state (node focus in address bar, copyable) | M1 | none | FR-023(partial) | S-01, S-02 | DR-0001 | 0.25 | T-005 | todo |
-| T-007 | Write path: RPC `submit_fact`/`upsert_stance`/`merge_source` (single transaction: validate → close old revision → insert new → audit_log), RLS editor-only | M1 | none | FR-006,007,008,009,014,017 | data-model.md, TH-02 | DR-0003, DR-0005 | 0.75 | T-002 | todo |
+| T-002 | `supabase/migrations/*.sql` core schema (orgs, persons, facts, sources, fact_sources, relation_types, stance_axes, stances, audit_log, app_users) + RLS; Python seed importer via service_role → PostgREST（DR-0006）; `api/` removed | M1 | none | FR-003,009,010,011,014 | data-model.md | DR-0003, DR-0005, DR-0006 | 0.75 | T-001 | done |
+| T-003 | Research + seed 20 orgs (tree skeleton for preview) from sources into seed JSON; validation script. **Done:** 24 orgs (20 target + DLR/MIT/Midea/Hyundai as pedigree parents), 29 sourced facts, 27 sources; `make seed` imported | M1 | none | FR-024 | — | — | 0.5 | T-002 | done |
+| T-004 | Read views per `api.md`: `tree_nodes`/`tree_edges`, `org_detail` (facts+sources JSON); `api.md` 改写为 PostgREST 契约（OpenAPI 由 PostgREST 自动生成，不提交）; migration `0002_read_model` | M1 | none | — | api.md | DR-0005 | 0.5 | T-002 | done |
+| T-005 | S-01 tree screen: SVG/D3 render, expand/collapse, view switcher stub, per-edge predicate text label (visual encoding + legend is T-012). **In review (round 2: approve on the shared commit, PR #3 open; CR-005 decided):** login gate (email/password), component-packed D3 layout, year labels, multi-parent badge, table view, light/dark theme toggle; verified in a real browser (screenshots under `build/preview/`, not committed) | M1 | none | FR-013,025,026 | S-01 | DR-0001 | 0.75 | T-004 | in review |
+| T-006 | S-02 minimal detail drawer + URL state (node focus in address bar, copyable). **In review (round 2 approved by the reviewer on 9b4a969; person approval pending after 0005 + views-probe):** `org_detail` drawer (facts/sources/`无来源`), `?focus=` deep link restores on reload, Esc clears, unknown id banner, copy link, focused-node highlight | M1 | none | FR-023(partial) | S-01, S-02 | DR-0001 | 0.25 | T-005 | in review |
+| T-007 | Write path: RPC `submit_fact`/`upsert_stance`/`merge_source` (single transaction: validate → close old revision → insert new → audit_log), RLS editor-only; migration `write_rpc`（编号见 data-model.md 台账）; 新增 `make write-probe` | M1 | none | FR-006,007,008,009,014,017 | data-model.md, TH-02 | DR-0003, DR-0005 | 0.75 | T-002 | todo |
 | T-008 | Test ladder: pytest (seed validation, RPC negative cases), vitest (tree layout, URL state, timeline scale), `make check` from clean checkout | M1 | none | NFR-07 | — | DR-0005 | 0.5 | T-004 | todo |
 | T-009 | Shared URL-state hook: view/focus/t/filters/compare in address bar, unknown id degrades gracefully | M1 | none | FR-023 | S-01 | DR-0001 | 0.5 | T-005 | todo |
 | T-010 | S-02 full detail: facts, sources + locator + as-of, citation copy, "无来源" label, conflicts side by side, person roles over time | M2 | none | FR-001,002,004,005,017 | S-02 | DR-0001 | 1.0 | T-006 | todo |
 | T-011 | S-03 timeline screen: episodes grouped, anchor years, year-band rendering, stable enter from S-01/S-04 | M2 | none | FR-003,025 | S-03 | DR-0001 | 1.5 | T-005 | todo |
 | T-012 | S-04 focus view: chain highlight + dim rest, restore previous view on Esc, relation legend | M2 | none | FR-012,013,021 | S-04 | DR-0001 | 1.0 | T-011 | todo |
-| T-013 | S-05 search + combined filters (PostgREST `search_orgs`, pg_trgm), persisted in URL, missing counts separate | M2 | none | FR-005,023,024 | S-05 | DR-0001 | 0.5 | T-010 | todo |
+| T-013 | S-05 search + combined filters (PostgREST `search_orgs`, pg_trgm), persisted in URL, missing counts separate; migration `search`（编号见 data-model.md 台账） | M2 | none | FR-005,023,024 | S-05 | DR-0001 | 0.5 | T-010 | todo |
 | T-014 | S-10 entry & verify station UI: create/edit org/person/fact/relation/source, registry-typed relation, stance axes, validation naming dangling ids, audit trail, merge decision; calls T-007 RPCs | M2 | none | FR-006,007,008,009,014 | S-10 | DR-0003, DR-0005 | 2.0 | T-007 | todo |
 | T-015 | Share/export: URL snapshot + PNG/SVG export with source appendix, CSV/JSON subset export (Should — build only after Must is green) | M2 | none | FR-027,028 (Should) | S-06 | DR-0001 | 1.0 | T-012 | todo |
 | T-016 | S-08 error/empty states (empty tree, no results, failed save) | M2 | none | — | S-08 | DR-0001 | 0.5 | T-013 | todo |
@@ -36,34 +36,38 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | T-019 | Deploy: Cloudflare Pages (`wrangler pages deploy`, env vars) + Supabase project (dev/prod separation, backup/restore runbook) | M2 | none | NFR-07 | — | DR-0005 | 0.5 | T-018 | todo |
 | T-020 | NFR validation: perf at 100 orgs (pan/zoom ≥30 fps), WCAG AA contrast, target browsers | M2 | none | NFR-02…06, FR-026 | — | — | 0.5 | T-017 | todo |
 | T-021 | Review passes (stage 6 on two walkthroughs: first-time visitor, data editor) + fixes | M2 | none | — | — | — | 2.0 | T-020 | todo |
-| T-022 | CI pipeline (GitHub Actions: build, typecheck, `make check`) once a git remote exists; also needed for Cloudflare Pages Git integration; blocked on remote (CR-002) | M1 | none | NFR-07 | — | DR-0004, DR-0005 | 0.25 | T-001 | blocked |
+| T-022 | CI pipeline (GitHub Actions: build, typecheck, `make check`); also needed for Cloudflare Pages Git integration; remote exists now (`github.com/UGcraftist/meta-pedigree`, PR #1–#4) so CR-004/T-022 are unblocked | M1 | none | NFR-07 | — | DR-0004, DR-0005 | 0.25 | T-001 | todo |
 
 ### T-001 acceptance criteria (rescoped by CR-002)
 - `api/`, `web/` exist per DR-0004 code layout; `GET /healthz` returns 200 + version; `make test` green; `make venv` works from a clean checkout (self-bootstraps pip).
 - `web/` compiles (`npm run build`).
 - Root `README.md` has run, build, test and deploy steps that a stranger can follow.
-- `db/` + `seed/` are T-002; CI is T-022 (needs a git remote, which does not exist yet).
+- `db/` + `seed/` are T-002; CI is T-022 (remote now exists).
 
 ### T-002 acceptance criteria
-- `supabase db push`（或 `psql -f`）在空库上干净应用全部迁移；ER 与 `data-model.md` 一致。
-- 种子导入器拒绝悬空 id 并点名（FR-006 规则）；导入器从 JSON 运行、不需要部署。
+- dev 空库从 SQL 编辑器应用 `0001_init.sql` 后 `make probe` 全绿（anon 写被拒、service_role 自建自删）；ER 与 `data-model.md` 一致。
+- 种子导入器拒绝悬空 id 并点名（FR-006 规则）；导入器从 JSON 运行、只需 service_role、不需要部署。
 
 ### T-003 acceptance criteria
 - 20 orgs with at least one sourced fact each load; every fact carries source + as-of or is explicitly `无来源`.
 
 ### T-004 acceptance criteria
-- PostgREST 视图 `tree_nodes`/`tree_edges` 与 `org_detail` 返回关系类型、时间带、事实、来源、关系；与 `openapi.yaml` 一致。
+- PostgREST 视图 `tree_nodes`/`tree_edges` 与 `org_detail` 返回关系类型、时间带、事实、来源、关系；与 `api.md` 一致（DR-0007）。
 - 视图只向普通读者返回已发布行（R1 由 RLS 控制；R2 打开 anon 只读）。
 
 ### T-005 acceptance criteria
-- Tree renders 20 orgs with expand/collapse; sibling date bands render with shades; click a node → focus; URL updates (T-006).
+- Tree renders 20+ orgs with expand/collapse; each node carries its founded year + precision badge (`ux.md` S-01: "每个日期带 precision badge" — 带 is the verb "carries", not a date-band shade; FR-003's year-only band belongs to T-010/T-011); click a node → focus; URL updates (T-006).
 
 ### T-006 acceptance criteria
 - Reload with a node id in the URL restores that focus; address bar state is copyable and pasteable.
+- 抽屉把每条事实渲染成 `subject · 谓词 · object`：**始终 subject 在前**，查看对象端（如 Boston Dynamics 的 `controlled_by`）也不反转；无 object 的事实（`founded`）只渲染 subject 与谓词，不追加隐藏对象尾巴；被 visibility 过滤的一端显示显式占位且不可导航；person 端不可导航（S-02 没有人物屏）。
+- `triple.test.ts` 覆盖：对象端查看、无 object、隐藏对象、隐藏 subject、person 不可导航。
 
 ### T-007 acceptance criteria
 - `submit_fact` 单事务：校验（来源或显式无来源、时间精度非空、关系类型必须已注册、悬空 id 拒绝并命名）→ 关闭旧修订 → 插入新修订 → 写 audit_log；失败时全部回滚（TH-02）。
 - RLS 负例：anon 与只读用户写操作被拒；只有 `app_metadata.role='editor'` 可写。
+- 只读用户用**第二个非 editor 测试账号**验证（anon 拒 ≠ 只读用户拒）；`make write-probe`（新增 target，仿 `seed/rls_probe.mjs`）断言 anon 拒（42501）、只读拒（42501）、editor 成功。
+- `merge_source` 归一化正例（相同 → 合并）与负例（路径不同 → 拒绝、不删行）各有测试，按 `api.md` 的归一化规则。
 
 ### T-008 acceptance criteria
 - `make check` 在干净 checkout 通过：pytest（种子校验 + RPC 负例）+ vitest（树布局/URL 状态/时间轴刻度）+ structure check。

@@ -6,9 +6,15 @@ node_modules/
 web/dist/
 *.tsbuildinfo
 .env
+.env.local
+.env.*.local
+!.env.example
 
 build/*
 !build/.gitkeep
 
 # Local reference material (external example projects), not part of this repo
 ref/
+
+# Local agent rules (machine-specific, not part of the repo)
+AGENTS.local.md

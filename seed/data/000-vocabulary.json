@@ -1,0 +1,33 @@
+{
+  "relation_types": [
+    {"code": "acquired", "label_zh": "收购", "label_en": "acquired",
+     "subject_kinds": ["org"], "object_kinds": ["org"], "implied_parent": true,
+     "attrs_schema": {"type": "object", "properties": {"amount_pct": {"type": "number"}}}},
+    {"code": "merged_into", "label_zh": "并入", "label_en": "merged into",
+     "subject_kinds": ["org"], "object_kinds": ["org"], "implied_parent": true},
+    {"code": "split_from", "label_zh": "拆分自", "label_en": "split from",
+     "subject_kinds": ["org"], "object_kinds": ["org"], "implied_parent": true},
+    {"code": "renamed_from", "label_zh": "更名自", "label_en": "renamed from",
+     "subject_kinds": ["org"], "object_kinds": ["org"], "implied_parent": false},
+    {"code": "controlled_by", "label_zh": "受控于", "label_en": "controlled by",
+     "subject_kinds": ["org"], "object_kinds": ["org"], "implied_parent": true,
+     "attrs_schema": {"type": "object", "properties": {"amount_pct": {"type": "number"}}}},
+    {"code": "allied_with", "label_zh": "结盟", "label_en": "allied with",
+     "subject_kinds": ["org"], "object_kinds": ["org"], "implied_parent": false},
+    {"code": "related_to", "label_zh": "相关", "label_en": "related to",
+     "subject_kinds": ["org", "person"], "object_kinds": ["org", "person"], "implied_parent": false},
+    {"code": "founded", "label_zh": "创立", "label_en": "founded",
+     "subject_kinds": ["org"], "object_kinds": [], "implied_parent": false},
+    {"code": "worked_at", "label_zh": "任职", "label_en": "worked at",
+     "subject_kinds": ["person"], "object_kinds": ["org"], "implied_parent": false,
+     "attrs_schema": {"type": "object", "properties": {"role": {"type": "string"}}}}
+  ],
+  "stance_axes": [
+    {"code": "left_right", "label_zh": "左右", "label_en": "left-right",
+     "scale_min": -2, "scale_max": 2, "anchors": {"min": "极左", "zero": "中间", "max": "极右"}},
+    {"code": "china", "label_zh": "对华态度", "label_en": "stance on China",
+     "scale_min": -2, "scale_max": 2, "anchors": {"min": "敌对", "zero": "中立", "max": "友好"}},
+    {"code": "us", "label_zh": "对美态度", "label_en": "stance on the US",
+     "scale_min": -2, "scale_max": 2, "anchors": {"min": "敌对", "zero": "中立", "max": "友好"}}
+  ]
+}

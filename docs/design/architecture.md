@@ -51,11 +51,11 @@ C4Container
 | `web/` | S-01…S-10；URL 状态；SVG 导出 PNG；布局与交互逻辑 | NFR-001（首屏 ≤3s）、NFR-004（放大不重叠）、NFR-002（无硬编码颜色） |
 | Supabase PostgREST | 读=视图（`tree_nodes`/`timeline_events`/…），写=RPC（`submit_fact`/`upsert_stance`/`merge_source`）+ RLS | NFR-003（≤200ms/事实）；RLS 是唯一防线（DR-0005） |
 | PostgreSQL | 唯一事实源；递归 CTE 出树；约束+触发器承担校验 | 迁移只向前（DR-0003） |
-| 契约 `openapi.yaml` | PostgREST/RPC 面的词表与类型单一来源（非容器） | web 由它生成类型（T-004） |
+| 契约 `api.md` | PostgREST/RPC 面的唯一契约来源（非容器）；OpenAPI 由 PostgREST 运行时生成、不提交（DR-0007） | web 手写类型（T-004） |
 
 ## 关键流程
 
-- 树：`POST /api/v1/tree` 语义不变，落成 PostgREST 视图 `tree_nodes`/`tree_edges`（递归 CTE，`relation_type.implied_parent` 决定方向）→ 前端 D3 布局（US-004）。
+- 树：读走 PostgREST 视图 `tree_nodes`/`tree_edges`（递归 CTE，`relation_type.implied_parent` 决定方向）→ 前端 D3 布局（US-004）。
 - 冲突并列：一个 (subject,predicate,object) 多行 → API 分组返回 → S-08 并列显示，可分别引用（US-009）。
 - 无来源：fact 无 source 行 → API 返回 `has_source:false` → S-07 画虚线 + `无来源` 标签（FR-001）。
 - 发布：RPC `submit_fact` 单事务完成"校验（来源或显式无来源 + 时间精度非空）→ 关旧修订 → 插新修订 → 写 audit_log"（TH-02）。
@@ -70,6 +70,18 @@ C4Container
 | NFR-004 字放大不重叠 | 字体相对单位 + 树节点最小间距可配；ux.md 验收 |
 | 审计 | fact 修订链 + audit_log 行（编辑者、时间、摘要） |
 
+## 仓库布局（DR-0005 取代 DR-0004 的 `api/` + `web/`）
+
+```
+supabase/migrations/   纯 SQL 迁移（唯一 schema 来源；应用顺序 = 文件名顺序）
+supabase/tests/        SQL 冒烟检查（T-004 起：视图与 RPC 的负向用例）
+seed/                  Python 种子导入器 + 数据包 seed/data/*.json（service_role → PostgREST）
+web/                   React 19 + Vite + TS SPA（Cloudflare Pages 产物）
+docs/                  工作流文档（见 docs/structure.yml）
+```
+
+`api/`（FastAPI 进程）按 DR-0005 取消，T-002 移除；`make dev` 不再存在，前端用 `npm run dev`。
+
 ## 部署（R1）
 
 | 环境 | 前端 | 数据/API | 说明 |
@@ -81,7 +93,17 @@ C4Container
 **Supabase 项目命名与创建时机**
 
 - 组织 `meta-pedigree`，项目名用连字符：`meta-pedigree-dev`、`meta-pedigree-prod`（Supabase 项目名按 slug 处理，下划线不稳妥；仓库名 `meta-pedigree` 保持一致）。
-- **现在只建 dev**；`meta-pedigree-prod` 在 stage 7 发布时创建（12-13 之前不建）：避免误写生产、避免免费层闲置项目自动暂停，schema 全部由 `supabase/migrations` 重放，建库时间可预期。
+- dev 已于 2026-11-15 创建并接上 T-002；**prod 也已创建（2026-11-15，用户操作），但 stage 7 之前不写入、不部署**：迁移只在 dev 跑，发布时按 `supabase/migrations` 重放到 prod。
 - 区域：`ap-northeast-1`（东京）或就近区域；创建后不可改，只能迁移。
 - 免费层每组织 2 个项目、无活跃自动暂停——dev 暂停可恢复，不影响数据。
 - 密钥只存本地 `.env`/`.env.local`（gitignore），Pages 环境变量在 Cloudflare 控制台设置；仓库里只有 `.env.example` 占位。
+
+**迁移应用与凭据（DR-0006）**
+
+| 环境 | 迁移如何应用 | 人读记录 |
+|---|---|---|
+| dev | 控制台 SQL 编辑器粘贴 `supabase/migrations/0001_init.sql`，保存为命名查询 | `meta-pedigree-dev:0001_init` |
+| prod | stage 7 重放同一份文件（之前不写入） | `meta-pedigree-prod:0001_init` |
+
+凭据只有两类：`VITE_SUPABASE_ANON_KEY`（公开；RLS 兜底）与 `SUPABASE_SERVICE_ROLE_KEY`（仅本机种子导入与 `make probe`）。
+没有 `DATABASE_URL`：Postgres 不接受外部 DDL 连接，迁移是手工粘贴；`make probe` 用 REST 证明 anon 被拒、service_role 可写。
