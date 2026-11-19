@@ -21,7 +21,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | T-004 | Read views per `api.md`: `tree_nodes`/`tree_edges`, `org_detail` (facts+sources JSON); `api.md` 改写为 PostgREST 契约（OpenAPI 由 PostgREST 自动生成，不提交）; migration `0002_read_model` | M1 | none | — | api.md | DR-0005 | 0.5 | T-002 | done |
 | T-005 | S-01 tree screen: SVG/D3 render, expand/collapse, view switcher stub, per-edge predicate text label (visual encoding + legend is T-012). **In review (round 2: approve on the shared commit, PR #3 open; CR-005 decided):** login gate (email/password), component-packed D3 layout, year labels, multi-parent badge, table view, light/dark theme toggle; verified in a real browser (screenshots under `build/preview/`, not committed) | M1 | none | FR-013,025,026 | S-01 | DR-0001 | 0.75 | T-004 | done (merged via PR #3) |
 | T-006 | S-02 minimal detail drawer + URL state (node focus in address bar, copyable). **In review (round 2 approved by the reviewer on 9b4a969; person approval pending after 0005 + views-probe):** `org_detail` drawer (facts/sources/`无来源`), `?focus=` deep link restores on reload, Esc clears, unknown id banner, copy link, focused-node highlight | M1 | none | FR-023(partial) | S-01, S-02 | DR-0001 | 0.25 | T-005 | done (merged via PR #4) |
-| T-007 | Write path: RPC `submit_fact`/`upsert_stance`/`merge_source` (single transaction: validate → close old revision → insert new → audit_log), RLS editor-only; migration `write_rpc`（编号见 data-model.md 台账）; 新增 `make write-probe` | M1 | none | FR-006,007,008,009,014,017 | data-model.md, TH-02 | DR-0003, DR-0005 | 0.75 | T-002 | todo |
+| T-007 | Write path: RPC `upsert_fact`（内嵌 `sources[]` 同事务写来源）、`submit_fact`（源或显式无源 → 旧修订 superseded → published → 一条 audit 记 old→new + actor）、`upsert_stance`、`merge_source`（归一化 URL 相等才合并）；`ensure_app_user` 保证审计 FK 可写；全部 `security definer` + pinned `search_path`，execute 只给 authenticated；migration `write_rpc`（编号见 data-model.md 台账）; 新增 `make write-probe` | M1 | none | FR-006,007,008,009,017 | data-model.md, TH-02 | DR-0003, DR-0005 | 1.0 | T-002 | todo |
 | T-008 | Test ladder: pytest (seed validation, RPC negative cases), vitest (tree layout, URL state, timeline scale), `make check` from clean checkout | M1 | none | NFR-07 | — | DR-0005 | 0.5 | T-004 | todo |
 | T-009 | Shared URL-state hook: view/focus/t/filters/compare in address bar, unknown id degrades gracefully | M1 | none | FR-023 | S-01 | DR-0001 | 0.5 | T-005 | todo |
 | T-010 | S-02 full detail: facts, sources + locator + as-of, citation copy, "无来源" label, conflicts side by side, person roles over time | M2 | none | FR-001,002,004,005,017 | S-02 | DR-0001 | 1.0 | T-006 | todo |
@@ -65,10 +65,11 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 - `triple.test.ts` 覆盖：对象端查看、无 object、隐藏对象、隐藏 subject、person 不可导航。
 
 ### T-007 acceptance criteria
-- `submit_fact` 单事务：校验（来源或显式无来源、时间精度非空、关系类型必须已注册、悬空 id 拒绝并命名）→ 关闭旧修订 → 插入新修订 → 写 audit_log；失败时全部回滚（TH-02）。
-- RLS 负例：anon 与只读用户写操作被拒；只有 `app_metadata.role='editor'` 可写。
-- 只读用户用**第二个非 editor 测试账号**验证（anon 拒 ≠ 只读用户拒）；`make write-probe`（新增 target，仿 `seed/rls_probe.mjs`）断言 anon 拒（42501）、只读拒（42501）、editor 成功。
-- `merge_source` 归一化正例（相同 → 合并）与负例（路径不同 → 拒绝、不删行）各有测试，按 `api.md` 的归一化规则。
+- `upsert_fact` 在单事务里落库（校验注册表 `is_active`、subject/object kind 兼容、两端 id 必须存在并命名悬空 id、日期/精度配对、amount 只属于 `controlled_by`；payload 内嵌 `sources[]` 时同事务写 `sources` + `fact_sources`，按 `normalize_url` 去重）。
+- `submit_fact`：要求"来源或显式无来源"，否则拒绝且不留半写；通过则旧修订置 `superseded`、本行 `published`、写一条 audit（`from_status`/`to_status` + actor id/email），失败全部回滚（TH-02）。R1 折叠 `in_review`（FR-031 属 R2，见 `api.md`）。
+- RLS 负例：anon 与只读用户写操作被拒；只有 `app_metadata.role='editor'` 可写。`make write-probe` 用**第二个非 editor 测试账号**验证（anon 拒 ≠ 只读用户拒），接受 403/42501 或 404，并在每次拒绝后断言行数未变。
+- FR-008：发布后用 editor JWT 重读 `org_detail`，断言新事实可见（`views_probe` 的 authenticated 路径即漂移探测器）。
+- `merge_source` 归一化正例（相同 → 合并）与负例（路径不同 → 拒绝、不删行）各有测试，按 `api.md` 的归一化规则；合并是单次审计的 one-way 操作。
 
 ### T-008 acceptance criteria
 - `make check` 在干净 checkout 通过：pytest（种子校验 + RPC 负例）+ vitest（树布局/URL 状态/时间轴刻度）+ structure check。

@@ -80,7 +80,7 @@
   `attrs_schema` deferral stated; denial assertions accept 403/42501/404 **and** assert row counts unchanged;
   credentials docs extended with editor/readonly accounts; CR-007 raised for the plan AC wording.
 
-## CR-007 — T-007 acceptance wording drifts from the corrected write contract (raised 2026-11-19, awaiting UGcraftist)
+## CR-007 — T-007 acceptance wording drifts from the corrected write contract (decided 2026-11-19)
 
 **Why.** The advisor review of the T-007 plan (`0006_write_rpc`) found the plan's acceptance criteria
 (`plan.md` §T-007) no longer match what the corrected contract does, and that one requirement row is
@@ -101,5 +101,6 @@ not a new requirement.
 **Recommendation.** Accept all three: reword AC bullet 1 as above, note the R1 `in_review` collapse, and
 remove FR-014 from the T-007 row (T-014 keeps it). The code already follows the corrected contract.
 
-**Status:** raised — awaiting UGcraftist. Until decided, `api.md`/`data-model.md`/`security.md` describe the
-corrected contract and `plan.md` keeps its original wording.
+**Status:** accepted by UGcraftist 2026-11-19 (all three); `plan.md` T-007 row and AC now carry the corrected
+wording, FR-014 stays only on T-014. `api.md`/`data-model.md`/`security.md` were already updated with the
+corrected contract in the same PR, so plan and contract now agree.
