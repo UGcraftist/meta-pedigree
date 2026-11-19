@@ -1,8 +1,10 @@
 -- 0006_write_rpc: the only write path (T-007, FR-006/007/008/009, DR-0003)
 --
 -- R1 has no application server (DR-0005): edits arrive through PostgREST RPCs.
--- Every function is SECURITY DEFINER with a pinned search_path, checks the
--- editor role in the JWT itself, and is executable only by authenticated.
+-- Every write function is SECURITY DEFINER with a pinned search_path, checks
+-- the editor role in the JWT itself, and is executable only by authenticated.
+-- normalize_url is the exception: immutable, invoker, pinned search_path, and
+-- no EXECUTE grant (internal callers run as the definer owner).
 -- No table-level write policy is added: writes happen only here.
 --
 -- Migration-numbered in docs/design/data-model.md; content follows
@@ -70,6 +72,14 @@ begin
   on conflict (id) do nothing;
 end;
 $$;
+
+-- Step 0: bring pre-existing source rows onto the normalized form. The seed
+-- importer stores URLs verbatim (seed/importer.py), so without this the
+-- `url = v_url` dedupe below would miss a raw-URL row and insert a duplicate.
+-- Idempotent; `merge_source` is the repair for anything that still slips through.
+update public.sources
+set url = public.normalize_url(url)
+where url is not null and url <> public.normalize_url(url);
 
 -- ── upsert_fact ─────────────────────────────────────────────────────────────
 

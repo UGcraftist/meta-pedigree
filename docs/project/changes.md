@@ -73,6 +73,10 @@
 - 2026-11-15: **CR-006 decided (staged)** — owner accepted Phase 1 SQL editor + Phase 2 CLI task (DR-0008); `role_table_grants` showed Supabase default privileges had given anon SELECT/write on all three views and authenticated ALL, so 0005 now revokes anon and grants authenticated SELECT-only.
 - 2026-11-15: **T-006 round-1 fixes** — `supabase/migrations/0005_org_detail_subject.sql` (both fact ends resolved server-side and gated on the counterpart's visibility; grant + comment re-issued); drawer renders the full `subject · predicate · object` triple (`web/src/features/tree/triple.ts`, 7 vitest cases; round-2 review added the object-side regression); TreeScreen zoom effect dropped on unmount (`on('.zoom', null)`); the ResizeObserver effect now re-subscribes on `[table]`; `seed/views_probe.mjs` asserts the seeded `Boston Dynamics · controlled_by · Hyundai Motor Group` ends plus a no-object `founded` fact, and anon 401. **Not yet applied** — UGcraftist must paste it to the Supabase SQL editor, then `make views-probe` runs.
 
+- 2026-11-19: **T-007 review rounds 2–4** — rollback probe moved after a source insert (the old assertion could
+  never fail); counts via Content-Range; registry-end rule documented and covered both ways; sources store the
+  normalized URL, and 0006 backfills pre-existing raw-URL rows (seed importer stores URLs verbatim — follow-up:
+  normalize in `seed/importer.py`, T-014's path or a small task).
 - 2026-11-19: **T-007 plan corrected** (advisor: change) — `ensure_app_user()` added (nothing else provisions
   `app_users`, so the audit FK would fail on the first real call); `upsert_fact` nests `sources[]` and dedupes
   by `normalize_url` (the schema had no source write path); predicate validation now checks
