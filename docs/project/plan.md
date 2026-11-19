@@ -8,7 +8,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 
 | ID | Goal | Includes | Target date | Status |
 |---|---|---|---|---|
-| M1 | Walking skeleton + internal preview: tree view over 20 seed orgs, URL state, runnable locally | T-001…T-006 | 2026-11-18 | in progress |
+| M1 | Walking skeleton + internal preview: tree view over 20 seed orgs, URL state, runnable locally | T-001…T-006 | 2026-11-19 | done (T-001–T-006 merged into master via PR #1–#4) |
 | M2 | R1: all Must scope — timeline, focus/provenance, search/filter, missing markers, entry & verify station, party fixture | T-010…T-021 | 2026-12-13 | planned |
 
 ## Tasks
@@ -19,8 +19,8 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | T-002 | `supabase/migrations/*.sql` core schema (orgs, persons, facts, sources, fact_sources, relation_types, stance_axes, stances, audit_log, app_users) + RLS; Python seed importer via service_role → PostgREST（DR-0006）; `api/` removed | M1 | none | FR-003,009,010,011,014 | data-model.md | DR-0003, DR-0005, DR-0006 | 0.75 | T-001 | done |
 | T-003 | Research + seed 20 orgs (tree skeleton for preview) from sources into seed JSON; validation script. **Done:** 24 orgs (20 target + DLR/MIT/Midea/Hyundai as pedigree parents), 29 sourced facts, 27 sources; `make seed` imported | M1 | none | FR-024 | — | — | 0.5 | T-002 | done |
 | T-004 | Read views per `api.md`: `tree_nodes`/`tree_edges`, `org_detail` (facts+sources JSON); `api.md` 改写为 PostgREST 契约（OpenAPI 由 PostgREST 自动生成，不提交）; migration `0002_read_model` | M1 | none | — | api.md | DR-0005 | 0.5 | T-002 | done |
-| T-005 | S-01 tree screen: SVG/D3 render, expand/collapse, view switcher stub, per-edge predicate text label (visual encoding + legend is T-012). **In review (round 2: approve on the shared commit, PR #3 open; CR-005 decided):** login gate (email/password), component-packed D3 layout, year labels, multi-parent badge, table view, light/dark theme toggle; verified in a real browser (screenshots under `build/preview/`, not committed) | M1 | none | FR-013,025,026 | S-01 | DR-0001 | 0.75 | T-004 | in review |
-| T-006 | S-02 minimal detail drawer + URL state (node focus in address bar, copyable). **In review (round 2 approved by the reviewer on 9b4a969; person approval pending after 0005 + views-probe):** `org_detail` drawer (facts/sources/`无来源`), `?focus=` deep link restores on reload, Esc clears, unknown id banner, copy link, focused-node highlight | M1 | none | FR-023(partial) | S-01, S-02 | DR-0001 | 0.25 | T-005 | in review |
+| T-005 | S-01 tree screen: SVG/D3 render, expand/collapse, view switcher stub, per-edge predicate text label (visual encoding + legend is T-012). **In review (round 2: approve on the shared commit, PR #3 open; CR-005 decided):** login gate (email/password), component-packed D3 layout, year labels, multi-parent badge, table view, light/dark theme toggle; verified in a real browser (screenshots under `build/preview/`, not committed) | M1 | none | FR-013,025,026 | S-01 | DR-0001 | 0.75 | T-004 | done (merged via PR #3) |
+| T-006 | S-02 minimal detail drawer + URL state (node focus in address bar, copyable). **In review (round 2 approved by the reviewer on 9b4a969; person approval pending after 0005 + views-probe):** `org_detail` drawer (facts/sources/`无来源`), `?focus=` deep link restores on reload, Esc clears, unknown id banner, copy link, focused-node highlight | M1 | none | FR-023(partial) | S-01, S-02 | DR-0001 | 0.25 | T-005 | done (merged via PR #4) |
 | T-007 | Write path: RPC `submit_fact`/`upsert_stance`/`merge_source` (single transaction: validate → close old revision → insert new → audit_log), RLS editor-only; migration `write_rpc`（编号见 data-model.md 台账）; 新增 `make write-probe` | M1 | none | FR-006,007,008,009,014,017 | data-model.md, TH-02 | DR-0003, DR-0005 | 0.75 | T-002 | todo |
 | T-008 | Test ladder: pytest (seed validation, RPC negative cases), vitest (tree layout, URL state, timeline scale), `make check` from clean checkout | M1 | none | NFR-07 | — | DR-0005 | 0.5 | T-004 | todo |
 | T-009 | Shared URL-state hook: view/focus/t/filters/compare in address bar, unknown id degrades gracefully | M1 | none | FR-023 | S-01 | DR-0001 | 0.5 | T-005 | todo |
@@ -37,6 +37,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | T-020 | NFR validation: perf at 100 orgs (pan/zoom ≥30 fps), WCAG AA contrast, target browsers | M2 | none | NFR-02…06, FR-026 | — | — | 0.5 | T-017 | todo |
 | T-021 | Review passes (stage 6 on two walkthroughs: first-time visitor, data editor) + fixes | M2 | none | — | — | — | 2.0 | T-020 | todo |
 | T-022 | CI pipeline (GitHub Actions: build, typecheck, `make check`); also needed for Cloudflare Pages Git integration; remote exists now (`github.com/UGcraftist/meta-pedigree`, PR #1–#4) so CR-004/T-022 are unblocked | M1 | none | NFR-07 | — | DR-0004, DR-0005 | 0.25 | T-001 | todo |
+| T-023 | CLI-tracked migrations (CR-006 phase 2): adopt `supabase` CLI migration history for dev/prod, DR-0008, prod paste runbook; needs an owner-held DB password; starts after T-022 and before any prod migration | M2 | UGcraftist | NFR-07 | — | DR-0006, DR-0008 | 1.0 | T-022 | todo |
 
 ### T-001 acceptance criteria (rescoped by CR-002)
 - `api/`, `web/` exist per DR-0004 code layout; `GET /healthz` returns 200 + version; `make test` green; `make venv` works from a clean checkout (self-bootstraps pip).
