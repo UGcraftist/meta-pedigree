@@ -1,6 +1,6 @@
 PY := .venv/bin/python
 
-.PHONY: venv test seed seed-dry probe views-probe web-dev check
+.PHONY: venv test seed seed-dry probe views-probe write-probe web-dev check
 
 venv:
 	-python3 -m venv .venv
@@ -26,6 +26,11 @@ probe:
 # Check the 0002 read-model views return the tree (run after pasting the migration).
 views-probe:
 	node seed/views_probe.mjs
+
+# Prove the 0006 write RPCs: anon+readonly denied, editor writes, audit + source merge.
+# Needs SUPABASE_EDITOR_EMAIL/PASSWORD and SUPABASE_READONLY_EMAIL/PASSWORD in .env.
+write-probe:
+	node seed/write_probe.mjs
 
 check:
 	python3 .dsh/skills/project-flow/scripts/structure.py check && $(MAKE) test
