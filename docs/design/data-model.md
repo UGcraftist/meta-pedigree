@@ -87,17 +87,22 @@ stateDiagram-v2
 `seed/importer.py` 校验后经 PostgREST + service_role 导入，校验规则与本节 CHECK 一一对应
 （`make seed-dry` 不需要网络）。
 
-计划内的迁移（R1 → M2）：
+计划内的迁移（R1 → M2）。每行都要能回答"这个对象凭什么在库里"：
 
-| 迁移 | 任务 | 内容 | 改表？ |
-|---|---|---|---|
-| `0001_init` | T-002 | 10 张表 + 枚举 + RLS + 审计触发器 | 建表（已应用 2026-11-15） |
-| `0002_read_model` | T-004 | `tree_nodes`/`tree_edges`/`org_detail` 视图（PostgREST 不能执行递归 CTE） | 否，新增视图（已应用 2026-11-15） |
-| `0003_tree_direction` | T-004 | `split_from`/`controlled_by`/`merged_into` 的父子极性归一 | 否，视图重定义（已应用 2026-11-15） |
-| `0004_tree_nodes_dedup` | T-004 | 每个组织一行（min-depth 去重）+ 恢复 grants | 否，视图重定义（已应用 2026-11-15） |
-| `0005_org_detail_subject` | T-006 fix | `org_detail` 增 subject 侧（按可见性过滤），供抽屉渲染完整三元组 | 否，视图重定义（计划） |
-| `0006_write_rpc` | T-007 | `submit_fact`/`upsert_stance`/`merge_source` | 否，新增函数（计划） |
-| `0007_search` | T-013 | `pg_trgm` + `search_orgs` + 检索索引 | 否，新增函数/索引（计划） |
+| 迁移 | 任务 | 内容 | 改表？ | 路由 | dev 回执 | prod | 权限变化 |
+|---|---|---|---|---|---|---|---|
+| `0001_init` | T-002 | 10 张表 + 枚举 + RLS + 审计触发器 | 建表（已应用 2026-11-15） | SQL editor | `meta-pedigree-dev:0001_init` | — | `revoke all` 全部表 from anon/authenticated；select 给 authenticated |
+| `0002_read_model` | T-004 | `tree_nodes`/`tree_edges`/`org_detail` 视图（PostgREST 不能执行递归 CTE） | 否，新增视图（已应用 2026-11-15） | SQL editor | `meta-pedigree-dev:0002_read_model` | — | 新建视图触发 Supabase default privileges：anon/authenticated 各得 ALL（未预期，0005 收紧） |
+| `0003_tree_direction` | T-004 | `split_from`/`controlled_by`/`merged_into` 的父子极性归一 | 否，视图重定义（已应用 2026-11-15） | SQL editor | `meta-pedigree-dev:0003_tree_direction` | — | drop/create 视图 → default privileges 再次给 anon/authenticated ALL；文件自身无 grant |
+| `0004_tree_nodes_dedup` | T-004 | 每个组织一行（min-depth 去重）+ 恢复 grants | 否，视图重定义（已应用 2026-11-15） | SQL editor | `meta-pedigree-dev:0004_tree_nodes_dedup` | — | `grant select on tree_nodes to authenticated`（只补了 tree_nodes） |
+| `0005_org_detail_subject` | T-006 fix | `org_detail` 增 subject 侧（按可见性过滤），供抽屉渲染完整三元组 | 否，视图重定义（计划） | SQL editor | `meta-pedigree-dev:0005_org_detail_subject`（待贴） | — | `revoke all` 三个视图 from anon；authenticated 改为 SELECT-only |
+| `0006_write_rpc` | T-007 | `submit_fact`/`upsert_stance`/`merge_source` | 否，新增函数（计划） | SQL editor | 待贴 | — | 每个函数 `revoke execute from public, anon` + `grant execute to authenticated`，`set search_path` |
+| `0007_search` | T-013 | `pg_trgm` + `search_orgs` + 检索索引 | 否，新增函数/索引（计划） | SQL editor | 待贴 | — | 同上（函数 execute 默认对 PUBLIC） |
+
+**2026-11-15 漂移核查（CR-006）**：`role_table_grants` 显示 `anon` 对三个视图都有 SELECT 及写权限、
+`authenticated` 对视图是 ALL——来源是 Supabase default privileges（`public` 新建对象默认全授权），
+不是手工 grant。`0005` 用显式 `revoke` 收紧并把规则写进文件。**不变式：库里每个对象和每条授权，
+都必须能在某个迁移文件里找到；`grant/revoke` 属于迁移内容，不是附注。**
 
 **迁移编号只在本台账分配**；其他文档按名字引用（`write_rpc`、`search`），不写数字。
 复核触发条件以 DR-0006 §Revisit triggers 为准；本文件不复述。

@@ -83,20 +83,22 @@ if (!anon) {
   }
   console.log("  anon org_detail access: SKIPPED (--allow-anon-skip)");
 } else {
-  let anonStatus = 0;
-  try {
-    const res = await fetch(`${url}/rest/v1/org_detail?select=id&limit=1`, {
-      headers: { apikey: anon, authorization: `Bearer ${anon}` },
-    });
-    anonStatus = res.status;
-  } catch {
-    anonStatus = -1;
+  for (const view of ["org_detail", "tree_edges", "tree_nodes"]) {
+    let anonStatus = 0;
+    try {
+      const res = await fetch(`${url}/rest/v1/${view}?select=id&limit=1`, {
+        headers: { apikey: anon, authorization: `Bearer ${anon}` },
+      });
+      anonStatus = res.status;
+    } catch {
+      anonStatus = -1;
+    }
+    if (anonStatus !== 401 && anonStatus !== 403) {
+      console.error(`FAIL: anon read ${view} returned ${anonStatus}, expected 401/403 (grant regression)`);
+      process.exit(1);
+    }
+    console.log(`  anon ${view} access: ${anonStatus} (denied, as required)`);
   }
-  if (anonStatus !== 401 && anonStatus !== 403) {
-    console.error(`FAIL: anon read org_detail returned ${anonStatus}, expected 401/403 (grant regression)`);
-    process.exit(1);
-  }
-  console.log(`  anon org_detail access: ${anonStatus} (denied, as required)`);
 }
 const ids = new Set(nodes.map((n) => n.id));
 const duped = ids.size !== nodes.length;

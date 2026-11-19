@@ -28,7 +28,7 @@ Last updated: 2026-11-15 by UGcraftist (review debt + CR-004 recorded)
 
 ## Open questions (blocking the current gate)
 - R2 auth (SSO + hosted accounts) is not designed yet: tracked as risk in risks.md, must close before the R2 public site.
-- T-005/T-006 gate: CR-005 decided 2026-11-15 (T-005 AC corrected, no shade built); **CR-006 (migration route) still awaits UGcraftist**. The round touches an auth-adjacent read view, so a person approves PR #4 before merge (one-way door).
+- T-005/T-006 gate: CR-005 decided 2026-11-15 (T-005 AC corrected, no shade built); **CR-006 decided 2026-11-15 (staged route accepted)** — SQL editor stays for 0005/0006, CLI move becomes a new M2 task (DR-0008). 0005 now also revokes anon on the three views and normalises authenticated to SELECT-only (default-privileges drift found by `role_table_grants`). The round touches an auth-adjacent read view, so a person approves PR #4 before merge (one-way door).
 
 ## Resolved (recorded in stories.md, ux.md, changes.md)
 - Q1 scope: US/EU embodied-AI companies, ≤100 orgs, persons as collected; production target is political parties, so the model stays domain-neutral (US-024, FR-011/FR-024 party slots).
