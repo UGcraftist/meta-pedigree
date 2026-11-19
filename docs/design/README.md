@@ -8,7 +8,7 @@ The system as it is today. Read the files in this order.
 |---|---|
 | architecture.md | parts of the system and how they connect |
 | data-model.md | entities, data types and the database |
-| api.md | API contract summary; the full spec is in api/ |
+| api.md | the API contract (PostgREST views/RPC, conventions) |
 | ux.md | art direction, screens and their Figma status |
 | security.md | threats, admins and credential owners (never values) |
 | performance.md | budgets and the optimization log |

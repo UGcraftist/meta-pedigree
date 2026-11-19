@@ -42,7 +42,7 @@ operators and error shapes.
 | `GET audit_log?entity=eq.fact&entity_id=eq.<id>` | editor-only audit trail | US-021 |
 | `GET timeline_events?order=start_date` | timeline view (view lands with T-009) | US-010 |
 
-## Write surface (Must, T-007 · migration 0003_write_rpc)
+## Write surface (Must, T-007 · migration `write_rpc`，编号见 data-model.md 迁移台账)
 
 | Call | Purpose |
 |---|---|
@@ -52,7 +52,20 @@ operators and error shapes.
 | `POST rpc/merge_source` | dedupe sources by URL and re-link facts |
 | `POST rpc/publish_fact` (if split out) | publish step for S-10 (exact split decided in T-007) |
 
-## Response snippets (0002 read model)
+### `merge_source` URL normalization (destructive, one-way)
+
+`merge_source(p_from, p_into)` 仅在两个来源的**归一化 URL 完全相同**时视为重复（T-007 实现并测试）：
+
+- 去首尾空白；
+- scheme 与 host 转小写，路径与查询串保留原大小写；
+- 去掉 fragment（`#...`）；
+- 去掉默认端口（`http:80`、`https:443`）；
+- 路径为空时去掉末尾 `/`。
+
+合并会删除重复来源并把其 fact 重新挂到保留来源上，**不可逆**；T-007 必须同时给出正例
+（归一化后相同 → 合并）与负例（路径不同 → 拒绝，不删行）。
+
+## Response snippets (0002/0005 read model)
 
 ```json
 // GET /rest/v1/tree_nodes
@@ -60,15 +73,23 @@ operators and error shapes.
   "founded_date":"2018-01-01","founded_precision":"year",
   "depth":0,"is_root":true,"child_count":1,"parent_count":0}]
 
-// GET /rest/v1/org_detail?id=eq.0191…
+// GET /rest/v1/org_detail?id=eq.0191…  (shape changed by 0005: both fact ends)
 [{"id":"0191…","name":"Boston Dynamics","kind":"company","country_code":"US",
-  "founded_date":"1992-01-01","founded_precision":"year",
+  "founded_date":"1992-01-01","founded_precision":"year","notes":null,
   "facts":[{"id":"0192…","predicate":"split_from","label_zh":"拆分自","label_en":"split from",
-            "object_kind":"org","object_id":"0193…","start_date":"1992-01-01","start_precision":"year",
+            "subject_kind":"org","subject_id":"0191…","subject_name":"Boston Dynamics",
+            "object_kind":"org","object_id":"0193…","object_name":"MIT",
+            "start_date":"1992-01-01","start_precision":"year",
             "end_date":null,"end_precision":null,"qualifier":"exact","amount":null,
             "certainty":"exact","no_source":false,
             "sources":[{"title":"…","url":"https://…","kind":"article","quote":"…","locator":null}]}]}]
 ```
+
+`org_detail` resolves **both** ends of each fact server-side: `subject_kind/id/name` and
+`object_kind/id/name`. The `*_id` and `*_name` of an end are `null` when that end is not
+`visibility='public'` (security.md:33); a fact with no object end (e.g. `founded`) has
+`object_kind = null`. Clients must render the subject end first; fact ends must not be resolved from `tree_nodes`
+(that map is tree-only and misses persons and gated orgs), though it may still label the drawer title.
 
 ## Coverage
 
