@@ -55,12 +55,11 @@ gate 检查要求每个管理角色两名具名持有人；R1 只有一人，**�
 |---|---|---|---|
 | `VITE_SUPABASE_ANON_KEY` | web | UGcraftist | `web/.env.local` / Pages 环境变量；**可公开**，安全靠 RLS |
 | `SUPABASE_SERVICE_ROLE_KEY` | 种子导入、`make probe` | UGcraftist | 本机 `.env`；**绝不进前端、CI、仓库**；绕过 RLS 读写暴露表，但**不能 DDL、不触达 auth schema**；控制台可单独 rotate |
-
-| `SUPABASE_EDITOR_EMAIL` / `SUPABASE_EDITOR_PASSWORD` | `make views-probe` / `make write-probe` 的 authenticated 读 | UGcraftist | 本机 `.env`；账号在 Supabase Auth，密码不进仓库 |
+| `SUPABASE_EDITOR_EMAIL` / `SUPABASE_EDITOR_PASSWORD` | `make views-probe` / `make write-probe` 的 authenticated 读写 | UGcraftist | 本机 `.env`；账号在 Supabase Auth（`app_metadata.role='editor'`），密码不进仓库 |
 | `SUPABASE_READONLY_EMAIL` / `SUPABASE_READONLY_PASSWORD` | `make write-probe` 的非 editor 拒写断言 | UGcraftist | 本机 `.env`；Supabase Auth 另建一个普通 authenticated 账号 |
+| `GEMINI_API_KEY`（可选，仅设计稿） | 图像生成 | UGcraftist | 用户本机配置，不进仓库 |
 
 迁移不经网络直连：`supabase/migrations/*.sql` 由人在控制台 SQL 编辑器粘贴（DR-0006），故无 `DATABASE_URL`。
-| `GEMINI_API_KEY`（可选，仅设计稿） | 图像生成 | UGcraftist | 用户本机配置，不进仓库 |
 
 ## Rules
 

@@ -103,4 +103,5 @@ remove FR-014 from the T-007 row (T-014 keeps it). The code already follows the 
 
 **Status:** accepted by UGcraftist 2026-11-19 (all three); `plan.md` T-007 row and AC now carry the corrected
 wording, FR-014 stays only on T-014. `api.md`/`data-model.md`/`security.md` were already updated with the
-corrected contract in the same PR, so plan and contract now agree.
+corrected contract in the same PR, so plan and contract now agree. PR #5 may merge only after the
+stage-5 step-8 review is clean and UGcraftist approves the merge (one-way door).

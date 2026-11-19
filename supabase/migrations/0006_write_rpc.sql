@@ -6,7 +6,10 @@
 -- No table-level write policy is added: writes happen only here.
 --
 -- Migration-numbered in docs/design/data-model.md; content follows
--- docs/design/api.md. Re-runnable (create or replace).
+-- docs/design/api.md. Re-runnable (create or replace), one transaction so a
+-- mid-paste failure leaves nothing behind.
+
+begin;
 
 -- ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -16,6 +19,8 @@
 create or replace function public.normalize_url(p_url text) returns text
 language plpgsql
 immutable
+security definer
+set search_path = pg_catalog, pg_temp
 as $$
 declare
   v text;
@@ -72,7 +77,8 @@ $$;
 -- Create a draft, or revise an existing fact (in place while draft/in_review).
 -- payload: subject_kind, subject_id, predicate_code, object_kind?, object_id?,
 --          start_date/precision?, end_date/precision?, amount?, attrs?,
---          visibility?, no_source?, revision_of?, id? (in-place edit),
+--          certainty?, qualifier?, visibility?, no_source?, revision_of?,
+--          id? (in-place edit),
 --          sources?: [{url, kind?, title?, author?, page?, quote?,
 --                      published_at?, accessed_at?, locator?}]
 create or replace function public.upsert_fact(payload jsonb) returns uuid
@@ -136,16 +142,22 @@ begin
     end if;
   end if;
 
-  -- registry says which entity kinds may sit on each end (empty = any)
+  -- registry says which entity kinds may sit on each end (empty = none allowed)
   if v_rt.subject_kinds is not null and array_length(v_rt.subject_kinds, 1) > 0
      and not (v_subject_kind = any (v_rt.subject_kinds)) then
     raise exception 'predicate % does not accept % subjects', v_predicate, v_subject_kind
       using errcode = '23514';
   end if;
-  if v_rt.object_kinds is not null and array_length(v_rt.object_kinds, 1) > 0
-     and v_object_kind is not null
-     and not (v_object_kind = any (v_rt.object_kinds)) then
-    raise exception 'predicate % does not accept % objects', v_predicate, v_object_kind
+  if array_length(v_rt.object_kinds, 1) > 0 then
+    if v_object_id is null then
+      raise exception 'predicate % requires an object', v_predicate using errcode = '23514';
+    end if;
+    if not (v_object_kind = any (v_rt.object_kinds)) then
+      raise exception 'predicate % does not accept % objects', v_predicate, v_object_kind
+        using errcode = '23514';
+    end if;
+  elsif v_object_id is not null then
+    raise exception 'predicate % does not accept an object', v_predicate
       using errcode = '23514';
   end if;
 
@@ -178,6 +190,10 @@ begin
         nullif(payload ->> 'end_precision', '')::public.date_precision, 'unknown'),
       amount = nullif(payload ->> 'amount', '')::numeric,
       attrs = coalesce(payload -> 'attrs', '{}'::jsonb),
+      certainty = coalesce(
+        nullif(payload ->> 'certainty', '')::public.certainty, 'exact'),
+      qualifier = coalesce(
+        nullif(payload ->> 'qualifier', '')::public.certainty, 'exact'),
       visibility = coalesce(
         nullif(payload ->> 'visibility', '')::public.visibility, 'public'),
       no_source = coalesce((payload ->> 'no_source')::boolean, false)
@@ -187,7 +203,7 @@ begin
     insert into public.facts (
       subject_kind, subject_id, predicate_code, object_kind, object_id,
       start_date, start_precision, end_date, end_precision, amount, attrs,
-      visibility, no_source, revision_of, created_by
+      certainty, qualifier, visibility, no_source, revision_of, created_by
     ) values (
       v_subject_kind, v_subject_id, v_predicate, v_object_kind, v_object_id,
       nullif(payload ->> 'start_date', '')::date,
@@ -196,6 +212,8 @@ begin
       coalesce(nullif(payload ->> 'end_precision', '')::public.date_precision, 'unknown'),
       nullif(payload ->> 'amount', '')::numeric,
       coalesce(payload -> 'attrs', '{}'::jsonb),
+      coalesce(nullif(payload ->> 'certainty', '')::public.certainty, 'exact'),
+      coalesce(nullif(payload ->> 'qualifier', '')::public.certainty, 'exact'),
       coalesce(nullif(payload ->> 'visibility', '')::public.visibility, 'public'),
       coalesce((payload ->> 'no_source')::boolean, false),
       nullif(payload ->> 'revision_of', '')::uuid,
@@ -211,6 +229,7 @@ begin
       if v_url is not null then
         select id into v_sid from public.sources
         where public.normalize_url(url) = public.normalize_url(v_url)
+        order by created_at, id
         limit 1;
       end if;
       if v_sid is null then
@@ -413,14 +432,13 @@ $$;
 
 -- ── Grants: authenticated only, no PUBLIC default ───────────────────────────
 
-revoke all on function public.normalize_url(text) from public, anon;
-revoke all on function public.ensure_app_user() from public, anon;
+revoke all on function public.normalize_url(text) from public, anon, authenticated;
+revoke all on function public.ensure_app_user() from public, anon, authenticated;
 revoke all on function public.upsert_fact(jsonb) from public, anon;
 revoke all on function public.submit_fact(uuid) from public, anon;
 revoke all on function public.upsert_stance(jsonb) from public, anon;
 revoke all on function public.merge_source(uuid, uuid) from public, anon;
 
-grant execute on function public.normalize_url(text) to authenticated;
 grant execute on function public.upsert_fact(jsonb) to authenticated;
 grant execute on function public.submit_fact(uuid) to authenticated;
 grant execute on function public.upsert_stance(jsonb) to authenticated;
@@ -432,3 +450,5 @@ comment on function public.submit_fact(uuid) is
   'T-007: publish with source-or-no_source, supersede the old revision, one audit row (R1 collapses in_review)';
 comment on function public.merge_source(uuid, uuid) is
   'T-007: destructive source dedupe, equal normalized URLs only, re-links fact_sources';
+
+commit;

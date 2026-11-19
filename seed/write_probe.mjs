@@ -3,13 +3,13 @@
 //   make write-probe
 //
 // Proves through PostgREST, the same path the SPA uses:
-//   * anon cannot call any write RPC (401/403 or hidden as 404);
-//   * an authenticated NON-editor cannot write either, and the write leaves no
-//     rows behind (a silent no-op must never read as a pass, security.md Rules);
-//   * the editor can create a fact with a nested source, is refused when a
-//     publish has neither source nor no_source, publishes with one audit row
-//     (actor id + email, old→new), and the new fact is visible in org_detail
-//     read back with the editor JWT (FR-008);
+//   * anon cannot call any write RPC, and the refusal leaves row counts unchanged;
+//   * an authenticated NON-editor cannot write either, again with row counts;
+//   * the editor can create a fact with a nested source, dedupe a second variant
+//     of the same URL, is refused for a dangling id / missing precision / amount
+//     outside controlled_by (and nothing leaks), publishes only with a source or
+//     no_source, writes exactly one audit row (actor id + email, old→new), and the
+//     published fact is visible in org_detail read back with the editor JWT;
 //   * duplicate sources merge only when normalized URLs are equal; the negative
 //     case leaves both rows in place.
 //
@@ -18,8 +18,8 @@
 // SUPABASE_READONLY_EMAIL/PASSWORD (authenticated, not editor). Without the
 // accounts the probe SKIPS loudly and exits 0 instead of claiming a pass.
 //
-// Fact rows are cleaned up afterwards; audit_log rows stay (append-only by
-// design, 0001_init.sql audit_log_no_update).
+// Fact/source rows are cleaned up afterwards; audit_log rows stay (append-only
+// by design, 0001_init.sql audit_log_no_update).
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -65,6 +65,7 @@ function fail(msg) {
 function ok(msg) {
   console.log(`  ok  ${msg}`);
 }
+const svcHeaders = { apikey: service, Authorization: `Bearer ${service}`, "Content-Type": "application/json" };
 
 async function call(key, path, { method = "GET", body, token, headers = {} } = {}) {
   const h = { apikey: key, "Content-Type": "application/json", ...headers };
@@ -106,24 +107,56 @@ async function signIn(email, password) {
 const svc = (path, opts = {}) => call(service, path, { ...opts, token: service });
 const denied = (r) => [401, 403, 404].includes(r.status) || r.json?.code === "42501";
 
+// exact count via Content-Range, not by counting a capped array
 async function countFacts() {
-  const res = await svc("facts?select=id", { headers: { Prefer: "count=exact" } });
-  return Array.isArray(res.json) ? res.json.length : -1;
+  const res = await fetch(`${url}/rest/v1/facts?select=id&limit=1`, {
+    headers: { ...svcHeaders, Prefer: "count=exact", Range: "0-0" },
+  });
+  const cr = res.headers.get("content-range") || "";
+  const n = Number(cr.split("/")[1]);
+  return Number.isFinite(n) ? n : -1;
+}
+
+// mirrors public.normalize_url (0006): trim, strip fragment, lower scheme+host,
+// drop :80/:443, no trailing slash on an empty path
+function normUrl(u) {
+  if (u == null) return null;
+  let v = u.trim().replace(/#.*$/, "");
+  const m = v.match(/^([Hh][Tt][Tt][Pp][Ss]?):\/\/([^/?]*)(.*)$/);
+  if (!m) return v;
+  let scheme = m[1].toLowerCase();
+  let authority = m[2].toLowerCase();
+  let rest = m[3];
+  if (scheme === "http") authority = authority.replace(/:80$/, "");
+  else authority = authority.replace(/:443$/, "");
+  if (rest === "/") rest = "";
+  return `${scheme}://${authority}${rest}`;
+}
+
+async function sourceCountFor(rawUrl) {
+  const res = await svc("sources?select=id,url");
+  if (!Array.isArray(res.json)) return -1;
+  const target = normUrl(rawUrl);
+  return res.json.filter((s) => normUrl(s.url) === target).length;
 }
 
 // ── 1. anon ────────────────────────────────────────────────────────────────
 {
+  const before = await countFacts();
   const res = await call(anon, "rpc/upsert_fact", {
     method: "POST",
     body: { payload: { subject_kind: "org", subject_id: randomUUID(), predicate_code: "related_to" } },
   });
   if (denied(res)) ok(`anon upsert_fact denied (HTTP ${res.status}${res.json?.code ? `, ${res.json.code}` : ""})`);
   else fail(`anon upsert_fact was NOT denied (HTTP ${res.status})`);
+  const after = await countFacts();
+  if (before >= 0 && after === before) ok(`facts count unchanged after anon denial (${before})`);
+  else fail(`facts count changed after anon denial (${before} → ${after})`);
 }
 
 // ── 2. authenticated non-editor ────────────────────────────────────────────
 const readonly = await signIn(readonlyEmail, readonlyPassword);
-const before = await countFacts();
+const beforeReadonly = await countFacts();
 {
   const res = await call(anon, "rpc/submit_fact", {
     method: "POST",
@@ -136,83 +169,119 @@ const before = await countFacts();
     fail(`readonly user submit_fact returned HTTP ${res.status}, expected 403/42501`);
   }
   const after = await countFacts();
-  if (before >= 0 && after === before) ok(`facts count unchanged after readonly denial (${before})`);
-  else fail(`facts count changed after readonly denial (${before} → ${after})`);
+  if (beforeReadonly >= 0 && after === beforeReadonly) ok(`facts count unchanged after readonly denial (${beforeReadonly})`);
+  else fail(`facts count changed after readonly denial (${beforeReadonly} → ${after})`);
 }
 {
   const res = await call(anon, "rpc/upsert_fact", {
     method: "POST",
     token: readonly.token,
-    body: {
-      payload: { subject_kind: "org", subject_id: randomUUID(), predicate_code: "related_to" },
-    },
+    body: { payload: { subject_kind: "org", subject_id: randomUUID(), predicate_code: "related_to" } },
   });
   if (res.status === 403 || res.json?.code === "42501") ok("readonly user upsert_fact denied (42501)");
   else fail(`readonly user upsert_fact returned HTTP ${res.status}, expected 403/42501`);
 }
 
-// ── 3. editor: create + source + publish + audit ──────────────────────────
+// ── 3. editor: create + nested source + URL dedupe ────────────────────────
 const editor = await signIn(editorEmail, editorPassword);
-const orgRes = await svc("orgs?select=id,name&order=name.asc&limit=1");
-if (!Array.isArray(orgRes.json) || !orgRes.json.length) {
-  console.error("FAIL: no orgs in the database; run make seed first");
+const orgsRes = await svc("orgs?select=id,name&visibility=eq.public&order=name.asc&limit=2");
+const orgs = Array.isArray(orgsRes.json) ? orgsRes.json : [];
+if (orgs.length < 2) {
+  console.error("FAIL: need at least two public orgs; run make seed first");
   process.exit(1);
 }
-const org = orgRes.json[0];
-const fact1 = randomUUID(); // client id is not accepted; facts get uuidv7 from the DB
-void fact1;
+const [subject, object] = orgs;
 
 const PROBE_URL = "https://Example.com:443/write-probe#frag";
+const PROBE_URL_VARIANT = " HTTPS://EXAMPLE.COM:443/write-probe#other ";
+
+const payload = {
+  subject_kind: "org",
+  subject_id: subject.id,
+  predicate_code: "related_to",
+  object_kind: "org",
+  object_id: object.id,
+  attrs: { probe: "t-007" },
+  sources: [
+    { url: PROBE_URL, title: "T-007 write probe", kind: "article", locator: "§probe" },
+  ],
+};
 const create = await call(anon, "rpc/upsert_fact", {
   method: "POST",
   token: editor.token,
-  body: {
-    payload: {
-      subject_kind: "org",
-      subject_id: org.id,
-      predicate_code: "related_to",
-      attrs: { probe: "t-007" },
-      sources: [
-        {
-          url: PROBE_URL,
-          title: "T-007 write probe",
-          kind: "article",
-          locator: "§probe",
-        },
-      ],
-    },
-  },
+  body: { payload },
 });
 if (create.status !== 200 || typeof create.json !== "string") {
   console.error(`FAIL: editor upsert_fact failed (HTTP ${create.status}): ${create.text}`);
   process.exit(1);
 }
 const newFact = create.json;
-ok(`editor created draft fact ${newFact} on ${org.name}`);
+ok(`editor created draft fact ${newFact} on ${subject.name}`);
 
+// second variant of the same URL must reuse the source row (dedupe by normalized URL)
 {
-  const src = await svc(`sources?select=id,url&url=eq.${encodeURIComponent(PROBE_URL)}`);
-  if (!Array.isArray(src.json) || src.json.length !== 1) fail("nested source was not written");
-  else ok(`nested source stored with original URL ${src.json[0].url}`);
-  const norm = await svc(
-    `sources?select=id&url=eq.${encodeURIComponent("https://example.com/write-probe")}`,
-  );
-  if (!Array.isArray(norm.json) || norm.json.length !== 1) {
-    fail("source dedupe key is not the normalized URL");
-  } else ok("normalized URL equals https://example.com/write-probe");
+  const res = await call(anon, "rpc/upsert_fact", {
+    method: "POST",
+    token: editor.token,
+    body: { payload: { ...payload, id: newFact, sources: [{ url: PROBE_URL_VARIANT }] } },
+  });
+  if (res.json === newFact) ok("variant URL updated the same draft (in-place)");
+  else fail(`variant URL call returned ${JSON.stringify(res.json)}, expected ${newFact}`);
+  const count = await sourceCountFor(PROBE_URL);
+  if (count === 1) ok("normalized-URL dedupe keeps exactly one source row");
+  else fail(`dedupe left ${count} source rows for the same normalized URL (expected 1)`);
   const link = await svc(`fact_sources?select=source_id&fact_id=eq.${newFact}`);
-  if (!Array.isArray(link.json) || link.json.length !== 1) fail("fact_sources link missing");
-  else ok("fact_sources link written in the same transaction");
+  if (Array.isArray(link.json) && link.json.length === 1) ok("fact_sources link written in the same transaction");
+  else fail(`fact_sources rows = ${link.json?.length}`);
 }
 
-// 3b. publish without a source must be refused and write nothing
+// ── 3b. refusals: dangling id named, missing precision, bad amount ────────
+{
+  const dangling = randomUUID();
+  const res = await call(anon, "rpc/upsert_fact", {
+    method: "POST",
+    token: editor.token,
+    body: { payload: { ...payload, subject_id: dangling, sources: [] } },
+  });
+  const named = typeof res.json?.message === "string" && res.json.message.includes(dangling);
+  if (res.json?.code === "23503" && named) ok("dangling subject id rejected and named (23503)");
+  else fail(`dangling id not named: HTTP ${res.status} ${res.text}`);
+}
+{
+  const res = await call(anon, "rpc/upsert_fact", {
+    method: "POST",
+    token: editor.token,
+    body: { payload: { ...payload, start_date: "2020-05-01", sources: [] } },
+  });
+  if (res.status === 400 || res.json?.code === "23514") ok("date without precision rejected (23514)");
+  else fail(`date/precision pairing not enforced: HTTP ${res.status} ${res.text}`);
+}
+{
+  const unique = `https://example.com/rollback-${randomUUID()}`;
+  const res = await call(anon, "rpc/upsert_fact", {
+    method: "POST",
+    token: editor.token,
+    body: {
+      payload: {
+        ...payload,
+        amount: 51,
+        sources: [{ url: unique, title: "rollback probe" }],
+      },
+    },
+  });
+  if (res.status === 400 || res.json?.code === "23514") ok("amount outside controlled_by rejected (23514)");
+  else fail(`amount scope not enforced: HTTP ${res.status} ${res.text}`);
+  const leaked = await sourceCountFor(unique);
+  if (leaked === 0) ok("no source row leaked from the failed insert (TH-02)");
+  else fail(`failed insert still wrote ${leaked} source row(s)`);
+}
+
+// 3c. publish without a source must be refused and write nothing
 {
   const bare = await call(anon, "rpc/upsert_fact", {
     method: "POST",
     token: editor.token,
-    body: {
-      payload: { subject_kind: "org", subject_id: org.id, predicate_code: "related_to" },
-    },
+    body: { payload: { ...payload, sources: [] } },
   });
   if (bare.status !== 200) {
     fail(`editor upsert_fact (no source) failed: ${bare.text}`);
@@ -235,7 +304,7 @@ ok(`editor created draft fact ${newFact} on ${org.name}`);
   }
 }
 
-// 3c. submit
+// 3d. submit
 {
   const res = await call(anon, "rpc/submit_fact", {
     method: "POST",
@@ -254,7 +323,9 @@ ok(`editor created draft fact ${newFact} on ${org.name}`);
   const audit = await svc(
     `audit_log?select=actor_id,actor_email,action,summary&entity=eq.fact&entity_id=eq.${newFact}`,
   );
-  const a = Array.isArray(audit.json) ? audit.json[0] : null;
+  const rows = Array.isArray(audit.json) ? audit.json : [];
+  const a = rows[0];
+  if (rows.length !== 1) fail(`expected exactly 1 audit row, got ${rows.length}`);
   if (!a) fail("no audit_log row for the fact");
   else {
     if (a.actor_id === editor.uid) ok("audit actor_id is the editor uid");
@@ -267,9 +338,9 @@ ok(`editor created draft fact ${newFact} on ${org.name}`);
   }
 }
 
-// 3d. FR-008: the published fact is visible in org_detail read as the editor
+// 3e. FR-008: the published fact is visible in org_detail read as the editor
 {
-  const res = await call(anon, `org_detail?select=id,facts&id=eq.${org.id}`, {
+  const res = await call(anon, `org_detail?select=id,facts&id=eq.${subject.id}`, {
     token: editor.token,
   });
   const facts = Array.isArray(res.json) ? (res.json[0]?.facts ?? []) : [];
@@ -291,7 +362,7 @@ ok(`editor created draft fact ${newFact} on ${org.name}`);
     const res = await call(anon, "rpc/upsert_stance", {
       method: "POST",
       token: editor.token,
-      body: { payload: { party_org_id: org.id, axis_code: ax.code, value } },
+      body: { payload: { party_org_id: subject.id, axis_code: ax.code, value } },
     });
     if (res.status === 200) {
       ok(`editor upsert_stance on ${ax.code}`);
@@ -302,7 +373,7 @@ ok(`editor created draft fact ${newFact} on ${org.name}`);
     const deny = await call(anon, "rpc/upsert_stance", {
       method: "POST",
       token: readonly.token,
-      body: { payload: { party_org_id: org.id, axis_code: ax.code, value } },
+      body: { payload: { party_org_id: subject.id, axis_code: ax.code, value } },
     });
     if (deny.status === 403 || deny.json?.code === "42501") ok("readonly user upsert_stance denied");
     else fail(`readonly upsert_stance returned HTTP ${deny.status}, expected 403`);
@@ -356,8 +427,9 @@ async function insertSource(u) {
   await svc(`sources?id=in.(${a.id},${b.id})`, { method: "DELETE" });
 }
 
-// ── cleanup: facts + fact_sources (audit rows stay by design) ────────────
+// ── cleanup: facts + sources (audit rows stay by design) ──────────────────
 await svc(`facts?id=eq.${newFact}`, { method: "DELETE" });
+await svc(`sources?url=eq.${encodeURIComponent(PROBE_URL)}`, { method: "DELETE" });
 console.log("  note: audit_log rows from this probe are kept (append-only by design)");
 
 if (failures.length) {
