@@ -86,7 +86,7 @@ if (!anon) {
   for (const view of ["org_detail", "tree_edges", "tree_nodes"]) {
     let anonStatus = 0;
     try {
-      const res = await fetch(`${url}/rest/v1/${view}?select=id&limit=1`, {
+      const res = await fetch(`${url}/rest/v1/${view}?limit=1`, {
         headers: { apikey: anon, authorization: `Bearer ${anon}` },
       });
       anonStatus = res.status;
@@ -98,6 +98,34 @@ if (!anon) {
       process.exit(1);
     }
     console.log(`  anon ${view} access: ${anonStatus} (denied, as required)`);
+  }
+}
+// The app reads the views as `authenticated`, not as service_role. That path
+// is the standing drift detector until CLI `db diff` lands (CR-006 Phase 2).
+const editorEmail = env.SUPABASE_EDITOR_EMAIL;
+const editorPassword = env.SUPABASE_EDITOR_PASSWORD;
+if (!editorEmail || !editorPassword) {
+  console.log("  authenticated views: SKIPPED (set SUPABASE_EDITOR_EMAIL/PASSWORD to cover the app role)");
+} else {
+  const tokenRes = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { apikey: anon, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: editorEmail, password: editorPassword }),
+  });
+  if (!tokenRes.ok) {
+    console.error(`FAIL: editor sign-in failed (${tokenRes.status}); set the editor password in .env`);
+    process.exit(1);
+  }
+  const { access_token: token } = await tokenRes.json();
+  for (const view of ["tree_nodes", "tree_edges", "org_detail"]) {
+    const res = await fetch(`${url}/rest/v1/${view}?limit=1`, {
+      headers: { apikey: anon, authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+      console.error(`FAIL: authenticated read ${view} returned ${res.status} (${await res.text()})`);
+      process.exit(1);
+    }
+    console.log(`  authenticated ${view} access: 200`);
   }
 }
 const ids = new Set(nodes.map((n) => n.id));

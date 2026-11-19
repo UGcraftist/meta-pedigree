@@ -95,7 +95,7 @@ stateDiagram-v2
 | `0002_read_model` | T-004 | `tree_nodes`/`tree_edges`/`org_detail` 视图（PostgREST 不能执行递归 CTE） | 否，新增视图（已应用 2026-11-15） | SQL editor | `meta-pedigree-dev:0002_read_model` | — | 新建视图触发 Supabase default privileges：anon/authenticated 各得 ALL（未预期，0005 收紧） |
 | `0003_tree_direction` | T-004 | `split_from`/`controlled_by`/`merged_into` 的父子极性归一 | 否，视图重定义（已应用 2026-11-15） | SQL editor | `meta-pedigree-dev:0003_tree_direction` | — | drop/create 视图 → default privileges 再次给 anon/authenticated ALL；文件自身无 grant |
 | `0004_tree_nodes_dedup` | T-004 | 每个组织一行（min-depth 去重）+ 恢复 grants | 否，视图重定义（已应用 2026-11-15） | SQL editor | `meta-pedigree-dev:0004_tree_nodes_dedup` | — | `grant select on tree_nodes to authenticated`（只补了 tree_nodes） |
-| `0005_org_detail_subject` | T-006 fix | `org_detail` 增 subject 侧（按可见性过滤），供抽屉渲染完整三元组 | 否，视图重定义（计划） | SQL editor | `meta-pedigree-dev:0005_org_detail_subject`（待贴） | — | `revoke all` 三个视图 from anon；authenticated 改为 SELECT-only |
+| `0005_org_detail_subject` | T-006 fix | `org_detail` 增 subject 侧（按可见性过滤），供抽屉渲染完整三元组 | 否，视图重定义（已应用 2026-11-19） | SQL editor | `meta-pedigree-dev:0005_org_detail_subject`（已贴） | — | `revoke all` 三个视图 from anon；authenticated 改为 SELECT-only；`views-probe` 三视图 anon 均 401 |
 | `0006_write_rpc` | T-007 | `submit_fact`/`upsert_stance`/`merge_source` | 否，新增函数（计划） | SQL editor | 待贴 | — | 每个函数 `revoke execute from public, anon` + `grant execute to authenticated`，`set search_path` |
 | `0007_search` | T-013 | `pg_trgm` + `search_orgs` + 检索索引 | 否，新增函数/索引（计划） | SQL editor | 待贴 | — | 同上（函数 execute 默认对 PUBLIC） |
 

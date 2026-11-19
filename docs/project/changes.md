@@ -61,6 +61,7 @@
 - docs/project/plan.md — T-002/T-004/T-007/T-014/T-018/T-019 rescoped; missing T-007…T-009 rows added
 - 2026-11-15: **CR-004 resolved** — remote `UGcraftist/meta-pedigree` provided and pushed; PR step restored (branch review kept for the round already running). T-022 unblocked.
 - 2026-11-15: **DR-0007 accepted by UGcraftist** — committed OpenAPI retired; `api.md` is the single contract source, PostgREST generates the document at runtime; openapi.yaml removed, structure.yml rendered.
+- 2026-11-19: **0005 applied, views-probe green** — `0005_org_detail_subject` pasted to `meta-pedigree-dev`; probe: tree_nodes 24 / tree_edges 5 / org_detail 24, Boston Dynamics `controlled_by` ends resolved, `founded` object null, anon 401 on all three views. Probe hardening: anon check queries `?limit=1` (tree_edges has no `id` column), optional authenticated sign-in via `SUPABASE_EDITOR_EMAIL/PASSWORD`, authenticated read asserted for all three views when creds are present.
 - 2026-11-15: **CR-005 decided** — UGcraftist accepted the corrected T-005 AC; the shade is not built (the AC change is in the plan already).
 - 2026-11-15: **CR-006 raised** — DR-0006 trigger #2 fired (0002/0003/0004 applied same day, 0005 next); migration route awaits UGcraftist.
 - 2026-11-15: **CR-004 raised** — no git remote → step 8 PR review substituted by fresh-reviewer branch review; notes stored as `docs(review):` commits on the branch; T-022 (CI) stays blocked until a remote exists. Awaiting UGcraftist.
