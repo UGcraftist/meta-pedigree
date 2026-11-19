@@ -43,6 +43,7 @@ R1 角色是 Supabase Auth 用户元数据：`app_metadata.role = 'editor'`。An
 |---|---|---|
 | anon | 无（R1） | — |
 | editor | 读种子/事实/审计；经 RPC 建、改、提交、发布 | UGcraftist |
+| authenticated（非 editor） | 只读被 RLS 拦成 0 行；写 RPC 一律 42501 | 测试账号（Supabase Auth，R1 由 UGcraftist 建） |
 | admin (Supabase owner) | 邀请用户、设 `app_metadata.role`、跑迁移 | UGcraftist（单一持有人 —— 见风险 R-001） |
 
 gate 检查要求每个管理角色两名具名持有人；R1 只有一人，**记为已知例外**（UGcraftist 2026-11-14 接受）：R2 前补第二持有人
@@ -54,9 +55,11 @@ gate 检查要求每个管理角色两名具名持有人；R1 只有一人，**�
 |---|---|---|---|
 | `VITE_SUPABASE_ANON_KEY` | web | UGcraftist | `web/.env.local` / Pages 环境变量；**可公开**，安全靠 RLS |
 | `SUPABASE_SERVICE_ROLE_KEY` | 种子导入、`make probe` | UGcraftist | 本机 `.env`；**绝不进前端、CI、仓库**；绕过 RLS 读写暴露表，但**不能 DDL、不触达 auth schema**；控制台可单独 rotate |
+| `SUPABASE_EDITOR_EMAIL` / `SUPABASE_EDITOR_PASSWORD` | `make views-probe` / `make write-probe` 的 authenticated 读写 | UGcraftist | 本机 `.env`；账号在 Supabase Auth（`app_metadata.role='editor'`），密码不进仓库 |
+| `SUPABASE_READONLY_EMAIL` / `SUPABASE_READONLY_PASSWORD` | `make write-probe` 的非 editor 拒写断言 | UGcraftist | 本机 `.env`；Supabase Auth 另建一个普通 authenticated 账号 |
+| `GEMINI_API_KEY`（可选，仅设计稿） | 图像生成 | UGcraftist | 用户本机配置，不进仓库 |
 
 迁移不经网络直连：`supabase/migrations/*.sql` 由人在控制台 SQL 编辑器粘贴（DR-0006），故无 `DATABASE_URL`。
-| `GEMINI_API_KEY`（可选，仅设计稿） | 图像生成 | UGcraftist | 用户本机配置，不进仓库 |
 
 ## Rules
 
@@ -64,7 +67,7 @@ gate 检查要求每个管理角色两名具名持有人；R1 只有一人，**�
 - 所有输入按 UTF-8 文本转义；前端不用 `dangerouslySetInnerHTML`。
 - 依赖锁定 + `pnpm audit` 进 CI；R1 不引入运行时远程脚本。
 - 日志不写 token、不写完整 URL 查询串。
-- `anon` 的表权限已整体收回，故 anon 请求直接 401/403；若未来只靠策略过滤，UPDATE/DELETE 会返回 **200 + 0 行**（不是报错），`make probe` 两种都按拒绝处理，防止把静默无操作误判为放行。
+- `anon` 的表权限已整体收回，故 anon 请求直接 401/403；若未来只靠策略过滤，UPDATE/DELETE 会返回 **200 + 0 行**（不是报错），`make probe` 两种都按拒绝处理，防止把静默无操作误判为放行。RPC 探针同理：**403/42501 或 404 都算拒绝**（没有 EXECUTE 权限时 PostgREST 可能两者之一），且每次拒绝后都要断言相关表行数未变。
 
 ## Accepted risks
 

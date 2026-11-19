@@ -26,6 +26,13 @@ SQL 表名用复数（PostgREST 约定）：`orgs`、`persons`、`facts`、`sour
 | audit_log | id, actor_id, entity, entity_id, action, summary, at | api/audit | private | 2 年 | US-021, NFR |
 | app_user | id (= auth.users.id), email, display_name；**role 在 Auth JWT `app_metadata.role`**（DR-0005），表里不重复存 | Supabase Auth | private | 在职期间 | security.md |
 
+关系类型的两端是注册表数据（US-024），`0006` 的写路径执行这条合同：
+
+- `subject_kinds` 为空 = **任意主体种类**；非空 = 主体种类必须在列内。
+- `object_kinds` 为空 = **该关系不允许 object**（`founded` 这类单端事实）；非空 = **必须带 object**，且种类在列内。
+
+改谓词只改注册表行，不改代码（FR-009）；新增谓词时按上面的语义填数组。
+
 ## ER
 
 ```mermaid
@@ -96,7 +103,7 @@ stateDiagram-v2
 | `0003_tree_direction` | T-004 | `split_from`/`controlled_by`/`merged_into` 的父子极性归一 | 否，视图重定义（已应用 2026-11-15） | SQL editor | `meta-pedigree-dev:0003_tree_direction` | — | drop/create 视图 → default privileges 再次给 anon/authenticated ALL；文件自身无 grant |
 | `0004_tree_nodes_dedup` | T-004 | 每个组织一行（min-depth 去重）+ 恢复 grants | 否，视图重定义（已应用 2026-11-15） | SQL editor | `meta-pedigree-dev:0004_tree_nodes_dedup` | — | `grant select on tree_nodes to authenticated`（只补了 tree_nodes） |
 | `0005_org_detail_subject` | T-006 fix | `org_detail` 增 subject 侧（按可见性过滤），供抽屉渲染完整三元组 | 否，视图重定义（已应用 2026-11-19） | SQL editor | `meta-pedigree-dev:0005_org_detail_subject`（已贴） | — | `revoke all` 三个视图 from anon；authenticated 改为 SELECT-only；`views-probe` 三视图 anon 均 401 |
-| `0006_write_rpc` | T-007 | `submit_fact`/`upsert_stance`/`merge_source` | 否，新增函数（计划） | SQL editor | 待贴 | — | 每个函数 `revoke execute from public, anon` + `grant execute to authenticated`，`set search_path` |
+| `0006_write_rpc` | T-007 | `normalize_url`、`ensure_app_user`（补 app_users 行，jwt email 入审计）、`upsert_fact`（内嵌 sources[] 同事务；校验注册表 is_active + subject/object kind 兼容；悬空 id 命名）、`submit_fact`（源或显式无源、旧修订 superseded、审计 old→new + actor id/email）、`upsert_stance`、`merge_source`（归一化 URL 相等才合并） | 否，新增函数（计划） | SQL editor | 待贴 | — | 除 `normalize_url`（immutable，仅 pinned `search_path`、无 EXECUTE 授权）外每个函数 `security definer` + `set search_path`；`revoke execute from public, anon`（helper 连 authenticated 也不给）+ 写 RPC `grant execute to authenticated`；无表级写策略 |
 | `0007_search` | T-013 | `pg_trgm` + `search_orgs` + 检索索引 | 否，新增函数/索引（计划） | SQL editor | 待贴 | — | 同上（函数 execute 默认对 PUBLIC） |
 
 **2026-11-15 漂移核查（CR-006）**：`role_table_grants` 显示 `anon` 对三个视图都有 SELECT 及写权限、
