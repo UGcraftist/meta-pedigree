@@ -134,10 +134,15 @@ function normUrl(u) {
 }
 
 async function sourceCountFor(rawUrl) {
-  const res = await svc("sources?select=id,url&limit=10000");
-  if (!Array.isArray(res.json)) return -1;
+  // exact count via Content-Range; the stored URL is already normalized (0006)
   const target = normUrl(rawUrl);
-  return res.json.filter((s) => normUrl(s.url) === target).length;
+  const res = await fetch(
+    `${url}/rest/v1/sources?select=id&url=eq.${encodeURIComponent(target)}&limit=1`,
+    { headers: { ...svcHeaders, Prefer: "count=exact", Range: "0-0" } },
+  );
+  const cr = res.headers.get("content-range") || "";
+  const n = Number(cr.split("/")[1]);
+  return Number.isFinite(n) ? n : -1;
 }
 
 // ── 1. anon ────────────────────────────────────────────────────────────────
