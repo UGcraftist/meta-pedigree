@@ -127,7 +127,7 @@ export function parseUrlState(search: string): ParsedUrlState {
       if (view !== 'tree') {
         notices.push({
           key: 'view',
-          text: `view=${view} 属 ${view === 'timeline' ? 'T-011' : 'T-012'}，当前仍显示树视图（参数已保留）。`,
+          text: `view=${view} 属 T-011（FR-025 的视图切换），当前仍显示树视图（参数已保留）。`,
         });
       }
     }
@@ -241,20 +241,15 @@ export function createUrlStateController(port: HistoryPort): UrlStateController 
     start,
     stop,
     set(next) {
-      const prev = current.state;
       const normalized = parseUrlState(serializeUrlState(next)).state;
-      const keep = current.notices.filter((notice) => {
-        if (notice.key === 'view') return normalized.view === prev.view;
-        if (notice.key === 't') return normalized.time === prev.time;
-        if (notice.key === 'f') return normalized.filters === prev.filters;
-        if (notice.key === 'compare') return normalized.compare.join() === prev.compare.join();
-        return false; // unknown/focus notices describe the URL that was just replaced
-      });
       const canonical = serializeUrlState(normalized);
       const location = port.readLocation();
       const target = `${location.pathname}${canonical}${location.hash}`;
       const actual = `${location.pathname}${port.readSearch()}${location.hash}`;
-      current = { state: normalized, drops: [], notices: keep };
+      // Rebuild state/notices from the string actually written: a preserved
+      // t/f/view notice is regenerated, and an "ignored" notice for a value the
+      // write dropped cannot outlive its parameter.
+      current = parseUrlState(canonical);
       if (target !== actual) port.write(target);
       emit();
     },

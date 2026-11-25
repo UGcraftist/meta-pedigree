@@ -34,6 +34,8 @@ function fakePort(initialSearch = '') {
     search = queryAt === -1 ? '' : pathAndQuery.slice(queryAt);
   };
 
+  let subscribes = 0;
+  let unsubscribes = 0;
   const port: HistoryPort = {
     readSearch: () => search,
     readLocation: () => location,
@@ -42,8 +44,10 @@ function fakePort(initialSearch = '') {
       applyWrite(url);
     },
     subscribe: (onChange) => {
+      subscribes += 1;
       listener = onChange;
       return () => {
+        unsubscribes += 1;
         listener = null;
       };
     },
@@ -53,6 +57,7 @@ function fakePort(initialSearch = '') {
     port,
     writes,
     location,
+    counts: () => ({ subscribes, unsubscribes }),
     setSearch: (next: string) => {
       search = next;
       listener?.();
@@ -92,7 +97,7 @@ describe('parseUrlState', () => {
     const network = parseUrlState('?view=network');
     expect(network.state.view).toBe('network');
     expect(network.drops).toEqual([]);
-    expect(network.notices.map((n) => n.text).join(' ')).toContain('T-012');
+    expect(network.notices.map((n) => n.text).join(' ')).toContain('T-011');
   });
 
   it('drops an unparseable value naming key and raw text', () => {
@@ -211,16 +216,43 @@ describe('createUrlStateController', () => {
   });
 
   it('re-arms the port after dispose/start (StrictMode remount)', () => {
-    const { port, setSearch } = fakePort('');
+    const { port, setSearch, counts } = fakePort('');
     const controller = createUrlStateController(port);
     controller.start();
+    expect(counts()).toEqual({ subscribes: 1, unsubscribes: 0 });
     controller.dispose();
+    expect(counts()).toEqual({ subscribes: 1, unsubscribes: 1 });
     controller.start();
+    expect(counts()).toEqual({ subscribes: 2, unsubscribes: 1 });
+
     const seen: string[] = [];
     controller.subscribe(() => seen.push(controller.get().state.focus ?? 'none'));
-
     setSearch(`?focus=${ID}`);
     expect(seen).toEqual([ID]);
+    controller.dispose();
+    expect(counts().unsubscribes).toBe(2);
+  });
+
+  it('stop() really unsubscribes: a later popstate is not seen', () => {
+    const { port, setSearch, counts } = fakePort('');
+    const controller = createUrlStateController(port);
+    controller.start();
+    controller.stop();
+    expect(counts().unsubscribes).toBe(1);
+    const seen: string[] = [];
+    controller.subscribe(() => seen.push(controller.get().state.focus ?? 'none'));
+    setSearch(`?focus=${ID}`);
+    expect(seen).toEqual([]);
+    controller.dispose();
+  });
+
+  it('drops an ignored-value notice once the write removed the parameter', () => {
+    const { port } = fakePort('?view=map');
+    const controller = createUrlStateController(port);
+    expect(controller.get().notices).toHaveLength(1);
+    controller.set(state({ focus: ID }));
+    expect(controller.get().notices).toEqual([]);
+    expect(controller.get().state.view).toBe('tree');
     controller.dispose();
   });
 
