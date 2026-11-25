@@ -104,8 +104,11 @@ The address bar carries the whole picture, so a link can be pasted into an artic
 reopen the same view:
 
 ```
-/?view=tree&focus=<对象-uuid>&t=2015-2024&f=region:eu,kind:startup&compare=<对象-uuid>
+/?focus=<对象-uuid>&t=2015-2024&f=region:eu,kind:startup&compare=<对象-uuid>
 ```
+
+`view=tree` is the default and is omitted from canonical links (`view` appears only for
+`timeline`/`network`); the order above is the one `serializeUrlState` writes.
 
 Carried: view (`tree|timeline|network`), focus object, time window, active filters, compare set
 (2–3 objects). Focus and compare values are object UUIDs; an unknown or stale reference is dropped

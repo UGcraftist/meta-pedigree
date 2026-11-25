@@ -1,14 +1,10 @@
 # Shared context
 ## Now  (rewrite this section each time; keep it under 30 lines)
-- Stage and skill step: stage 5 implementation, T-009 URL-state hook, branch `feat/T-009-url-state` off master `10ed82d`; work done, PR being opened for step-8 review.
-- Applied the advisor's five corrections: query string with **CR-009** (ux.md hash route retired, UUIDs, no human-readable ids, replaceState/history rule, view enum), `view=table` stays React state only, unbuilt `t`/`f`/`view=timeline|network` preserved byte-semantics with one neutral notice each, notices survive unrelated writes, unknown/unparseable values dropped with key+raw named, duplicate keys dropped as a whole, compare sanitised (blank/focus/dupe/cap 3), no manual decode (URLSearchParams only), hash preserved, copy link built from canonical state.
-- Port: `HistoryPort` (readSearch/readLocation/write/subscribe) + `createUrlStateController` are pure JS and unit-tested with a fake port: read, no-churn write, canonical order, popstate, link. Hook is a thin React binder. Mutation checks: first-wins duplicates, compare cap 5, link from raw search, always-write, drop hash — each failed the suite once.
-- Files: `web/src/lib/urlState.ts` (rewritten), `web/src/lib/useUrlState.ts` (new), `TreeScreen.tsx` (uses the hook, single notice banner), `DetailDrawer.tsx` (copies the canonical link passed in), `urlState.test.ts` (14 cases).
-- Docs: plan.md T-009 row/AC (NFR-005 → FR-023/FR-027), ux.md URL section corrected, CR-009 proposed (needs UGcraftist), implementation log carries the written browser check.
-- Evidence: `make check` green (34 vitest), browser check on vite :5173 (notices, canonical write, Esc+hash, unknown id, duplicates, compare cap, table toggle leaves URL alone).
-- Step-8 review (round 1): **change** — (1) the port subscription lived in the controller constructor, so React StrictMode mount→cleanup→mount killed it (reproduced in Chromium) and leaked one listener per mount; (2) plan T-009 decision column still DR-0001 (advisor correction missed) and CR-009 did not carry it; (3) the PR claimed a two-way door although it edits the gate-approved ux.md under an undecided CR-009. All three fixed: start()/stop() owned by the effect (unit test for dispose→start re-arm, live StrictMode popstate re-checked), plan column → DR-0002 + ux.md:115 (also in CR-009 item 5), PR body re-labelled one-way; plus nits (stated reason for the reversed order test, ux.md example order, browser-check bullet moved to the implementation log with the writeText/已复制 evidence, set() normalises, unknown-key notice typing, view=network test, compare-cap source, stale focusNotice).
-- CR-009: **decided 2026-11-25 (UGcraftist)**, all five items accepted.
-- Open questions: merge after the round-2 review returns agree; one-way door so the owner's approval is on record.
+- Stage and skill step: stage 5. T-009 **merged** via PR #7 (merge commit `a84e41b`); master now has the URL-state hook. Follow-up branch `fix/T-009-url-notices` carries the round-2 non-blocking nits.
+- Current task: close the round-2 review nits — (1) `set()` rebuilt from the canonical string so an "ignored" notice cannot outlive a dropped parameter (and `drops`/`notices` now agree); (2) the fake port counts subscribe/unsubscribe and two tests fail if `stop()`/`dispose()` leak (a no-op `stop()` mutation now fails 2 tests); (3) `view=network` notice points at T-011 (FR-025 owner); (4) docs: ux.md example is canonical (default `view=tree` omitted, with a note), CR-009/plan cite "ux.md § URL state" instead of the moved `:115`, `changes.md` wording fixed.
+- Next task after this branch: **T-010** (S-02 full detail: facts/sources/locator/as-of, citation copy, `无来源`, conflicts side by side, person roles over time) — its plan needs an advisor call before implementation.
+- Evidence: 38 vitest green (`urlState.test.ts` 19), tsc/lint clean; mutation no-op `stop()` → 2 failures; earlier live StrictMode popstate check stands.
+- Open questions: (1) merge of the small `fix/T-009-url-notices` PR (user approval); (2) T-010 plan review.
 
 ## Journal  (append one line per step, newest last; never edit old lines)
 - 2026-11-15 stage 5 step 8: proposed proceeding to T-007 while T-006 was self-reviewed only → advisor: not asked
@@ -20,3 +16,6 @@
 - 2026-11-25 T-009 plan → advisor: **change** (CR-009 for the ux.md hash route; t/f/view notices not silent; injected HistoryPort so read→subscribe→write is testable; view=table not a URL view; copy from canonical state, keep hash, getAll for duplicates, no manual decode, compare sanitise) → all applied; PR opened
 - 2026-11-25 T-009 review round 1 → reviewer: **change** (StrictMode port subscription, plan decision column, door label) → all fixed with tests + live re-check; round-2 review requested
 - 2026-11-25 CR-009 decided by UGcraftist (all five items); T-009 PR waits only on the round-2 review
+- 2026-11-25 T-009 review round 2 → reviewer: **agree** (no blocking; nits: stale notices after write, port test cannot catch a leaking stop(), network notice T-011, docs citations) → nit-fix branch opened
+- 2026-11-25 T-009 merged via PR #7 (merge commit a84e41b); STATE updated on master (1776c54)
+
