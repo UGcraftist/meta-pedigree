@@ -1,7 +1,7 @@
 # Project state: Meta Pedigree
 
-Current stage: 5 implementation — T-001–T-008 all merged into master 2026-11-19 (PR #1–#6); next T-009 (shared URL-state hook)
-Last updated: 2026-11-19 by UGcraftist (PR #5–#6 merged; T-007/T-008 done)
+Current stage: 5 implementation — T-001–T-009 all merged into master (PR #1–#7); next T-010 (S-02 full detail) / T-011 (S-03 timeline)
+Last updated: 2026-11-25 by UGcraftist (PR #7 merged; T-009 done)
 
 ## Gates
 | Stage | Status | Approved by | Date | Artifact |
@@ -25,7 +25,8 @@ Last updated: 2026-11-19 by UGcraftist (PR #5–#6 merged; T-007/T-008 done)
 - **Review debt (open)**: T-004/T-005/T-006 were never independently reviewed before round 1. Round 2: `changes requested` on `e526e11` → fixes on `9b4a969` → **reviewer approve** 2026-11-15 (S1–S6 non-blocking, applied). S-01/S-02 scope; S-03 is T-011, not built. **0005 applied 2026-11-19; `make views-probe` green** (24/5/24, BD `controlled_by` ends, founded object null, anon 401 on all three views). Person approval of PR #4 given; all four PRs merged 2026-11-19.
 - T-007 **merged** (PR #5, 2026-11-19): `0006_write_rpc` — `upsert_fact` (embedded `sources[]` in one transaction, registry/date/amount validation, dangling id named), `submit_fact` (source-or-explicit-none, old revision superseded, one `audit_log` row, TH-02 rollback), `upsert_stance`, `merge_source` (normalized-URL equality), `ensure_app_user`; SECURITY DEFINER + pinned `search_path`, execute only to `authenticated`. Applied to dev; `make write-probe` **33/33 green** (anon+readonly denied with row counts unchanged, editor write→publish→audit, rollback, FR-008 read-back).
 - T-008 **merged** (PR #6, 2026-11-19): quality gate is real — `make check` = structure + pytest + ESLint + `tsc -b` + vitest, credential-free (`make setup` = `.venv` + `npm ci`); ESLint 9 flat + Prettier config in `web/`; strengthened layout test + new `treeData` tests (mutation-verified); `views-probe` now asserts live response shapes (DR-0007:48). **CR-008 decided** (timeline-scale test → T-011 AC; RPC negatives/rollback stay in `write-probe` with the CI gap recorded; `Depends on` fixed). Fresh review: **agree, no blocking, two-way door**. Open follow-ups: repo-wide Prettier pass + `format:check` gate; dependency advisories in the pre-existing vitest 2.1.9 subtree.
-- Next action: **T-009** — shared URL-state hook (view/focus/t/filters/compare in the address bar, unknown id degrades gracefully), branch off `master`.
+- T-009 **merged** (PR #7, 2026-11-25, merge commit `a84e41b`): shared URL-state hook — canonical query string (view/focus/t/f/compare, fixed order, defaults omitted, hash kept), unknown/unparseable values dropped naming key+raw, unbuilt `t`/`f`/`view=timeline|network` preserved with a notice, compare sanitised, `HistoryPort`-injected controller (read → popstate → `replaceState` only when canonical changes) with a React binder that survives StrictMode. 36 vitest; real Chromium checks recorded in `changes.md`. **CR-009 decided** (ux.md URL section corrected: query string, UUIDs, no readable-id claim, replaceState rule); round-2 review **agree**, nits deferred.
+- Next action: **T-010** — S-02 full detail (facts/sources/locator/as-of, citation copy, `无来源`, conflicts side by side, person roles over time), branch off `master`. T-011 (timeline) follows T-010 in M2.
 - Supabase dev project: `https://gwjyptxnlhbzzzqbpwbg.supabase.co` (anon key in `web/.env.local`, gitignored). Prod project `uuujfqygazlmtmiyxnkc` exists but is not used until stage 7.
 
 ## Open questions (blocking the current gate)
