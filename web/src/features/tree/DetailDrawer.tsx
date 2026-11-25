@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ApiError, fetchOrgDetail } from '../../lib/api';
 import type { OrgDetailRow, OrgFactRow } from '../../lib/types';
-import { focusLink } from '../../lib/urlState';
 import { factView, type FactSegment } from './triple';
 import { formatDate, formatSpan, PRECISION_LABEL } from './format';
 import { PREDICATE_LABEL } from './layout';
@@ -19,6 +18,8 @@ const KIND_LABEL: Record<string, string> = {
 interface DetailDrawerProps {
   orgId: string;
   nameById: Map<string, string>;
+  /** Canonical share link for the current state, built by the URL-state controller. */
+  copyUrl: string;
   onClose: () => void;
   onFocus: (id: string) => void;
 }
@@ -104,7 +105,7 @@ function FactItem({
 }
 
 /** S-02 detail drawer (T-006): one org, its published facts and their sources. */
-export function DetailDrawer({ orgId, nameById, onClose, onFocus }: DetailDrawerProps) {
+export function DetailDrawer({ orgId, nameById, copyUrl, onClose, onFocus }: DetailDrawerProps) {
   const [detail, setDetail] = useState<OrgDetailRow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -134,7 +135,7 @@ export function DetailDrawer({ orgId, nameById, onClose, onFocus }: DetailDrawer
   const copy = async () => {
     setCopyState('idle');
     try {
-      await navigator.clipboard.writeText(focusLink(window.location, orgId));
+      await navigator.clipboard.writeText(copyUrl);
       setCopyState('done');
     } catch {
       setCopyState('failed');

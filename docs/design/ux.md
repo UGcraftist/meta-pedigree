@@ -104,15 +104,17 @@ The address bar carries the whole picture, so a link can be pasted into an artic
 reopen the same view:
 
 ```
-#/org/ORG-eu-012?view=tree&t=2015-2024&f=region:eu,kind:startup&compare=ORG-us-004
+/?view=tree&focus=<对象-uuid>&t=2015-2024&f=region:eu,kind:startup&compare=<对象-uuid>
 ```
 
-Carried: view (`tree|timeline|network`), focus object, time window, active filters, compare set.
-Stable human-readable IDs (FR-004); an unknown or stale reference is dropped with a banner, never
-guessed. This is exactly the string S-09 "复制链接" copies. Without URL state, sharing means the
-reader has to re-navigate by hand and sees a different picture — which breaks US-019.
+Carried: view (`tree|timeline|network`), focus object, time window, active filters, compare set
+(2–3 objects). Focus and compare values are object UUIDs; an unknown or stale reference is dropped
+with a banner, never guessed (FR-023 — FR-004 is about conflicting values, not ids). The string is
+canonical: fixed parameter order (view, focus, t, f, compare), defaults omitted, and S-09 "复制链接"
+copies exactly it (FR-027). Without URL state, sharing means the reader has to re-navigate by hand
+and sees a different picture — which breaks US-019.
 
-**Decided 2026-11-14 (UGcraftist): carry state in the URL**, minimal set only (view, focus, time, filters, comparison) — every screen stays on one route, no per-screen routing. S-09 "复制链接" copies this exact string; unknown IDs in an old link are dropped with a one-line notice.
+**Decided 2026-11-14 (UGcraftist): carry state in the URL**, minimal set only (view, focus, time, filters, comparison) — every screen stays on one route, no per-screen routing. S-09 "复制链接" copies this exact string; unknown IDs in an old link are dropped with a one-line notice. **Corrected 2026-11-25 (CR-009):** the query string is the address-bar form (the earlier `#/org/ORG-eu-012?...` sketch is retired), values are object UUIDs, and writes use `replaceState` without adding history entries — the back-button view history is M2 (FR-024/T-012). `view` allows only `tree|timeline|network`; the table is the NFR-009 alternative rendering of the same view, not a fourth URL view.
 
 ## States checklist (Must screens)
 Every Must screen must cover: default · loading · empty · error · partial data · long content ·
