@@ -125,10 +125,10 @@ function FactBody({
                 {source.published_at && <span className="muted"> · 出版 {source.published_at.slice(0, 10)}</span>}
                 {source.accessed_at && <span className="muted"> · 访问 {source.accessed_at.slice(0, 10)}</span>}
                 {source.quote && <q className="quote">{source.quote}</q>}
+                <CitationButton source={source} />
               </li>
             ))}
           </ul>
-          <CitationButton source={fact.sources[0]} />
         </div>
       )}
     </div>
@@ -241,7 +241,7 @@ export function DetailDrawer({ orgId, nameById, copyUrl, onClose, onFocus }: Det
 
           <h3>事实与来源 <span className="muted">({detail.facts.length})</span></h3>
           {detail.facts.length === 0 ? (
-            <p className="muted">暂无已发布事实（可能未录入，或对当前账号不可见）。</p>
+            <p className="muted">暂无已发布或争议事实（可能未录入，或对当前账号不可见）。</p>
           ) : (
             <ul className="facts">
               {groupFacts(detail.facts).map((group) =>

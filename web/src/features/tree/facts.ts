@@ -42,7 +42,7 @@ export function groupFacts(facts: OrgFactRow[]): FactGroup[] {
 }
 
 /**
- * One-line citation (FR-002): author → title → locator → url, then the access
+ * One-line citation (FR-002): author → title → page → locator → url, then the access
  * date. Never empty parentheses, never a newline, and `quote` stays out
  * (NFR-008 excerpt only). `无来源` facts get no citation at all.
  */

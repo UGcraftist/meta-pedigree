@@ -103,7 +103,7 @@ are distinct; the drawer never presents one as the other. The `*_id` and `*_name
 (that map is tree-only and misses persons and gated orgs), though it may still label the drawer title.
 
 `facts_for(uuid)` is the single fact-shaping function both `org_detail` and the future person view
-call; it is exposed at `POST /rest/v1/rpc/facts_for` to `authenticated` only (documented here because
+call; it is exposed at `POST /rest/v1/rpc/facts_for` to `authenticated` and `service_role` only (documented here because
 it is reachable). **R1 known limitation:** `tree_edges` still filters `status='published'`, so a
 disputed relation appears in the detail drawer but not on the canvas; the provenance chip (ux.md)
 lands with T-011/T-012.

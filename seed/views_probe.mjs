@@ -124,14 +124,15 @@ if (founded.object_kind !== null || founded.object_id !== null) {
 // provenance fields must actually be populated — a shape check that only sees
 // nulls would pass on an empty fixture (log.md:27 "assertion that cannot fail").
 const bdFacts = bd?.facts ?? [];
+const EXPECTED_CONFLICT_ROWS = 3;
 const disputed = bdFacts.filter((f) => f.predicate === "founded" && f.status === "disputed");
-if (disputed.length !== 2) {
-  console.error(`FAIL: expected two disputed founded facts for Boston Dynamics, found ${disputed.length}`);
+if (disputed.length < 2) {
+  console.error(`FAIL: expected at least two disputed founded facts for Boston Dynamics, found ${disputed.length}`);
   process.exit(1);
 }
 const conflictGroup = bdFacts.filter((f) => f.predicate === "founded" && f.conflict_key === disputed[0].conflict_key);
-if (conflictGroup.length !== 3) {
-  console.error(`FAIL: conflict group for Boston Dynamics founded must have 3 rows (T-010's 3-row state), found ${conflictGroup.length}`);
+if (conflictGroup.length !== EXPECTED_CONFLICT_ROWS) {
+  console.error(`FAIL: conflict group for Boston Dynamics founded must have ${EXPECTED_CONFLICT_ROWS} rows, found ${conflictGroup.length}`);
   process.exit(1);
 }
 if (!conflictGroup.some((f) => f.status === "published") || disputed.some((d) => !conflictGroup.includes(d))) {
@@ -186,6 +187,23 @@ if (!anon) {
     }
     console.log(`  anon ${view} access: ${anonStatus} (denied, as required)`);
   }
+  // facts_for is exposed as an RPC; anon must be refused by the missing execute grant.
+  let rpcStatus = 0;
+  try {
+    const res = await fetch(`${url}/rest/v1/rpc/facts_for`, {
+      method: "POST",
+      headers: { apikey: anon, authorization: `Bearer ${anon}`, "content-type": "application/json" },
+      body: JSON.stringify({ p_object_id: "00000000-0000-0000-0000-000000000000" }),
+    });
+    rpcStatus = res.status;
+  } catch {
+    rpcStatus = -1;
+  }
+  if (rpcStatus !== 401 && rpcStatus !== 403) {
+    console.error(`FAIL: anon rpc/facts_for returned ${rpcStatus}, expected 401/403 (execute grant regression)`);
+    process.exit(1);
+  }
+  console.log(`  anon rpc/facts_for access: ${rpcStatus} (denied, as required)`);
 }
 // The app reads the views as `authenticated`, not as service_role. That path
 // is the standing drift detector until CLI `db diff` lands (CR-006 Phase 2).

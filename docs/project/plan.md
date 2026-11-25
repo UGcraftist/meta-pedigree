@@ -24,7 +24,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | T-007 | Write path: RPC `upsert_fact`（内嵌 `sources[]` 同事务写来源）、`submit_fact`（源或显式无源 → 旧修订 superseded → published → 一条 audit 记 old→new + actor）、`upsert_stance`、`merge_source`（归一化 URL 相等才合并）；`ensure_app_user` 保证审计 FK 可写；全部 `security definer` + pinned `search_path`，execute 只给 authenticated；migration `write_rpc`（编号见 data-model.md 台账）; 新增 `make write-probe` | M1 | none | FR-006,007,008,009,017 | data-model.md, TH-02 | DR-0003, DR-0005 | 1.0 | T-002 | done |
 | T-008 | Test ladder: lint（ESLint 9 flat，0 error；Prettier 已配置但未进 gate，待独立 `chore(format)` 提交后启用）+ typecheck（`tsc -b`，与 `npm run build` 共用）+ vitest（树布局/D3 布局/URL 状态/api 去重）+ pytest 种子校验；`make setup && make check` 从干净 checkout 通过且无需凭据；契约形状由 `views-probe` 对真实响应断言（DR-0007:48），RPC 负例与回滚在 `write-probe`（DR-0005:25）。**Deviations:** lint/typecheck 是 DR-0002:39 已有的要求、不需 CR；时间轴刻度测试移交 T-011（CR-008） | M1 | none | NFR-07 | — | DR-0002, DR-0005, DR-0007 | 0.5 | T-005, T-006 | done |
 | T-009 | Shared URL-state hook：`?view=&focus=&t=&f=&compare=` 走查询串（单路由，哈希不动）；纯解析/序列化 + 注入 `HistoryPort`，读 → 订阅（popstate）→ 写回（`replaceState`，串未变不写）可单测；未实现的 `t`/`f`/`view=timeline\|network` 原样保留并提示，无法解析的参数连键带原值丢弃；`view` 仅 tree\|timeline\|network（表格是同一视图的替代渲染，不进 URL） | M1 | none | FR-023, FR-027 | S-01 | DR-0002 + ux.md § URL state | 0.5 | T-005, T-006 | done |
-| T-010 | S-07 object detail (orgs): migration `detail_contract`（按台账编号）给 `org_detail` 增加 `status`/`conflict_key`/事实源的四字段 `author`/`page`/`published_at`/`accessed_at`，并把 fact JSON 抽到 `facts_for(uuid)` 供 T-024 复用；抽屉按 `conflict_key` 分组、disputed 并列（无主列、按 `start_date nulls last, id`）、一行式引文（author→title→url 的降级顺序）、`无来源` 无引文按钮、年份用纯函数 `precisionSpan` 显示区间；夹具（disputed 对、无源、作者/页码/访问日期）同 PR | M2 | none | FR-001,002,003,004,005 | S-07 | DR-0003, DR-0007 | 1.5 | T-006 | todo |
+| T-010 | S-07 object detail (orgs): migration `detail_contract`（按台账编号）给 `org_detail` 增加 `status`/`conflict_key`/事实源的四字段 `author`/`page`/`published_at`/`accessed_at`，并把 fact JSON 抽到 `facts_for(uuid)` 供 T-024 复用；抽屉按 `conflict_key` 分组、disputed 并列（无主列、按 `start_date nulls last, id`）、一行式引文（author · title · page · locator · url 的降级顺序）、`无来源` 无引文按钮、年份用纯函数 `precisionSpan` 显示区间；夹具（disputed 对、无源、作者/页码/访问日期）同 PR | M2 | none | FR-001,002,003,004,005 | S-07 | DR-0003, DR-0007 | 1.5 | T-006 | todo |
 | T-024 | S-07 person detail + role timeline: 人物详情屏，读取 `org_detail` 同源的 `facts_for`/`object_detail`（`kind='person'`），角色按时间排列、缺口可见（FR-017）；person fixture（1 人 2 段角色）同 PR。CR-010 从 T-010 移入 | M2 | none | FR-017 | S-07 | DR-0003, DR-0007 | 1.0 | T-010 | todo |
 | T-011 | S-03 timeline screen: episodes grouped, anchor years, year-band rendering, stable enter from S-01/S-04 | M2 | none | FR-003,025 | S-03 | DR-0001 | 1.5 | T-005 | todo |
 | T-012 | S-04 focus view: chain highlight + dim rest, restore previous view on Esc, relation legend | M2 | none | FR-012,013,021 | S-04 | DR-0001 | 1.0 | T-011 | todo |
@@ -145,6 +145,8 @@ Preview path (M1): T-001 → T-002 → T-003 → T-004 → T-005 → T-006 (2026
 | Person | Available (days ≈ 6 h) | Assigned (days) |
 |---|---|---|
 | UGcraftist | ≈ 26 (≈160 h over 4 weeks at ~40 h/week, 2026-11-16 → 2026-12-11) | 17.75 tasks + 0.5 spikes = 18.25, ≈110 h |
+
+任务行合计 15.75 d（Must 14.75 + T-015 1.0）；余下 2.0 d 为里程碑/集成与评审缓冲（CR-010 之前即存在），故 Assigned = 15.75 + 2.0 + 0.5 spikes = 18.25。
 
 Result: ≈7.75 days (≈45 h) of buffer reserved for review passes (T-021), rework and data-collection surprises. Fits without cutting Must scope. Stretch (Should) work T-015 is scheduled only after Must is green.
 

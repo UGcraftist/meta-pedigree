@@ -15,19 +15,6 @@ export function formatDate(date: string | null, precision: string | null): strin
   return date.slice(0, 4);
 }
 
-/** Start–end span; an unknown start is said out loud instead of rendered as a gap. */
-export function formatSpan(
-  startDate: string | null,
-  startPrecision: string | null,
-  endDate: string | null,
-  endPrecision: string | null,
-): string {
-  const start = formatDate(startDate, startPrecision);
-  if (!start) return '时间未知';
-  if (!endDate) return start;
-  return `${start}–${formatDate(endDate, endPrecision)}`;
-}
-
 /**
  * The interval a recorded date actually denotes (FR-003: a year-only value is a
  * band, never a point silently shown as a day). Pure so the drawer and, later,

@@ -47,7 +47,7 @@ export interface OrgFactRow {
   label_zh: string | null;
   label_en: string | null;
   /** published / disputed (0008); `superseded` rows never leave the view. */
-  status: 'published' | 'disputed' | string;
+  status: 'published' | 'disputed';
   /** md5 of the raw oriented triple, computed before the visibility gate. */
   conflict_key: string;
   subject_kind: 'org' | 'person' | null;
