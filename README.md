@@ -31,6 +31,16 @@ make check     # 干净 checkout 的质量门禁，无凭据：structure + pytes
 
 从零开始：`make setup && make check`。TH 探针（`make probe` / `views-probe` / `write-probe`）需要 Supabase 凭据，故意不在 `check` 里。
 
+## CI
+
+`.github/workflows/ci.yml` 在 push / PR 到 `master` 时跑 job `check`：`make setup && make check`，然后
+`npm --prefix web run build`。它不使用任何 `secrets.*`、不部署；TH 探针、`format:check`（T-008 遗留）、
+`npm audit`（已知 vitest 2.1.9 告警）和 OpenAPI drift 检查都**故意不在** CI 里。
+
+CI 最终取决于仓库设置：`master` 分支保护必须把名为 `check` 的 job 设为 **required status check**（仓库管理员手工开启；
+开启前 T-022 不算完成，见 `changes.md`）。干净 checkout 上 `make setup && make check` 能通过，`web/.env.test`
+只放非敏感占位。
+
 ## Deploy
 
 `npx wrangler pages deploy web/dist`，或 Cloudflare Pages Git 集成；预览/生产环境变量分别指向
