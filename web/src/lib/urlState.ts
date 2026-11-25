@@ -85,7 +85,7 @@ function sanitizeCompare(raw: string, focus: string | null, notices: UrlNotice[]
   if (unique.length !== withoutFocus.length)
     notices.push({ key: 'compare', text: '参数 compare 有重复对象，已去重。' });
   if (unique.length > MAX_COMPARE) {
-    notices.push({ key: 'compare', text: `参数 compare 超过 ${MAX_COMPARE} 个，已截断（FR-022 的对比组上限）。` });
+    notices.push({ key: 'compare', text: `参数 compare 超过 ${MAX_COMPARE} 个，已截断（ux.md 的对比组上限 2–3）。` });
     return unique.slice(0, MAX_COMPARE);
   }
   return unique;
@@ -102,11 +102,12 @@ export function parseUrlState(search: string): ParsedUrlState {
     if (!(KNOWN_KEYS as readonly string[]).includes(key)) {
       drops.push({ key, raw: params.getAll(key).join('&'), reason: 'unparseable' });
       notices.push({ key: 'unknown', text: `未知参数 ${key}=${params.getAll(key).join('&')} 已忽略。` });
+      continue;
     }
     const all = params.getAll(key);
     if (all.length > 1) {
       drops.push({ key, raw: all.join('&'), reason: 'duplicate' });
-      notices.push({ key: key as NoticeKey, text: `参数 ${key} 出现 ${all.length} 次，已忽略全部取值。` });
+      notices.push({ key: key as UrlNotice['key'], text: `参数 ${key} 出现 ${all.length} 次，已忽略全部取值。` });
     }
   }
 
@@ -203,41 +204,57 @@ export interface HistoryPort {
 
 export interface UrlStateController {
   get(): ParsedUrlState;
+  /** Normalises the state, then writes only if the canonical string changed. */
   set(next: UrlState): void;
   subscribe(listener: () => void): () => void;
   /** Absolute link for a state (defaults to the current one) — what "复制链接" copies. */
   link(state?: UrlState): string;
+  /** Subscribe to the port; idempotent and re-armable (React StrictMode remounts). */
+  start(): void;
+  /** Unsubscribe from the port but keep listeners and state. */
+  stop(): void;
   dispose(): void;
 }
 
 export function createUrlStateController(port: HistoryPort): UrlStateController {
   let current = parseUrlState(port.readSearch());
   const listeners = new Set<() => void>();
+  let unsubscribePort: (() => void) | null = null;
   const emit = () => {
     for (const listener of listeners) listener();
   };
-
-  const unsubscribePort = port.subscribe(() => {
-    current = parseUrlState(port.readSearch());
-    emit();
-  });
+  const start = () => {
+    if (unsubscribePort) return;
+    unsubscribePort = port.subscribe(() => {
+      current = parseUrlState(port.readSearch());
+      emit();
+    });
+  };
+  const stop = () => {
+    if (!unsubscribePort) return;
+    unsubscribePort();
+    unsubscribePort = null;
+  };
 
   return {
     get: () => current,
+    start,
+    stop,
     set(next) {
       const prev = current.state;
+      const normalized = parseUrlState(serializeUrlState(next)).state;
       const keep = current.notices.filter((notice) => {
-        if (notice.key === 'view') return next.view === prev.view;
-        if (notice.key === 't') return next.time === prev.time;
-        if (notice.key === 'f') return next.filters === prev.filters;
-        if (notice.key === 'compare') return next.compare.join() === prev.compare.join();
+        if (notice.key === 'view') return normalized.view === prev.view;
+        if (notice.key === 't') return normalized.time === prev.time;
+        if (notice.key === 'f') return normalized.filters === prev.filters;
+        if (notice.key === 'compare') return normalized.compare.join() === prev.compare.join();
         return false; // unknown/focus notices describe the URL that was just replaced
       });
-      const canonical = serializeUrlState(next);
+      const canonical = serializeUrlState(normalized);
       const location = port.readLocation();
       const target = `${location.pathname}${canonical}${location.hash}`;
       const actual = `${location.pathname}${port.readSearch()}${location.hash}`;
-      current = { state: next, drops: [], notices: keep };
+      current = { state: normalized, drops: [], notices: keep };
       if (target !== actual) port.write(target);
       emit();
     },
@@ -252,7 +269,7 @@ export function createUrlStateController(port: HistoryPort): UrlStateController 
       return `${location.origin}${location.pathname}${serializeUrlState(state)}${location.hash}`;
     },
     dispose() {
-      unsubscribePort();
+      stop();
       listeners.clear();
     },
   };

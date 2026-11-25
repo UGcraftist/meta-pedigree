@@ -17,11 +17,15 @@ export function useUrlState(port: HistoryPort = windowPort): readonly [ParsedUrl
   const [parsed, setParsed] = useState<ParsedUrlState>(() => controller.get());
 
   useEffect(() => {
+    // start()/stop() own the port subscription: React StrictMode runs
+    // mount -> cleanup -> mount, and a subscription created in the controller
+    // constructor (useMemo) would be torn down with nothing to re-arm it.
+    controller.start();
     setParsed(controller.get());
     const unsubscribe = controller.subscribe(() => setParsed(controller.get()));
     return () => {
       unsubscribe();
-      controller.dispose();
+      controller.stop();
     };
   }, [controller]);
 

@@ -64,7 +64,11 @@ export function TreeScreen({ data }: { data: TreeData }) {
   // A stale or unknown deep link is dropped with a one-line notice, never
   // guessed or silently re-pointed at another object (ux.md, URL state).
   useEffect(() => {
-    if (!focusId || forest.all.has(focusId)) return;
+    if (!focusId) return;
+    if (forest.all.has(focusId)) {
+      setFocusNotice(null);
+      return;
+    }
     setFocusNotice(`链接里的对象 ${focusId} 不在当前可见数据中，已忽略该焦点。`);
     focusNode(null);
   }, [focusId, forest, focusNode]);

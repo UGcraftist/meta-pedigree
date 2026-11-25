@@ -72,6 +72,7 @@
 - 2026-11-15: T-002 in progress — `supabase/migrations/0001_init.sql`, `seed/` importer + validation, `api/` (FastAPI) removed per DR-0005; docs (architecture layout, data-model table names/keys, security RLS) updated in the same branch. Supabase **dev** project connected (URL + anon key); **prod** project also created by the owner on 2026-11-15 but stays unused until stage 7.
 
 ## Implementation log (stage 5)
+- 2026-11-25: **T-009 manual browser check (StrictMode fix re-checked)** (written record, implementation/SKILL:49)** — Chromium (ego-browser) against vite :5173, signed in as the dev editor via a Supabase password grant (session injected, password never typed into the page). Verified: `?view=timeline&t=2015-2024&f=region:eu` renders the tree with three notices (view → T-011, t → T-011, f → T-013) and the params preserved; clicking Franka Emika wrote `?view=timeline&focus=<uuid>&t=2015-2024&f=region:eu&compare=bad` (canonical order, readable `f=`); the notices survived the focus write; Esc cleared focus and kept view/t/f **and** the `#section` hash; `?focus=does-not-exist` showed "链接里的对象 does-not-exist …" and rewrote the URL without it; `?focus=a&focus=b&compare=x,y,z,w` showed the duplicate-key and compare-cap notices; the table toggle changed no URL parameter. The clipboard itself cannot be read in this headless Chromium (`readText` never settles), so `writeText` was temporarily replaced in the page: it received `http://localhost:5173/?focus=<uuid>` and the button switched to `已复制`. StrictMode re-check after the review fix: a synthetic `popstate` (replaceState to another focus + dispatch) moved the drawer from Franka Emika to Boston Dynamics, so the hook keeps its port subscription through the double mount.
 - 2026-11-15: **CR-006 decided (staged)** — owner accepted Phase 1 SQL editor + Phase 2 CLI task (DR-0008); `role_table_grants` showed Supabase default privileges had given anon SELECT/write on all three views and authenticated ALL, so 0005 now revokes anon and grants authenticated SELECT-only.
 - 2026-11-15: **T-006 round-1 fixes** — `supabase/migrations/0005_org_detail_subject.sql` (both fact ends resolved server-side and gated on the counterpart's visibility; grant + comment re-issued); drawer renders the full `subject · predicate · object` triple (`web/src/features/tree/triple.ts`, 7 vitest cases; round-2 review added the object-side regression); TreeScreen zoom effect dropped on unmount (`on('.zoom', null)`); the ResizeObserver effect now re-subscribes on `[table]`; `seed/views_probe.mjs` asserts the seeded `Boston Dynamics · controlled_by · Hyundai Motor Group` ends plus a no-object `founded` fact, and anon 401. **Not yet applied** — UGcraftist must paste it to the Supabase SQL editor, then `make views-probe` runs.
 
@@ -95,19 +96,19 @@
 asks for (FR-004 is about conflicting values), and it is the string S-09's copy button is defined to copy.
 The T-009 AC also cited NFR-005 (availability) where it meant FR-023.
 
-**Decision (proposed).** One CR carrying all four corrections:
+**Decision (proposed).** One CR carrying all five corrections:
 
 1. hash route → query string on the single route (`/?focus=<uuid>&view=tree&t=…&f=…&compare=<uuid>`);
 2. `ORG-eu-012` → object UUIDs for focus and compare;
 3. delete "Stable human-readable IDs (FR-004)" — no FR asks for readable ids;
 4. record the history rule: `replaceState`, no history entry in M1 (back-button view history is M2, FR-024/T-012),
    and `view` is `tree|timeline|network` only (the table is NFR-009's alternative rendering, not a view);
-5. `plan.md` T-009 AC: NFR-005 → FR-023/FR-027.
+5. `plan.md` T-009 AC: NFR-005 → FR-023/FR-027, and the T-009 row's decision-record
+   column DR-0001 → DR-0002 + `ux.md:115` (the URL-state decision lives there, not in
+   the wireframes-instead-of-Figma record).
 
 **Status:** proposed — waiting for UGcraftist. The T-009 PR contains the `ux.md`/`plan.md` wording so the
 change is visible, but must not merge before this CR is decided.
-
-- 2026-11-25: **T-009 manual browser check (written record, implementation/SKILL:49)** — Chromium (ego-browser) against vite :5173, signed in as the dev editor via a Supabase password grant (session injected, password never typed into the page). Verified: `?view=timeline&t=2015-2024&f=region:eu` renders the tree with three notices (view → T-011, t → T-011, f → T-013) and the params preserved; clicking Franka Emika wrote `?view=timeline&focus=<uuid>&t=2015-2024&f=region:eu&compare=bad` (canonical order, readable `f=`); the notices survived the focus write; Esc cleared focus and kept view/t/f **and** the `#section` hash; `?focus=does-not-exist` showed "链接里的对象 does-not-exist …" and rewrote the URL without it; `?focus=a&focus=b&compare=x,y,z,w` showed the duplicate-key and compare-cap notices; the table toggle changed no URL parameter. Clipboard content itself was not read back (Chromium denied `clipboard.readText` without a user gesture); `copyUrl` is produced by the same `controller.link()` covered in `urlState.test.ts` and the button rendered its idle label after the copy attempt.
 
 ## CR-007 — T-007 acceptance wording drifts from the corrected write contract (decided 2026-11-19)
 

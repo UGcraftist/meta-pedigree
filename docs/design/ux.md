@@ -104,7 +104,7 @@ The address bar carries the whole picture, so a link can be pasted into an artic
 reopen the same view:
 
 ```
-/?focus=<对象-uuid>&view=tree&t=2015-2024&f=region:eu,kind:startup&compare=<对象-uuid>
+/?view=tree&focus=<对象-uuid>&t=2015-2024&f=region:eu,kind:startup&compare=<对象-uuid>
 ```
 
 Carried: view (`tree|timeline|network`), focus object, time window, active filters, compare set

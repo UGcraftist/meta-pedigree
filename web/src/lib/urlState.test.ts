@@ -84,10 +84,15 @@ describe('parseUrlState', () => {
   });
 
   it('preserves a known-but-unbuilt view and says so instead of dropping it', () => {
-    const parsed = parseUrlState('?view=timeline');
-    expect(parsed.state.view).toBe('timeline');
-    expect(parsed.drops).toEqual([]);
-    expect(parsed.notices.map((n) => n.text).join(' ')).toContain('T-011');
+    const timeline = parseUrlState('?view=timeline');
+    expect(timeline.state.view).toBe('timeline');
+    expect(timeline.drops).toEqual([]);
+    expect(timeline.notices.map((n) => n.text).join(' ')).toContain('T-011');
+
+    const network = parseUrlState('?view=network');
+    expect(network.state.view).toBe('network');
+    expect(network.drops).toEqual([]);
+    expect(network.notices.map((n) => n.text).join(' ')).toContain('T-012');
   });
 
   it('drops an unparseable value naming key and raw text', () => {
@@ -142,6 +147,9 @@ describe('parseUrlState', () => {
 });
 
 describe('serializeUrlState', () => {
+  // The old T-006 test asserted that unrelated params keep their input order.
+  // That is now deliberately reversed: the canonical string fixes the order
+  // (view, focus, t, f, compare) so two links to the same state are identical.
   it('omits defaults and writes a fixed parameter order', () => {
     expect(serializeUrlState(state())).toBe('');
     expect(
@@ -193,11 +201,35 @@ describe('createUrlStateController', () => {
   it('follows popstate by re-reading the URL', () => {
     const { port, setSearch } = fakePort('');
     const controller = createUrlStateController(port);
+    controller.start();
     const seen: string[] = [];
     controller.subscribe(() => seen.push(controller.get().state.focus ?? 'none'));
 
     setSearch(`?focus=${ID}`);
     expect(seen).toEqual([ID]);
+    controller.dispose();
+  });
+
+  it('re-arms the port after dispose/start (StrictMode remount)', () => {
+    const { port, setSearch } = fakePort('');
+    const controller = createUrlStateController(port);
+    controller.start();
+    controller.dispose();
+    controller.start();
+    const seen: string[] = [];
+    controller.subscribe(() => seen.push(controller.get().state.focus ?? 'none'));
+
+    setSearch(`?focus=${ID}`);
+    expect(seen).toEqual([ID]);
+    controller.dispose();
+  });
+
+  it('normalises what it stores, so get() and a reload of link() agree', () => {
+    const { port, writes } = fakePort('');
+    const controller = createUrlStateController(port);
+    controller.set(state({ compare: ['a', 'b', 'c', 'd'] }));
+    expect(controller.get().state.compare).toEqual(['a', 'b', 'c']);
+    expect(writes).toEqual(['/app?compare=a,b,c#anchor']);
     controller.dispose();
   });
 
