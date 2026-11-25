@@ -1,10 +1,10 @@
 # Shared context
 ## Now  (rewrite this section each time; keep it under 30 lines)
-- Stage and skill step: stage 5. T-009 **merged** via PR #7 (merge commit `a84e41b`); master now has the URL-state hook. Follow-up branch `fix/T-009-url-notices` carries the round-2 non-blocking nits.
-- Current task: close the round-2 review nits — (1) `set()` rebuilt from the canonical string so an "ignored" notice cannot outlive a dropped parameter (and `drops`/`notices` now agree); (2) the fake port counts subscribe/unsubscribe and two tests fail if `stop()`/`dispose()` leak (a no-op `stop()` mutation now fails 2 tests); (3) `view=network` notice points at T-011 (FR-025 owner); (4) docs: ux.md example is canonical (default `view=tree` omitted, with a note), CR-009/plan cite "ux.md § URL state" instead of the moved `:115`, `changes.md` wording fixed.
-- Next task after this branch: **T-010** (S-02 full detail: facts/sources/locator/as-of, citation copy, `无来源`, conflicts side by side, person roles over time) — its plan needs an advisor call before implementation.
-- Evidence: 38 vitest green (`urlState.test.ts` 19), tsc/lint clean; mutation no-op `stop()` → 2 failures; earlier live StrictMode popstate check stands.
-- Open questions: (1) merge of the small `fix/T-009-url-notices` PR (user approval); (2) T-010 plan review.
+- Stage and skill step: stage 5, T-010 "S-07 object detail & sources" (M2), planning. No branch yet — the advisor's verdict is **change** and one item needs the owner; nothing may be written to the database first.
+- Advisor changes absorbed into CR-010 (proposed): migration **0008_detail_contract** (0007 is reserved for T-013's search; numbers come from the ledger); view emits opaque `conflict_key` computed from the raw oriented triple **before** the visibility gate + `status`, no `revision_of`; privileges re-issued and `role_table_grants` re-run (one-way door, person approval); sources expose `author/page/published_at/accessed_at` with 出版/访问 labels (no coalesced `as_of`); `S-02 → S-07` and `DR-0001 → DR-0003 + DR-0007` corrected; `precisionSpan(date, precision)` gives the interval in the drawer, no timeline component; the fixture (disputed pair, no_source, year, range, author/locator/accessed_at) is part of T-010; no winner in a conflict group; headers via `triple.ts`; probe shape assertions must be able to fail; canvas/drawer divergence recorded.
+- Safe fixes landed with the CR: ledger 0006 receipt (已贴 2026-11-19, was drifting), `api.md` phantom promises (timeline_events → T-011; conflicts derived client-side from `conflict_key`), BUG-002 (T-003 as-of AC against data that cannot show it) and BUG-003 (importer only enforces source-or-none for `published`).
+- The owner's choice (CR-010): (i) T-010 ships the person path now, or (ii) **recommended** insert T-024 "S-07 person detail + role timeline" right after T-010, move FR-017 there, and expose `object_detail` with a `kind` column over orgs ∪ persons so the person screen lands without redefining `org_detail` again.
+- Open questions: CR-010 route choice + approval; after that, write 0008 (user pastes it), then S-07.
 
 ## Journal  (append one line per step, newest last; never edit old lines)
 - 2026-11-15 stage 5 step 8: proposed proceeding to T-007 while T-006 was self-reviewed only → advisor: not asked
@@ -18,4 +18,5 @@
 - 2026-11-25 CR-009 decided by UGcraftist (all five items); T-009 PR waits only on the round-2 review
 - 2026-11-25 T-009 review round 2 → reviewer: **agree** (no blocking; nits: stale notices after write, port test cannot catch a leaking stop(), network notice T-011, docs citations) → nit-fix branch opened
 - 2026-11-25 T-009 merged via PR #7 (merge commit a84e41b); STATE updated on master (1776c54)
+- 2026-11-25 T-010 plan → advisor: **change** (0008 not 0007; conflict_key from raw triple; no revision_of; privileges re-issued; as_of ≠ coalesce; S-02→S-07 + DR fix; fixture; FR-004 authoring; probe assertions) → CR-010 raised with a person-path choice; migration blocked on the owner
 

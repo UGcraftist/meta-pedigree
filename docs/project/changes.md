@@ -10,6 +10,7 @@
 | CR-005 | Agent (fresh-reviewer finding, T-005 round 1) | 2026-11-15 | T-005 acceptance said "sibling date bands render with shades", but `ux.md` S-01 means each **date carries a precision badge** (带 = carries; already shipped, TreeScreen.tsx:320-324). FR-003's year-only band is owned by T-010/T-011, and the T-005 row also claimed 'diff shade' that no requirement asks for. | 4 plan, 5 implementation | **Correct the AC, do not build the shade**: plan.md:59 reworded to the precision badge; T-005 scope clause drops 'diff shade', names the per-edge predicate text label (encoding + legend stays T-012). | **Decided 2026-11-15 (UGcraftist): corrected in place; no shade built.** |
 | CR-006 | Agent (fresh-reviewer finding, round 1) | 2026-11-15 | DR-0006 **trigger 1, second half** fired ("daily schema edits during T-004/T-007"): 0002/0003/0004 applied 2026-11-15 and 0005 next; trigger 2 (CI) is not fired. Advisor review found **live drift**: `0003` drops `tree_edges`/`tree_nodes` with no grant in the file, `0004` re-grants `tree_nodes` only (`:54`), yet the app reads `tree_edges` as `authenticated` — so the dev DB holds a grant no committed file contains, invisible because `views_probe` runs as service_role. | 5 implementation | **Advisor (Claude Code, 2026-11-15) recommends staging, not a binary**: Phase 1 stay on the SQL editor for 0005 + `0006_write_rpc` (this week); Phase 2 move to CLI-tracked migrations as its own M2 task after T-022 and before any prod paste, via **DR-0008** (needs an owner-held DB password). Before 0005: run the `role_table_grants` drift query, commit 0005 (done, `54088d5`), any missing grant becomes its own repair migration; `make views-probe` must assert as `authenticated` + anon-denied on all three views; hidden-visibility fixture for 0005 gating. | **decided 2026-11-15 (UGcraftist): staged route accepted** — Phase 1 stays on the SQL editor (0005, `0006_write_rpc`); Phase 2 moves to CLI-tracked migrations as a new M2 task after T-022, via DR-0008 and an owner-held DB password. `role_table_grants` receipt: anon SELECT+write on all three views and authenticated ALL on views, from Supabase default privileges (not hand grants); 0005 revokes anon and leaves authenticated SELECT-only. **Landed 2026-11-19**: PR #4 merged into master; dev `make views-probe` green (24/5/24, 34 sourced facts, anon 401 on all three views); T-023 added to `plan.md` for the CLI-tracked phase 2. |
 
+| CR-010 | Agent (advisor review of the T-010 plan, 2026-11-25) | 2026-11-25 | T-010 计划与契约/决策记录冲突：迁移编号按"下一个空闲"会撞 `0007_search`（data-model.md:107 已预留）；冲突分组键取 (predicate, counterpart)，与 DR-0003:33 的定向三元组冲突，且被 0005 对隐藏端置空 `object_id` 击穿；`as_of` 用 coalesce 把"出版日期"和"访问日期"混成一个字段；以"S-02 没有人物屏"为由把 Must 的 FR-017 移去 T-017，但对象详情是 S-07（ux.md:66），T-017 是数据任务；band 被推给 T-011，而抽屉本身需要"精度区间"表示。另缺：可触发五条 AC 的夹具、FR-004 的录入路径、非平凡形状断言。 | 4 plan, 5 implementation | 迁移编号只用 `0008`（按名字 `detail_contract` 引用，由台账分配）；冲突键由视图在可见性过滤前用**原始 id** 计算为不透明 `conflict_key`，客户端只按它分组；`status` 入视图，不加 `revision_of`；`author/page/published_at/accessed_at` 四字段分别暴露并各自标注；T-006/T-010 的 `S-02→S-07`、决策列 `DR-0001→DR-0003+DR-0007` 一并更正；T-010 用纯函数 `precisionSpan(date, precision)→{from,to}` 表达精度区间（不建时间轴组件）；夹具与人物路径见下，**人物路径需你二选一**。 | proposed 2026-11-25（待 UGcraftist） |
 | CR-008 | Agent (advisor review of the T-008 plan, 2026-11-19) | 2026-11-19 | T-008 的验收标准有三处与现实冲突：`timeline scale` 属 M2 的 T-011；"pytest RPC 负例"与 DR-0005:25（pytest 只保留种子校验）冲突，且该行引用的 `db/verify.sql` 已不存在；"至少一个测试断言 SQL 回滚"只能在需要凭据的 `write-probe` 里跑，进不了 CI（DR-0006:38）。另外 T-008 的 `Depends on` 写成 T-004，但它测试的树屏/抽屉实际落在 T-005/T-006。 | 4 plan, 5 implementation | **修正 AC，不新建能力**：时间轴刻度移入 T-011 AC（不是删除）；RPC 负例与回滚保留在 `write-probe`，并在 T-008 AC 注明 CI 缺口（T-023 前不得声称覆盖）；T-008 补 DR-0007:48 的契约形状断言（`views-probe` 对真实响应）；`Depends on` 改为 T-005, T-006。lint/typecheck 不算偏离（DR-0002:39 已要求），仅在 PR 的 Deviations 说明。 | **decided 2026-11-19 (UGcraftist): 四项全部接受** — 时间轴刻度进 T-011 AC；RPC 负例/回滚留在 `write-probe` 并注明 CI 缺口；T-008 补契约形状断言；`Depends on` 改为 T-005, T-006。 |
 
 ### CR-001 detail — R1 re-cut options
@@ -86,6 +87,66 @@
   `relation_types.is_active` + `subject_kinds`/`object_kinds` instead of repeating table CHECKs; `attrs` vs
   `attrs_schema` deferral stated; denial assertions accept 403/42501/404 **and** assert row counts unchanged;
   credentials docs extended with editor/readonly accounts; CR-007 raised for the plan AC wording.
+
+## CR-010 — T-010 plan against the contract and the decision records (proposed 2026-11-25)
+
+**Raised by:** agent, after the advisor's review of the T-010 plan. Owner: UGcraftist.
+
+**Why it cannot land silently.** The advisor's verdict is *change* and one item needs the owner's choice
+(the person path), because it decides the shape of the shared fact view. Nothing may be written to the
+database before this CR is decided.
+
+### What is settled (no choice needed)
+
+1. **Migration `0008_detail_contract`**, not 0007: `data-model.md:107` reserves `0007_search` for T-013, and
+   the ledger's own rule says numbers are assigned only there. Reference it by name elsewhere.
+2. **Conflicts need an opaque `conflict_key`** computed by the view from the *raw* oriented triple
+   (DR-0003:33: subject_kind, subject_id, predicate_code, object_kind, object_id) **before** the visibility
+   gate nulls the counterpart id, e.g. `md5(subject_kind||subject_id||predicate||object_kind||object_id)`.
+   `org_detail` also emits `status`; no `revision_of` (revision history is FR-007/T-014, and exposing a
+   pointer to rows the client is filtered from would be a dangling contract).
+3. **Privileges re-issued in the same file** (drop/create re-triggers Supabase default grants; 0005 precedent),
+   `role_table_grants` receipt re-run, anon-401 kept in `views-probe`, and a person approves the PR before merge
+   (one-way door: view + data).
+4. **`as_of` is not one column**: expose `author`, `page`, `published_at`, `accessed_at` as four keys with
+   distinct labels (出版 / 访问). If FR-001 truly means a per-*fact* as-of, the schema has a gap — recorded here
+   as an item for T-014 (data-as-of per fact) and T-017 (data task), not invented by a `coalesce`.
+5. **Design labels fixed**: T-006 and T-010 rows say `S-02`, but object detail is **S-07** (`ux.md:66`; S-02 is
+   the tree view). Decision column `DR-0001 → DR-0003 + DR-0007`. T-006's "person 端不可导航（S-02 没有人物屏）"
+   sentence is reworded to cite S-07.
+6. **Precision interval inside T-010**: a year-only value renders as the interval it denotes (1998 → 1998 全年),
+   implemented as the pure function `precisionSpan(date, precision) → {from, to}`; no timeline component here.
+7. **Fixture is part of T-010** (all 29 seed facts are `published`, no source has author/locator/accessed_at,
+   no persons exist): a disputed pair of `founded` years with one source each, one `no_source` fact, one
+   year-precision fact, one range fact, and sources with author/locator/accessed_at filled. `importer.py`
+   already accepts the fields.
+8. **Grouping and rendering rules**: no winner (FR-004), order by `start_date nulls last, id`; group headers go
+   through `triple.ts` (subject-first; `label_zh` is active voice); a disputed `无来源` value shows `无来源`
+   with no citation button; citation degradation order defined (author → title → url → `无来源`), no empty
+   parentheses, no embedded newlines, `quote` stays out (NFR-008).
+9. **`views-probe` shape assertions must be able to fail**: at least one row with non-null `author`, `locator`,
+   `accessed_at`; one `status='disputed'`; one `conflict_key` group of size 2.
+10. **Canvas/drawer divergence recorded in `api.md`**: `tree_edges` keeps `status='published'`, so a disputed
+    relation appears in the drawer only (R1 known limitation; the provenance chip is unowned).
+11. **FR-004 authoring path**: `disputed` appears nowhere in `write_rpc`; either T-014's AC gains "mark one of
+    two facts disputed" or `api.md` states that R1 conflicts are seed-only. (BUG-002/BUG-003 already record the
+    T-003 AC and importer gaps.)
+12. **Estimate re-cut** in `plan.md` for T-010 (migration + fixture + grouping + citation + as-of + interval).
+13. **`implementation/SKILL.md`**: apply the migration DoD bullet the advisor suggested on 2026-11-15
+    (privileges destroyed by `drop` re-issued in the same file; ledger receipt; probe as the app's role) and add
+    the "AC must be demonstrable" step.
+
+### The choice you own — person path
+
+- **(i) T-010 ships the person path now**, over a small person fixture (one person, two roles with dates).
+- **(ii) Recommended: insert T-024 "S-07 person detail + role timeline" directly after T-010**, move FR-017 and
+  its AC bullet there, and have T-010's view expose `object_detail` with a `kind` column over
+  `orgs ∪ persons` from the start (one fact-shaping expression both screens share), so the person screen lands
+  without a fifth redefinition of `org_detail`.
+
+Either way FR-017 (Must) stays in M2 and T-017 keeps only the data scale-up.
+
+**Status:** proposed — waiting for UGcraftist's route choice and approval.
 
 ## CR-009 — ux.md's URL-state sketch contradicts its own route decision (decided 2026-11-25)
 

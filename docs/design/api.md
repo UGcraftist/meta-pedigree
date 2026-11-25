@@ -40,7 +40,7 @@ operators and error shapes.
 | `GET relation_types` / `GET stance_axes` | controlled vocabulary (registry) | US-024 |
 | `GET stances?party_org_id=eq.<id>` | party stances incl. to-China / to-US axes (R1 returns empty) | US-024 |
 | `GET audit_log?entity=eq.fact&entity_id=eq.<id>` | editor-only audit trail | US-021 |
-| `GET timeline_events?order=start_date` | timeline view (view lands with T-009) | US-010 |
+| `GET timeline_events?order=start_date` | timeline view (view lands with T-011) | US-010 |
 
 ## Write surface (Must, T-007 · migration `write_rpc`，编号见 data-model.md 迁移台账)
 
@@ -97,5 +97,6 @@ R1 折叠 `in_review`：`submit_fact` 直接发布（FR-031 的 editor→reviewe
 ## Coverage
 
 Every Must story maps to a read or write call above. US-012 filters are HTTP parameters on
-`tree_edges`/`orgs`; US-013 conflict groups arrive with the facts view in T-007; US-015 (URL state)
-is purely frontend.
+`tree_edges`/`orgs`; US-002/US-009 conflict groups are derived client-side from the opaque
+`conflict_key` that migration `detail_contract` adds to `org_detail` (PostgREST cannot group rows
+server-side; T-010); US-015 (URL state) is purely frontend.
