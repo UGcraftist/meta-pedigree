@@ -36,7 +36,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | T-019 | Deploy: Cloudflare Pages (`wrangler pages deploy`, env vars) + Supabase project (dev/prod separation, backup/restore runbook) | M2 | none | NFR-07 | — | DR-0005 | 0.5 | T-018 | todo |
 | T-020 | NFR validation: perf at 100 orgs (pan/zoom ≥30 fps), WCAG AA contrast, target browsers | M2 | none | NFR-02…06, FR-026 | — | — | 0.5 | T-017 | todo |
 | T-021 | Review passes (stage 6 on two walkthroughs: first-time visitor, data editor) + fixes | M2 | none | — | — | — | 2.0 | T-020 | todo |
-| T-022 | CI pipeline (GitHub Actions: build, typecheck, `make check`); also needed for Cloudflare Pages Git integration; remote exists now (`github.com/UGcraftist/meta-pedigree`, PR #1–#4) so CR-004/T-022 are unblocked | M1 | none | NFR-07 | — | DR-0004, DR-0005 | 0.25 | T-001 | todo |
+| T-022 | CI pipeline (GitHub Actions: build, typecheck, `make check`); also needed for Cloudflare Pages Git integration; remote exists now (`github.com/UGcraftist/meta-pedigree`, PR #1–#4) so CR-004/T-022 are unblocked | M1 | none | NFR-011, NFR-006 | — | DR-0004, DR-0005 | 0.25 | T-001 | todo |
 | T-023 | CLI-tracked migrations (CR-006 phase 2): adopt `supabase` CLI migration history for dev/prod, DR-0008, prod paste runbook; needs an owner-held DB password; starts after T-022 and before any prod migration | M2 | UGcraftist | NFR-07 | — | DR-0006, DR-0008 | 1.0 | T-022 | todo |
 
 ### T-001 acceptance criteria (rescoped by CR-002)
@@ -117,6 +117,14 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 
 ### T-021 acceptance criteria
 - Two walkthroughs completed with UGcraftist: first-time visitor finds the lineage chain in < 5 actions; data editor completes one edit without instructions; defects found are fixed or logged.
+
+### T-022 acceptance criteria
+- `.github/workflows/ci.yml` runs on `push` and `pull_request` to `master`, job name `check`: `make setup && make check` (structure + pytest + eslint + tsc + vitest) followed by `npm --prefix web run build`. It runs **no** TH probe (DR-0006:23), no `format:check` (parked per T-008), no `npm audit` (known vitest 2.1.9 advisories) and no OpenAPI drift check (DR-0007:47).
+- The workflow uses **no `secrets.*`**, does not deploy, declares `permissions: contents: read`, pins action majors (`checkout@v4`, `setup-node@v4`, `setup-python@v5`), sets `timeout-minutes`, and cancels concurrent `pull_request` runs only.
+- `make setup && make check` passes on a clean checkout **without `.env`/`.env.local`**: `web/.env.test` supplies non-secret placeholders so Vitest importing `supabase.ts` does not fail only in CI.
+- The gate can fail: a scratch commit with a broken import turns `check` red (not an assertion that can never fail).
+- Repository admin marks the job **`check`** as a required status check on `master`; T-022 is not `done` until that is on (owner step recorded in `changes.md`).
+- README states what CI runs and what it deliberately leaves out.
 
 ## Spikes
 

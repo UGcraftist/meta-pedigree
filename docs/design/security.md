@@ -65,7 +65,7 @@ gate 检查要求每个管理角色两名具名持有人；R1 只有一人，**�
 
 - 来源 URL 只允许 `http(s)`，存文本，点击时 `rel="noopener noreferrer"`，不嵌入 iframe。
 - 所有输入按 UTF-8 文本转义；前端不用 `dangerouslySetInnerHTML`。
-- 依赖锁定 + `pnpm audit` 进 CI；R1 不引入运行时远程脚本。
+- 依赖锁定 + `npm ci`（lockfile 变更随 PR 提交）进 CI；`npm audit` **故意不进**门禁（已知 vitest 2.1.9 子树的告警，作为后续升级项跟踪）；R1 不引入运行时远程脚本。
 - 日志不写 token、不写完整 URL 查询串。
 - `anon` 的表权限已整体收回，故 anon 请求直接 401/403；若未来只靠策略过滤，UPDATE/DELETE 会返回 **200 + 0 行**（不是报错），`make probe` 两种都按拒绝处理，防止把静默无操作误判为放行。RPC 探针同理：**403/42501 或 404 都算拒绝**（没有 EXECUTE 权限时 PostgREST 可能两者之一），且每次拒绝后都要断言相关表行数未变。
 

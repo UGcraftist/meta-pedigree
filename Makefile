@@ -45,8 +45,10 @@ web-deps:
 lint: web-deps
 	npm --prefix $(WEB) run lint
 
+# --force: ignore a stale *.tsbuildinfo (T-009's stale-import incident);
+# `npm run build` stays incremental.
 typecheck: web-deps
-	npm --prefix $(WEB) run typecheck
+	npm --prefix $(WEB) run typecheck -- --force
 
 web-test: web-deps
 	npm --prefix $(WEB) run test
