@@ -87,7 +87,7 @@
   `attrs_schema` deferral stated; denial assertions accept 403/42501/404 **and** assert row counts unchanged;
   credentials docs extended with editor/readonly accounts; CR-007 raised for the plan AC wording.
 
-## CR-009 — ux.md's URL-state sketch contradicts its own route decision (proposed 2026-11-25)
+## CR-009 — ux.md's URL-state sketch contradicts its own route decision (decided 2026-11-25)
 
 **Raised by:** agent (advisor review of the T-009 plan), owner of the affected doc: UGcraftist (stage-2 gate approved, `STATE.md`).
 
@@ -107,8 +107,8 @@ The T-009 AC also cited NFR-005 (availability) where it meant FR-023.
    column DR-0001 → DR-0002 + `ux.md:115` (the URL-state decision lives there, not in
    the wireframes-instead-of-Figma record).
 
-**Status:** proposed — waiting for UGcraftist. The T-009 PR contains the `ux.md`/`plan.md` wording so the
-change is visible, but must not merge before this CR is decided.
+**Status:** **decided 2026-11-25 (UGcraftist)** — all five corrections accepted; the T-009 PR (#7) carries the
+`ux.md`/`plan.md` wording and can merge once the round-2 review returns agree.
 
 ## CR-007 — T-007 acceptance wording drifts from the corrected write contract (decided 2026-11-19)
 

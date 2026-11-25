@@ -7,7 +7,8 @@
 - Docs: plan.md T-009 row/AC (NFR-005 → FR-023/FR-027), ux.md URL section corrected, CR-009 proposed (needs UGcraftist), implementation log carries the written browser check.
 - Evidence: `make check` green (34 vitest), browser check on vite :5173 (notices, canonical write, Esc+hash, unknown id, duplicates, compare cap, table toggle leaves URL alone).
 - Step-8 review (round 1): **change** — (1) the port subscription lived in the controller constructor, so React StrictMode mount→cleanup→mount killed it (reproduced in Chromium) and leaked one listener per mount; (2) plan T-009 decision column still DR-0001 (advisor correction missed) and CR-009 did not carry it; (3) the PR claimed a two-way door although it edits the gate-approved ux.md under an undecided CR-009. All three fixed: start()/stop() owned by the effect (unit test for dispose→start re-arm, live StrictMode popstate re-checked), plan column → DR-0002 + ux.md:115 (also in CR-009 item 5), PR body re-labelled one-way; plus nits (stated reason for the reversed order test, ux.md example order, browser-check bullet moved to the implementation log with the writeText/已复制 evidence, set() normalises, unknown-key notice typing, view=network test, compare-cap source, stale focusNotice).
-- Open questions: (1) CR-009 approval by UGcraftist; (2) merge approval (one-way) after the round-2 review.
+- CR-009: **decided 2026-11-25 (UGcraftist)**, all five items accepted.
+- Open questions: merge after the round-2 review returns agree; one-way door so the owner's approval is on record.
 
 ## Journal  (append one line per step, newest last; never edit old lines)
 - 2026-11-15 stage 5 step 8: proposed proceeding to T-007 while T-006 was self-reviewed only → advisor: not asked
@@ -18,3 +19,4 @@
 - 2026-11-15 fix plan (openapi retire / migration numbering / org_detail sides / shades AC) → advisor: **change** — shades AC is an overclaim (ux.md:92 带 = verb), don't build; don't assign migration numbers in 3 files (ledger only); DR-0007 must stay proposed + name DR-0002/0004 supersession; org_detail needs visibility gating + SQL-side names + full triple; bugs go to stories.md as BUG- items; STATE overclaim must go. Applied: STATE/plan in review statuses, T-005 AC corrected (this commit); open DR-0007 + CR-004/005/006 await UGcraftist
 - 2026-11-25 T-009 plan → advisor: **change** (CR-009 for the ux.md hash route; t/f/view notices not silent; injected HistoryPort so read→subscribe→write is testable; view=table not a URL view; copy from canonical state, keep hash, getAll for duplicates, no manual decode, compare sanitise) → all applied; PR opened
 - 2026-11-25 T-009 review round 1 → reviewer: **change** (StrictMode port subscription, plan decision column, door label) → all fixed with tests + live re-check; round-2 review requested
+- 2026-11-25 CR-009 decided by UGcraftist (all five items); T-009 PR waits only on the round-2 review
