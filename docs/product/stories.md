@@ -291,8 +291,8 @@
 
 | ID | Found | Where | What | Status |
 |---|---|---|---|---|
-| BUG-002 | 2026-11-25 (T-010 plan review) | `seed/data/020-facts.json` + `docs/project/plan.md:53` | T-003's accepted AC says every fact carries source + as-of or is explicitly `无来源`, but no seed source fills `published_at`/`accessed_at`/`author`/`locator` and no fact has an as-of — the AC was passed against data that cannot demonstrate it. Creating the data is part of T-010's fixture (CR-010); the false AC is recorded here. | open — fixture in T-010 |
-| BUG-003 | 2026-11-25 (T-010 plan review) | `seed/importer.py:262` | The source-or-`no_source` check runs only when status is `published`; a `disputed` row can be imported with neither a source nor `no_source`, although DR-0003:51 makes `disputed` a parallel state of published and FR-001 applies to it too. | open — widen the check with the T-010 fixture |
+| BUG-002 | 2026-11-25 (T-010 plan review) | `seed/data/020-facts.json` + `docs/project/plan.md:53` | T-003's accepted AC says every fact carries source + as-of or is explicitly `无来源`, but no seed source fills `published_at`/`accessed_at`/`author`/`locator` and no fact has an as-of — the AC was passed against data that cannot demonstrate it. Creating the data is part of T-010's fixture (CR-010); the false AC is recorded here. | fixed in T-010 (fixture + probe; probe runs after the 0008 paste) |
+| BUG-003 | 2026-11-25 (T-010 plan review) | `seed/importer.py:262` | The source-or-`no_source` check runs only when status is `published`; a `disputed` row can be imported with neither a source nor `no_source`, although DR-0003:51 makes `disputed` a parallel state of published and FR-001 applies to it too. | fixed in T-010 (importer rejects disputed rows with neither source nor `no_source`; dry-run covers it) |
 | BUG-001 | 2026-11-19 (T-008 plan review) | `web/src/lib/treeData.ts:10-16` vs `supabase/migrations/0004_tree_nodes_dedup.sql` | 客户端按 PostgREST 返回顺序取首行，服务端按 `min(depth)` 去重；两者语义不一致，若返回顺序变化客户端可能保留非 min-depth 行。当前视图已去重所以不可复现；`treeData.test.ts` 固定了客户端一侧的行为。 | open — 待 `depth` 语义的契约决定（`api.md`；T-009 只负责 URL 状态，不是本项 owner） |
 
 ## Open questions and assumptions

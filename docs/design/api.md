@@ -33,7 +33,7 @@ operators and error shapes.
 |---|---|---|
 | `GET tree_nodes?order=depth.asc,name.asc` | whole pedigree skeleton: name, country, founded, depth, root flag, child/parent counts | US-004 |
 | `GET tree_edges?parent_org_id=eq.<id>` | children of one node for expand/collapse + relation type/date | US-004, US-012 |
-| `GET org_detail?id=eq.<id>` | org row + published facts with sources as JSON (detail panel) | US-001, US-002, US-004, US-008 |
+| `GET org_detail?id=eq.<id>` | org row + **published and disputed** facts with sources as JSON (detail panel) | US-001, US-002, US-004, US-008 |
 | `GET orgs?name=ilike.*q*&kind=eq.company` | name search and facet filter (until T-013 adds `search_orgs`) | US-005, US-008, US-014 |
 | `GET facts?id=eq.<id>` | fact detail: sources are embedded by the RPC/view layer in T-007; R1 detail uses `org_detail` | US-001, US-002, US-006, US-009 |
 | `GET sources?select=*&id=in.(...)` / `fact_sources` | source list per fact, source CRUD backing | US-001 |
@@ -101,6 +101,12 @@ are distinct; the drawer never presents one as the other. The `*_id` and `*_name
 `visibility='public'` (security.md:33); a fact with no object end (e.g. `founded`) has
 `object_kind = null`. Clients must render the subject end first; fact ends must not be resolved from `tree_nodes`
 (that map is tree-only and misses persons and gated orgs), though it may still label the drawer title.
+
+`facts_for(uuid)` is the single fact-shaping function both `org_detail` and the future person view
+call; it is exposed at `POST /rest/v1/rpc/facts_for` to `authenticated` only (documented here because
+it is reachable). **R1 known limitation:** `tree_edges` still filters `status='published'`, so a
+disputed relation appears in the detail drawer but not on the canvas; the provenance chip (ux.md)
+lands with T-011/T-012.
 
 ## Coverage
 

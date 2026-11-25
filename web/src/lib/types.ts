@@ -40,7 +40,7 @@ export interface OrgSourceRow {
   accessed_at: string | null;
 }
 
-/** One published fact where the org is subject or object (org_detail.facts[]). */
+/** One published or disputed fact where the org is subject or object (org_detail.facts[]). */
 export interface OrgFactRow {
   id: string;
   predicate: string;
@@ -69,7 +69,7 @@ export interface OrgFactRow {
   sources: OrgSourceRow[];
 }
 
-/** Row of the org_detail view: org + its chronology of published facts. */
+/** Row of the org_detail view: org + its chronology of published and disputed facts. */
 export interface OrgDetailRow {
   id: string;
   name: string;

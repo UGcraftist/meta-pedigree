@@ -548,7 +548,8 @@ def import_bundle(bundle: Bundle, cfg: RestConfig | None = None) -> dict[str, in
     _upsert(cfg, "sources", sources)
     for start in range(0, len(links), BATCH):
         _request(cfg, "POST", "fact_sources", payload=links[start:start + BATCH],
-                 prefer="resolution=ignore-duplicates,return=minimal")
+                 prefer="resolution=merge-duplicates,return=minimal",
+                 on_conflict="fact_id,source_id")
     _upsert(cfg, "stances", stance_rows(bundle))
     _request(cfg, "POST", "audit_log",
              payload={"entity": "seed", "action": "seed", "summary": counts},

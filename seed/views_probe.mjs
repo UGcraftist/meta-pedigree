@@ -125,17 +125,26 @@ if (founded.object_kind !== null || founded.object_id !== null) {
 // nulls would pass on an empty fixture (log.md:27 "assertion that cannot fail").
 const bdFacts = bd?.facts ?? [];
 const disputed = bdFacts.filter((f) => f.predicate === "founded" && f.status === "disputed");
-if (disputed.length !== 1) {
-  console.error(`FAIL: expected one disputed founded fact for Boston Dynamics, found ${disputed.length}`);
+if (disputed.length !== 2) {
+  console.error(`FAIL: expected two disputed founded facts for Boston Dynamics, found ${disputed.length}`);
   process.exit(1);
 }
 const conflictGroup = bdFacts.filter((f) => f.predicate === "founded" && f.conflict_key === disputed[0].conflict_key);
-if (conflictGroup.length !== 2) {
-  console.error(`FAIL: conflict group for Boston Dynamics founded must have 2 rows, found ${conflictGroup.length}`);
+if (conflictGroup.length !== 3) {
+  console.error(`FAIL: conflict group for Boston Dynamics founded must have 3 rows (T-010's 3-row state), found ${conflictGroup.length}`);
   process.exit(1);
 }
-if (!conflictGroup.some((f) => f.status === "published") || !conflictGroup.some((f) => f.status === "disputed")) {
-  console.error("FAIL: conflict group must contain one published and one disputed row");
+if (!conflictGroup.some((f) => f.status === "published") || disputed.some((d) => !conflictGroup.includes(d))) {
+  console.error("FAIL: conflict group must contain the published row and both disputed rows");
+  process.exit(1);
+}
+if (!conflictGroup.some((f) => f.status === "disputed" && f.no_source === true)) {
+  console.error("FAIL: conflict group lacks the 争议 + 无来源 row (FR-001/FR-004 combined state)");
+  process.exit(1);
+}
+const ranged = bdFacts.find((f) => f.end_date && f.end_precision === "year");
+if (!ranged) {
+  console.error("FAIL: fixture lacks a year-precision range fact (end_date/end_precision unexercised)");
   process.exit(1);
 }
 const noSource = bdFacts.concat(detail.flatMap((o) => o.facts ?? [])).filter((f) => f.no_source === true);
@@ -151,7 +160,7 @@ if (populatedSources.length === 0) {
   console.error("FAIL: no source has author + locator + accessed_at (FR-001 as-of unverifiable)");
   process.exit(1);
 }
-console.log(`  disputed pair: ${conflictGroup.length} rows for one conflict_key; provenance populated on ${populatedSources.length} source(s)`);
+console.log(`  conflict group: ${conflictGroup.length} rows for one conflict_key (incl. 无来源); range fact: ${ranged.predicate} ${ranged.start_date}–${ranged.end_date}; provenance populated on ${populatedSources.length} source(s)`);
 
 // security.md:33 — an anon caller must not read org_detail at all.
 if (!anon) {

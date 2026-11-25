@@ -583,6 +583,47 @@
    "status": "published",
    "visibility": "public",
    "no_source": true
+  },
+  {
+   "id": "0191bb00-0000-7000-8000-000000000003",
+   "subject_kind": "org",
+   "subject_id": "c413219a-d04e-58db-808e-270c9723d012",
+   "predicate_code": "founded",
+   "start_date": "1991-01-01",
+   "start_precision": "year",
+   "certainty": "circa",
+   "status": "disputed",
+   "visibility": "public",
+   "no_source": true,
+   "attrs": {"note": "Contested year kept beside the sourced values (FR-004); deliberately source-less to exercise the 无来源 + 争议 column."}
+  },
+  {
+   "id": "0191bb00-0000-7000-8000-000000000004",
+   "subject_kind": "org",
+   "subject_id": "c413219a-d04e-58db-808e-270c9723d012",
+   "object_kind": "org",
+   "object_id": "743297de-a84a-5005-b544-3932e585d3f5",
+   "predicate_code": "related_to",
+   "start_date": "1992-01-01",
+   "start_precision": "year",
+   "end_date": "2004-01-01",
+   "end_precision": "year",
+   "certainty": "exact",
+   "status": "published",
+   "visibility": "public",
+   "sources": [
+    {
+     "kind": "article",
+     "title": "Boston Dynamics spin-out history (MIT roots)",
+     "url": "https://www.bostondynamics.com/about",
+     "author": "Boston Dynamics",
+     "page": "About",
+     "published_at": "2023-01-01",
+     "accessed_at": "2026-11-19T00:00:00Z",
+     "locator": "paragraph 1"
+    }
+   ],
+   "attrs": {"note": "Range fixture: year precision on both ends."}
   }
  ]
 }

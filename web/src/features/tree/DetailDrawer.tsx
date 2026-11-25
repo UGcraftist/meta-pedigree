@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ApiError, fetchOrgDetail } from '../../lib/api';
 import type { OrgDetailRow, OrgFactRow, OrgSourceRow } from '../../lib/types';
 import { factView, type FactSegment } from './triple';
-import { formatFactWhen, PRECISION_LABEL } from './format';
+import { formatFactWhen, precisionSpan } from './format';
 import { PREDICATE_LABEL } from './layout';
 import { citationLine, groupFacts } from './facts';
 
@@ -27,7 +27,7 @@ interface DetailDrawerProps {
 
 /**
  * One end of a triple: emphasised when it is the org being viewed; a public
- * org is navigable, a person is not (S-02 has no person screen), and a gated
+ * org is navigable, a person is not (S-07's person screen lands with T-024), and a gated
  * end renders its explicit fallback text instead of disappearing.
  */
 function FactEndView({ seg, onFocus }: { seg: FactSegment; onFocus: (id: string) => void }) {
@@ -82,7 +82,7 @@ function FactBody({
   const view = factView(fact, orgId);
   const label = fact.label_zh ?? PREDICATE_LABEL[fact.predicate] ?? fact.predicate;
   const when = formatFactWhen(fact.start_date, fact.start_precision, fact.end_date, fact.end_precision);
-  const precision = PRECISION_LABEL[fact.start_precision];
+  const interval = precisionSpan(fact.start_date, fact.start_precision);
   const unsourced = fact.no_source || fact.sources.length === 0;
 
   return (
@@ -98,11 +98,9 @@ function FactBody({
             </>
           )}
         </span>
-        <span className="fact-when">
+        <span className="fact-when" title={interval ? `${interval.from} – ${interval.to}` : undefined}>
           {when}
-          {when !== '时间未知' && precision && precision !== '未知' && (
-            <span className="precision">（{precision}精度）</span>
-          )}
+          {fact.start_precision === 'unknown' && <span className="precision">（精度未知）</span>}
           {fact.status === 'disputed' && <span className="badge disputed">争议</span>}
         </span>
       </div>
@@ -165,7 +163,7 @@ function ConflictItem({ facts, orgId, onFocus }: { facts: OrgFactRow[]; orgId: s
   );
 }
 
-/** S-02 detail drawer (T-006): one org, its published facts and their sources. */
+/** S-07 detail drawer (T-006): one org, its published and disputed facts and their sources. */
 export function DetailDrawer({ orgId, nameById, copyUrl, onClose, onFocus }: DetailDrawerProps) {
   const [detail, setDetail] = useState<OrgDetailRow | null>(null);
   const [error, setError] = useState<string | null>(null);

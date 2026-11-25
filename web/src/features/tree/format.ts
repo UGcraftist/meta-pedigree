@@ -63,6 +63,9 @@ export function formatFactWhen(
 ): string {
   if (!startDate) return '时间未知';
   if (endDate) return `${formatDate(startDate, startPrecision)}–${formatDate(endDate, endPrecision)}`;
-  if (startPrecision === 'year') return `${startDate.slice(0, 4)}（全年）`;
+  // The interval the precision denotes is shown as text (FR-003), not as a bare point.
+  const span = precisionSpan(startDate, startPrecision);
+  if (span && startPrecision === 'year') return `${startDate.slice(0, 4)}（全年）`;
+  if (span && startPrecision === 'month') return `${startDate.slice(0, 7)}（整月）`;
   return formatDate(startDate, startPrecision);
 }

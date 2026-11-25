@@ -83,11 +83,11 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 - 读 → 订阅（popstate）→ 写回（`replaceState`，串未变则不写）通过注入的 `HistoryPort` 单测覆盖；浏览器内手测记录在 PR 与 changes.md 的 implementation log。
 
 ### T-010 acceptance criteria
-- 每条事实显示来源（author/page/published_at/accessed_at 四字段分别标注"出版/访问"）+ locator，或显式 `无来源`；复制引文粘贴为一行（author → title → url 的降级顺序，无空括号、无换行），`quote` 不进入引文（NFR-008）。
-- 冲突：同一 `conflict_key` 的多行事实并列显示，**无主列**、无"主来源"样式，各自带值/来源/`无来源`；组内按 `start_date nulls last, id`；组标题复用 `triple.ts` 的 subject-first 渲染；disputed 组来自真实夹具（`founded` 两说，各一来源）。
+- 每条事实显示来源（author/page/published_at/accessed_at 四字段分别标注"出版/访问"）+ locator，或显式 `无来源`；复制引文粘贴为一行（author · title · page · locator · url 的降级顺序，无空括号、无换行），`quote` 不进入引文（NFR-008）。
+- 冲突：同一 `conflict_key` 的多行事实并列显示，**无主列**、无"主来源"样式，各自带值/来源/`无来源`；组内按 `start_date nulls last, id`；组标题复用 `triple.ts` 的 subject-first 渲染；disputed 组来自真实夹具（`founded` 三行：published 1992 + disputed 1993 有来源 + disputed 1991 `无来源`；另有 1992–2004 的年度范围事实）。
 - 年/月精度按 `precisionSpan(date, precision) → {from, to}` 显示为区间（如 1998 全年），不出现静默按日的点；组织自身的 `founded_date` 同样处理。
 - 设计状态覆盖 `ux.md` S-07 的 sourced / no source / conflicting values / missing fields 四态，外加 loading/error/长内容/1024px；3 行冲突组在 1024px 不溢出。
-- `views-probe` 断言至少一条非空 `author`/`locator`/`accessed_at`、一条 `status='disputed'`、一个大小 2 的 `conflict_key` 组（断言必须能失败）。
+- `views-probe` 断言至少一条非空 `author`/`locator`/`accessed_at`、一条 `status='disputed'`、一个大小 3 的 `conflict_key` 组、组内一条 disputed+`no_source`、一条 `end_date` 年度范围（断言必须能失败）。
 
 ### T-024 acceptance criteria
 - 人物详情列出全部角色（职位/组织/起止/精度/来源），按时间排序且时间缺口可见（最新角色附 as-of，过期标 "last confirmed <year>"，FR-019）；person fixture（1 人 2 段角色）同 PR。
@@ -144,9 +144,9 @@ Preview path (M1): T-001 → T-002 → T-003 → T-004 → T-005 → T-006 (2026
 
 | Person | Available (days ≈ 6 h) | Assigned (days) |
 |---|---|---|
-| UGcraftist | ≈ 26 (≈160 h over 4 weeks at ~40 h/week, 2026-11-16 → 2026-12-11) | 16.25 tasks + 0.5 spikes = 16.75, ≈100 h |
+| UGcraftist | ≈ 26 (≈160 h over 4 weeks at ~40 h/week, 2026-11-16 → 2026-12-11) | 17.75 tasks + 0.5 spikes = 18.25, ≈110 h |
 
-Result: ≈9.25 days (≈55 h) of buffer reserved for review passes (T-021), rework and data-collection surprises. Fits without cutting Must scope. Stretch (Should) work T-015 is scheduled only after Must is green.
+Result: ≈7.75 days (≈45 h) of buffer reserved for review passes (T-021), rework and data-collection surprises. Fits without cutting Must scope. Stretch (Should) work T-015 is scheduled only after Must is green.
 
 ## Change log
 
