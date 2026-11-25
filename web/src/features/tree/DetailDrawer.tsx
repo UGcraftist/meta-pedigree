@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { ApiError, fetchOrgDetail } from '../../lib/api';
-import type { OrgDetailRow, OrgFactRow } from '../../lib/types';
+import type { OrgDetailRow, OrgFactRow, OrgSourceRow } from '../../lib/types';
 import { factView, type FactSegment } from './triple';
-import { formatDate, formatSpan, PRECISION_LABEL } from './format';
+import { formatFactWhen, PRECISION_LABEL } from './format';
 import { PREDICATE_LABEL } from './layout';
+import { citationLine, groupFacts } from './facts';
 
 // Keys come from the pg enum public.org_kind (0001_init.sql).
 const KIND_LABEL: Record<string, string> = {
@@ -43,7 +44,31 @@ function FactEndView({ seg, onFocus }: { seg: FactSegment; onFocus: (id: string)
   return <span className={seg.emphasized ? 'self-end' : undefined}>{seg.text}</span>;
 }
 
-function FactItem({
+function CitationButton({ source }: { source: OrgSourceRow }) {
+  const [state, setState] = useState<'idle' | 'done' | 'failed'>('idle');
+  const timer = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (timer.current !== null) window.clearTimeout(timer.current);
+  }, []);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(citationLine(source));
+      setState('done');
+    } catch {
+      setState('failed');
+    }
+    if (timer.current !== null) window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setState('idle'), 2500);
+  };
+  return (
+    <button className="ghost" onClick={() => void copy()}>
+      {state === 'done' ? '已复制引文' : state === 'failed' ? '复制失败' : '复制引文'}
+    </button>
+  );
+}
+
+/** One fact body: triple, when, sources/provenance or an explicit `无来源`. */
+function FactBody({
   fact,
   orgId,
   onFocus,
@@ -52,18 +77,16 @@ function FactItem({
   orgId: string;
   onFocus: (id: string) => void;
 }) {
-  // org_detail (0005) resolves BOTH ends server-side. factView fixes the order
-  // (subject first) so viewing the object side cannot invert the sentence, and
-  // returns object = null for facts that genuinely have no object end
-  // (e.g. "founded") — those render the predicate alone, not a hidden tail.
+  // org_detail resolves BOTH ends server-side. factView fixes the order
+  // (subject first) so viewing the object side cannot invert the sentence.
   const view = factView(fact, orgId);
   const label = fact.label_zh ?? PREDICATE_LABEL[fact.predicate] ?? fact.predicate;
-  const span = formatSpan(fact.start_date, fact.start_precision, fact.end_date, fact.end_precision);
+  const when = formatFactWhen(fact.start_date, fact.start_precision, fact.end_date, fact.end_precision);
   const precision = PRECISION_LABEL[fact.start_precision];
   const unsourced = fact.no_source || fact.sources.length === 0;
 
   return (
-    <li className="fact">
+    <div className="fact">
       <div className="fact-head">
         <span className="fact-triple">
           <FactEndView seg={view.subject} onFocus={onFocus} />
@@ -76,30 +99,68 @@ function FactItem({
           )}
         </span>
         <span className="fact-when">
-          {span}
-          {span !== '时间未知' && precision && precision !== '未知' && (
+          {when}
+          {when !== '时间未知' && precision && precision !== '未知' && (
             <span className="precision">（{precision}精度）</span>
           )}
+          {fact.status === 'disputed' && <span className="badge disputed">争议</span>}
         </span>
       </div>
       {unsourced ? (
-        <span className="badge nosource" title="这条事实没有来源记录">无来源</span>
+        <div className="fact-source">
+          <span className="badge nosource" title="这条事实没有来源记录">无来源</span>
+        </div>
       ) : (
-        <ul className="sources">
-          {fact.sources.map((source, i) => (
-            <li key={`${source.title}-${i}`}>
-              {source.url ? (
-                <a href={source.url} target="_blank" rel="noreferrer">{source.title}</a>
-              ) : (
-                <span>{source.title}</span>
-              )}
-              {source.kind && <span className="muted">（{source.kind}）</span>}
-              {source.locator && <span className="muted"> · {source.locator}</span>}
-              {source.quote && <q className="quote">{source.quote}</q>}
-            </li>
-          ))}
-        </ul>
+        <div className="fact-source">
+          <ul className="sources">
+            {fact.sources.map((source, i) => (
+              <li key={`${source.title}-${i}`}>
+                {source.author && <span>{source.author} · </span>}
+                {source.url ? (
+                  <a href={source.url} target="_blank" rel="noreferrer">{source.title}</a>
+                ) : (
+                  <span>{source.title}</span>
+                )}
+                {source.kind && <span className="muted">（{source.kind}）</span>}
+                {source.page && <span className="muted"> · {source.page}</span>}
+                {source.locator && <span className="muted"> · {source.locator}</span>}
+                {source.published_at && <span className="muted"> · 出版 {source.published_at.slice(0, 10)}</span>}
+                {source.accessed_at && <span className="muted"> · 访问 {source.accessed_at.slice(0, 10)}</span>}
+                {source.quote && <q className="quote">{source.quote}</q>}
+              </li>
+            ))}
+          </ul>
+          <CitationButton source={fact.sources[0]} />
+        </div>
       )}
+    </div>
+  );
+}
+
+function FactItem({ fact, orgId, onFocus }: { fact: OrgFactRow; orgId: string; onFocus: (id: string) => void }) {
+  return (
+    <li className="fact-row">
+      <FactBody fact={fact} orgId={orgId} onFocus={onFocus} />
+    </li>
+  );
+}
+
+/** One conflict group: same conflict_key, equal columns, no winner (FR-004). */
+function ConflictItem({ facts, orgId, onFocus }: { facts: OrgFactRow[]; orgId: string; onFocus: (id: string) => void }) {
+  const view = factView(facts[0], orgId);
+  const label = facts[0].label_zh ?? PREDICATE_LABEL[facts[0].predicate] ?? facts[0].predicate;
+  return (
+    <li className="fact-row conflict">
+      <div className="conflict-title">
+        {view.subject.text} · {label}
+        {view.object ? ` · ${view.object.text}` : ''}
+        <span className="muted"> · 两说并存</span>
+      </div>
+      <div className="conflict-grid">
+        {facts.map((fact) => (
+          <FactBody key={fact.id} fact={fact} orgId={orgId} onFocus={onFocus} />
+        ))}
+      </div>
     </li>
   );
 }
@@ -169,7 +230,7 @@ export function DetailDrawer({ orgId, nameById, copyUrl, onClose, onFocus }: Det
             {' · '}
             {detail.country_code ?? '国家未知'}
             {' · 成立 '}
-            {formatDate(detail.founded_date, detail.founded_precision) || '未知'}
+            {formatFactWhen(detail.founded_date, detail.founded_precision, null, null)}
           </p>
           <div className="drawer-actions">
             <button className="ghost" onClick={() => void copy()}>
@@ -185,14 +246,13 @@ export function DetailDrawer({ orgId, nameById, copyUrl, onClose, onFocus }: Det
             <p className="muted">暂无已发布事实（可能未录入，或对当前账号不可见）。</p>
           ) : (
             <ul className="facts">
-              {detail.facts.map((fact) => (
-                <FactItem
-                  key={fact.id}
-                  fact={fact}
-                  orgId={orgId}
-                  onFocus={onFocus}
-                />
-              ))}
+              {groupFacts(detail.facts).map((group) =>
+                group.conflict ? (
+                  <ConflictItem key={`conflict-${group.key}`} facts={group.facts} orgId={orgId} onFocus={onFocus} />
+                ) : (
+                  <FactItem key={group.facts[0].id} fact={group.facts[0]} orgId={orgId} onFocus={onFocus} />
+                ),
+              )}
             </ul>
           )}
           {detail.notes && <p className="notes">{detail.notes}</p>}

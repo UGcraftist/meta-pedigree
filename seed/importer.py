@@ -259,8 +259,8 @@ def validate(bundle: Bundle) -> list[Issue]:
         if not isinstance(sources, list):
             issues.append(Issue("error", where, f"{fid}: sources must be a list"))
             sources = []
-        if fact.get("status") == "published" and not sources and not fact.get("no_source"):
-            issues.append(Issue("error", where, f"{fid}: published fact needs a source or no_source=true"))
+        if fact.get("status") in ("published", "disputed") and not sources and not fact.get("no_source"):
+            issues.append(Issue("error", where, f"{fid}: fact needs a source or no_source=true (status={fact.get('status')})"))
         for source in sources:
             url = source.get("url")
             if url is not None and not str(url).startswith(("http://", "https://")):

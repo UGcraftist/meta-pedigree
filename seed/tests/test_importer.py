@@ -74,6 +74,17 @@ def test_published_fact_without_source_is_rejected(tmp_path: Path):
     assert any("needs a source or no_source=true" in message for message in messages)
 
 
+def test_disputed_fact_without_source_is_rejected(tmp_path: Path):
+    # BUG-003: `disputed` is a parallel state of published (DR-0003:51), so the
+    # source-or-no_source rule applies to it too.
+    files = base_bundle()
+    files["030-facts.json"] = {"facts": [dict(files["030-facts.json"]["facts"][0],
+                                              status="disputed", sources=[])]}
+    bundle, _ = load_bundle(write_bundle(tmp_path, files))
+    messages = [str(issue) for issue in errors(validate(bundle))]
+    assert any("needs a source or no_source=true" in message for message in messages)
+
+
 def test_year_precision_requires_january_first(tmp_path: Path):
     files = base_bundle()
     files["010-orgs.json"] = {"orgs": [{"id": ORG, "name": "A", "founded_date": "1998-04-01",

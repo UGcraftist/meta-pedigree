@@ -80,16 +80,24 @@ R1 折叠 `in_review`：`submit_fact` 直接发布（FR-031 的 editor→reviewe
 [{"id":"0191…","name":"Boston Dynamics","kind":"company","country_code":"US",
   "founded_date":"1992-01-01","founded_precision":"year","notes":null,
   "facts":[{"id":"0192…","predicate":"split_from","label_zh":"拆分自","label_en":"split from",
+            "status":"published",
+            "conflict_key":"3f0c…",
             "subject_kind":"org","subject_id":"0191…","subject_name":"Boston Dynamics",
             "object_kind":"org","object_id":"0193…","object_name":"MIT",
             "start_date":"1992-01-01","start_precision":"year",
             "end_date":null,"end_precision":null,"qualifier":"exact","amount":null,
             "certainty":"exact","no_source":false,
-            "sources":[{"title":"…","url":"https://…","kind":"article","quote":"…","locator":null}]}]}]
+            "sources":[{"title":"…","url":"https://…","kind":"article","quote":"…",
+                        "locator":null,"author":"…","page":null,
+                        "published_at":"2026-01-01","accessed_at":"2026-11-19T00:00:00Z"}]}]}]
 ```
 
 `org_detail` resolves **both** ends of each fact server-side: `subject_kind/id/name` and
-`object_kind/id/name`. The `*_id` and `*_name` of an end are `null` when that end is not
+`object_kind/id/name`. It emits `published` **and** `disputed` facts with an opaque
+`conflict_key` (md5 of the raw oriented triple, computed before the visibility gate — never
+recompute it from the returned ids, which are nulled for hidden counterparts). Clients group on
+`conflict_key`; PostgREST cannot group server-side. `published_at` (出版) and `accessed_at` (访问)
+are distinct; the drawer never presents one as the other. The `*_id` and `*_name` of an end are `null` when that end is not
 `visibility='public'` (security.md:33); a fact with no object end (e.g. `founded`) has
 `object_kind = null`. Clients must render the subject end first; fact ends must not be resolved from `tree_nodes`
 (that map is tree-only and misses persons and gated orgs), though it may still label the drawer title.
