@@ -106,7 +106,10 @@ are distinct; the drawer never presents one as the other. The `*_id` and `*_name
 call; it is exposed at `POST /rest/v1/rpc/facts_for` to `authenticated` and `service_role` only (documented here because
 it is reachable). **R1 known limitation:** `tree_edges` still filters `status='published'`, so a
 disputed relation appears in the detail drawer but not on the canvas; the provenance chip (ux.md)
-lands with T-011/T-012.
+lands with T-011/T-012. **Fixture limitation:** every seeded conflict end is public, so a `conflict_key`
+computed *after* the visibility gate would still group the seeded pair — the pre-gate property is
+asserted by construction in 0008 and needs a hidden-counterpart fact (T-024's person data) to be
+demonstrated end-to-end.
 
 ## Coverage
 

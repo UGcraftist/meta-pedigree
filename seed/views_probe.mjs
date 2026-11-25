@@ -153,6 +153,11 @@ if (noSource.length === 0) {
   console.error("FAIL: fixture lacks a no_source fact (FR-001 label unverifiable)");
   process.exit(1);
 }
+const multiSource = bdFacts.find((f) => (f.sources ?? []).length >= 2);
+if (!multiSource) {
+  console.error("FAIL: no fact has two sources (per-source citation button unexercised)");
+  process.exit(1);
+}
 const populatedSources = detail
   .flatMap((o) => o.facts ?? [])
   .flatMap((f) => f.sources ?? [])
@@ -161,7 +166,7 @@ if (populatedSources.length === 0) {
   console.error("FAIL: no source has author + locator + accessed_at (FR-001 as-of unverifiable)");
   process.exit(1);
 }
-console.log(`  conflict group: ${conflictGroup.length} rows for one conflict_key (incl. 无来源); range fact: ${ranged.predicate} ${ranged.start_date}–${ranged.end_date}; provenance populated on ${populatedSources.length} source(s)`);
+console.log(`  conflict group: ${conflictGroup.length} rows for one conflict_key (incl. 无来源); range fact: ${ranged.predicate} ${ranged.start_date}–${ranged.end_date}; multi-source fact: ${multiSource.predicate} (${(multiSource.sources ?? []).length}); provenance populated on ${populatedSources.length} source(s)`);
 
 // security.md:33 — an anon caller must not read org_detail at all.
 if (!anon) {

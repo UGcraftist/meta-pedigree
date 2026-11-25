@@ -92,8 +92,19 @@
      "published_at": "2026-01-01",
      "accessed_at": "2026-11-19T00:00:00Z",
      "locator": "infobox: Founded"
+    },
+    {
+     "kind": "article",
+     "title": "Boston Dynamics company history",
+     "url": "https://www.bostondynamics.com/about",
+     "author": "Boston Dynamics",
+     "page": "About",
+     "published_at": "2023-01-01",
+     "accessed_at": "2026-11-19T00:00:00Z",
+     "locator": "paragraph 2"
     }
-   ]
+   ],
+   "attrs": {"note": "Two sources on one fact: exercises the per-source citation button."}
   },
   {
    "id": "d1e9f695-a375-5c2e-b4d7-e9b1262238e0",

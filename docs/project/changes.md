@@ -122,7 +122,7 @@ database before this CR is decided.
    already accepts the fields.
 8. **Grouping and rendering rules**: no winner (FR-004), order by `start_date nulls last, id`; group headers go
    through `triple.ts` (subject-first; `label_zh` is active voice); a disputed `无来源` value shows `无来源`
-   with no citation button; citation degradation order defined (author → title → url → `无来源`), no empty
+   with no citation button; citation degradation order defined (author · title · page · locator · url → `无来源`), no empty
    parentheses, no embedded newlines, `quote` stays out (NFR-008).
 9. **`views-probe` shape assertions must be able to fail**: at least one row with non-null `author`, `locator`,
    `accessed_at`; one `status='disputed'`; one `conflict_key` group of size 2.
