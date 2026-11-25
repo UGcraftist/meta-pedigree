@@ -24,7 +24,8 @@ Goal: code that does what the task says, follows the recorded decisions, and is 
    - Take one criterion: write a test that fails, write just enough code to pass it, then take the next. Never write all the tests before the code.
    - Test through the public interface (the API operation, the screen as the user uses it, the module's exported functions), never internals. A test should still pass after a refactor that keeps the behavior.
    - Avoid tests that mock internal parts or check the database directly instead of the interface, and tests whose expected value is computed the same way the code computes it; take it from the requirement or a worked example.
-   - Each acceptance criterion maps to at least one test. For a bug, follow "Fixing a bug" below.
+   - Each acceptance criterion maps to at least one test. Before coding, name the row, record or fixture that will exercise each criterion; if none exists, creating that fixture is part of this task. An AC that no data can reach is not "met".
+   - For a bug, follow "Fixing a bug" below.
 6. **Stay inside the decisions.** If the task cannot be done within the decision records or requirements:
    - stop, do not quietly work around it;
    - write a short note in the PR and in `docs/project/changes.md`;
@@ -53,6 +54,7 @@ If you cannot make it fail, stop: list what you tried and ask the reporter for a
 - [ ] Design docs updated per the `design-doc` update triggers, in the same PR.
 - [ ] UI matches the `ready` design, including loading, empty, error and permission states.
 - [ ] Follows linked decision records and the API contract; any deviation raised, not hidden.
+- [ ] Migrations: the number comes from the `data-model.md` ledger (never "next free"); a `drop ... create` re-issues every privilege the drop destroys in the same file and updates that object's ledger row; the probe asserts as the app's role and as anon.
 - [ ] Secrets are not in code or logs; new credentials added to the security register (no values).
 - [ ] Reviewed per step 8 with no blocking comments; one-way PRs also approved by a person.
 

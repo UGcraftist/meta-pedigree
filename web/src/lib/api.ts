@@ -35,7 +35,7 @@ export async function fetchTree(): Promise<TreeData> {
 }
 
 /**
- * One org with its published facts and sources, for the S-02 detail drawer
+ * One org with its published and disputed facts and sources, for the S-07 detail drawer
  * (T-006). Returns null when the id is unknown or hidden by RLS — the caller
  * must not guess another object (ux.md, URL state).
  */

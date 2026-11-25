@@ -10,6 +10,8 @@ const bdControlledByHyundai: OrgFactRow = {
   predicate: 'controlled_by',
   label_zh: '受控于',
   label_en: null,
+  status: 'published',
+  conflict_key: 'bd|controlled_by|hyundai',
   subject_kind: 'org',
   subject_id: 'bd',
   subject_name: 'Boston Dynamics',

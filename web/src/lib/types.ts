@@ -33,14 +33,23 @@ export interface OrgSourceRow {
   kind: string | null;
   quote: string | null;
   locator: string | null;
+  /** 出版 (source date) and 访问 (when we read it) are distinct provenance facts. */
+  author: string | null;
+  page: string | null;
+  published_at: string | null;
+  accessed_at: string | null;
 }
 
-/** One published fact where the org is subject or object (org_detail.facts[]). */
+/** One published or disputed fact where the org is subject or object (org_detail.facts[]). */
 export interface OrgFactRow {
   id: string;
   predicate: string;
   label_zh: string | null;
   label_en: string | null;
+  /** published / disputed (0008); `superseded` rows never leave the view. */
+  status: 'published' | 'disputed';
+  /** md5 of the raw oriented triple, computed before the visibility gate. */
+  conflict_key: string;
   subject_kind: 'org' | 'person' | null;
   /** null when the subject end is not public (gated in the view, security.md:33). */
   subject_id: string | null;
@@ -60,7 +69,7 @@ export interface OrgFactRow {
   sources: OrgSourceRow[];
 }
 
-/** Row of the org_detail view: org + its chronology of published facts. */
+/** Row of the org_detail view: org + its chronology of published and disputed facts. */
 export interface OrgDetailRow {
   id: string;
   name: string;

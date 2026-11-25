@@ -9,7 +9,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | ID | Goal | Includes | Target date | Status |
 |---|---|---|---|---|
 | M1 | Walking skeleton + internal preview: tree view over 20 seed orgs, URL state, runnable locally | T-001…T-006 | 2026-11-19 | done (T-001–T-006 merged into master via PR #1–#4) |
-| M2 | R1: all Must scope — timeline, focus/provenance, search/filter, missing markers, entry & verify station, party fixture | T-010…T-021 | 2026-12-13 | planned |
+| M2 | R1: all Must scope — timeline, focus/provenance, search/filter, missing markers, entry & verify station, party fixture | T-010…T-024 | 2026-12-13 | planned |
 
 ## Tasks
 
@@ -20,18 +20,19 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 | T-003 | Research + seed 20 orgs (tree skeleton for preview) from sources into seed JSON; validation script. **Done:** 24 orgs (20 target + DLR/MIT/Midea/Hyundai as pedigree parents), 29 sourced facts, 27 sources; `make seed` imported | M1 | none | FR-024 | — | — | 0.5 | T-002 | done |
 | T-004 | Read views per `api.md`: `tree_nodes`/`tree_edges`, `org_detail` (facts+sources JSON); `api.md` 改写为 PostgREST 契约（OpenAPI 由 PostgREST 自动生成，不提交）; migration `0002_read_model` | M1 | none | — | api.md | DR-0005 | 0.5 | T-002 | done |
 | T-005 | S-01 tree screen: SVG/D3 render, expand/collapse, view switcher stub, per-edge predicate text label (visual encoding + legend is T-012). **In review (round 2: approve on the shared commit, PR #3 open; CR-005 decided):** login gate (email/password), component-packed D3 layout, year labels, multi-parent badge, table view, light/dark theme toggle; verified in a real browser (screenshots under `build/preview/`, not committed) | M1 | none | FR-013,025,026 | S-01 | DR-0001 | 0.75 | T-004 | done (merged via PR #3) |
-| T-006 | S-02 minimal detail drawer + URL state (node focus in address bar, copyable). **In review (round 2 approved by the reviewer on 9b4a969; person approval pending after 0005 + views-probe):** `org_detail` drawer (facts/sources/`无来源`), `?focus=` deep link restores on reload, Esc clears, unknown id banner, copy link, focused-node highlight | M1 | none | FR-023(partial) | S-01, S-02 | DR-0001 | 0.25 | T-005 | done (merged via PR #4) |
+| T-006 | S-07 minimal detail drawer + URL state (node focus in address bar, copyable). **In review (round 2 approved by the reviewer on 9b4a969; person approval pending after 0005 + views-probe):** `org_detail` drawer (facts/sources/`无来源`), `?focus=` deep link restores on reload, Esc clears, unknown id banner, copy link, focused-node highlight | M1 | none | FR-023(partial) | S-01, S-07 | DR-0001 | 0.25 | T-005 | done (merged via PR #4) |
 | T-007 | Write path: RPC `upsert_fact`（内嵌 `sources[]` 同事务写来源）、`submit_fact`（源或显式无源 → 旧修订 superseded → published → 一条 audit 记 old→new + actor）、`upsert_stance`、`merge_source`（归一化 URL 相等才合并）；`ensure_app_user` 保证审计 FK 可写；全部 `security definer` + pinned `search_path`，execute 只给 authenticated；migration `write_rpc`（编号见 data-model.md 台账）; 新增 `make write-probe` | M1 | none | FR-006,007,008,009,017 | data-model.md, TH-02 | DR-0003, DR-0005 | 1.0 | T-002 | done |
 | T-008 | Test ladder: lint（ESLint 9 flat，0 error；Prettier 已配置但未进 gate，待独立 `chore(format)` 提交后启用）+ typecheck（`tsc -b`，与 `npm run build` 共用）+ vitest（树布局/D3 布局/URL 状态/api 去重）+ pytest 种子校验；`make setup && make check` 从干净 checkout 通过且无需凭据；契约形状由 `views-probe` 对真实响应断言（DR-0007:48），RPC 负例与回滚在 `write-probe`（DR-0005:25）。**Deviations:** lint/typecheck 是 DR-0002:39 已有的要求、不需 CR；时间轴刻度测试移交 T-011（CR-008） | M1 | none | NFR-07 | — | DR-0002, DR-0005, DR-0007 | 0.5 | T-005, T-006 | done |
 | T-009 | Shared URL-state hook：`?view=&focus=&t=&f=&compare=` 走查询串（单路由，哈希不动）；纯解析/序列化 + 注入 `HistoryPort`，读 → 订阅（popstate）→ 写回（`replaceState`，串未变不写）可单测；未实现的 `t`/`f`/`view=timeline\|network` 原样保留并提示，无法解析的参数连键带原值丢弃；`view` 仅 tree\|timeline\|network（表格是同一视图的替代渲染，不进 URL） | M1 | none | FR-023, FR-027 | S-01 | DR-0002 + ux.md § URL state | 0.5 | T-005, T-006 | done |
-| T-010 | S-02 full detail: facts, sources + locator + as-of, citation copy, "无来源" label, conflicts side by side, person roles over time | M2 | none | FR-001,002,004,005,017 | S-02 | DR-0001 | 1.0 | T-006 | todo |
+| T-010 | S-07 object detail (orgs): migration `detail_contract`（按台账编号）给 `org_detail` 增加 `status`/`conflict_key`/事实源的四字段 `author`/`page`/`published_at`/`accessed_at`，并把 fact JSON 抽到 `facts_for(uuid)` 供 T-024 复用；抽屉按 `conflict_key` 分组、disputed 并列（无主列、按 `start_date nulls last, id`）、一行式引文（author · title · page · locator · url 的降级顺序）、`无来源` 无引文按钮、年份用纯函数 `precisionSpan` 显示区间；夹具（disputed 对、无源、作者/页码/访问日期）同 PR | M2 | none | FR-001,002,003,004,005 | S-07 | DR-0003, DR-0007 | 1.5 | T-006 | todo |
+| T-024 | S-07 person detail + role timeline: 人物详情屏，读取 `org_detail` 同源的 `facts_for`/`object_detail`（`kind='person'`），角色按时间排列、缺口可见（FR-017）；person fixture（1 人 2 段角色）同 PR。CR-010 从 T-010 移入 | M2 | none | FR-017 | S-07 | DR-0003, DR-0007 | 1.0 | T-010 | todo |
 | T-011 | S-03 timeline screen: episodes grouped, anchor years, year-band rendering, stable enter from S-01/S-04 | M2 | none | FR-003,025 | S-03 | DR-0001 | 1.5 | T-005 | todo |
 | T-012 | S-04 focus view: chain highlight + dim rest, restore previous view on Esc, relation legend | M2 | none | FR-012,013,021 | S-04 | DR-0001 | 1.0 | T-011 | todo |
 | T-013 | S-05 search + combined filters (PostgREST `search_orgs`, pg_trgm), persisted in URL, missing counts separate; migration `search`（编号见 data-model.md 台账） | M2 | none | FR-005,023,024 | S-05 | DR-0001 | 0.5 | T-010 | todo |
 | T-014 | S-10 entry & verify station UI: create/edit org/person/fact/relation/source, registry-typed relation, stance axes, validation naming dangling ids, audit trail, merge decision; calls T-007 RPCs | M2 | none | FR-006,007,008,009,014 | S-10 | DR-0003, DR-0005 | 2.0 | T-007 | todo |
 | T-015 | Share/export: URL snapshot + PNG/SVG export with source appendix, CSV/JSON subset export (Should — build only after Must is green) | M2 | none | FR-027,028 (Should) | S-06 | DR-0001 | 1.0 | T-012 | todo |
 | T-016 | S-08 error/empty states (empty tree, no results, failed save) | M2 | none | — | S-08 | DR-0001 | 0.5 | T-013 | todo |
-| T-017 | Expand seeds to 100 orgs + persons + relations; party fixture (FR-011 fields, China/US axes); data quality run | M2 | none | FR-010,011,024 | — | DR-0003 | 2.0 | T-014 | todo |
+| T-017 | Expand seeds to 100 orgs + persons + relations; party fixture (FR-011 fields, China/US axes); data quality run（FR-017 的人物屏在 T-024；as-of per fact 见 CR-010） | M2 | none | FR-010,011,024 | — | DR-0003 | 2.0 | T-014 | todo |
 | T-018 | Security: Supabase Auth invite (single editor), RLS editor policies + negative tests (anon denied), audit actor from JWT, headers per TH-01…TH-05, log hygiene | M2 | none | NFR-08 | TH-01…TH-08 | DR-0005 | 0.5 | T-007 | todo |
 | T-019 | Deploy: Cloudflare Pages (`wrangler pages deploy`, env vars) + Supabase project (dev/prod separation, backup/restore runbook) | M2 | none | NFR-07 | — | DR-0005 | 0.5 | T-018 | todo |
 | T-020 | NFR validation: perf at 100 orgs (pan/zoom ≥30 fps), WCAG AA contrast, target browsers | M2 | none | NFR-02…06, FR-026 | — | — | 0.5 | T-017 | todo |
@@ -61,7 +62,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 
 ### T-006 acceptance criteria
 - Reload with a node id in the URL restores that focus; address bar state is copyable and pasteable.
-- 抽屉把每条事实渲染成 `subject · 谓词 · object`：**始终 subject 在前**，查看对象端（如 Boston Dynamics 的 `controlled_by`）也不反转；无 object 的事实（`founded`）只渲染 subject 与谓词，不追加隐藏对象尾巴；被 visibility 过滤的一端显示显式占位且不可导航；person 端不可导航（S-02 没有人物屏）。
+- 抽屉把每条事实渲染成 `subject · 谓词 · object`：**始终 subject 在前**，查看对象端（如 Boston Dynamics 的 `controlled_by`）也不反转；无 object 的事实（`founded`）只渲染 subject 与谓词，不追加隐藏对象尾巴；被 visibility 过滤的一端显示显式占位且不可导航；person 端不可导航（S-07 的人物屏尚未做，T-024；S-02 是树视图）。
 - `triple.test.ts` 覆盖：对象端查看、无 object、隐藏对象、隐藏 subject、person 不可导航。
 
 ### T-007 acceptance criteria
@@ -82,7 +83,15 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 - 读 → 订阅（popstate）→ 写回（`replaceState`，串未变则不写）通过注入的 `HistoryPort` 单测覆盖；浏览器内手测记录在 PR 与 changes.md 的 implementation log。
 
 ### T-010 acceptance criteria
-- Any fact detail shows source + locator + as-of or the `无来源` label; citation copy pastes as one line with locator; two conflicting sources render side by side; year-only renders as a band; person page lists roles in time order with gaps visible.
+- 每条事实显示来源（author/page/published_at/accessed_at 四字段分别标注"出版/访问"）+ locator，或显式 `无来源`；复制引文粘贴为一行（author · title · page · locator · url 的降级顺序，无空括号、无换行），`quote` 不进入引文（NFR-008）。
+- 冲突：同一 `conflict_key` 的多行事实并列显示，**无主列**、无"主来源"样式，各自带值/来源/`无来源`；组内按 `start_date nulls last, id`；组标题复用 `triple.ts` 的 subject-first 渲染；disputed 组来自真实夹具（`founded` 三行：published 1992 + disputed 1993 有来源 + disputed 1991 `无来源`；另有 1992–2004 的年度范围事实）。
+- 年/月精度按 `precisionSpan(date, precision) → {from, to}` 显示为区间（如 1998 全年），不出现静默按日的点；组织自身的 `founded_date` 同样处理。
+- 设计状态覆盖 `ux.md` S-07 的 sourced / no source / conflicting values / missing fields 四态，外加 loading/error/长内容/1024px；3 行冲突组在 1024px 不溢出。
+- `views-probe` 断言至少一条非空 `author`/`locator`/`accessed_at`、一条 `status='disputed'`、一个大小 3 的 `conflict_key` 组、组内一条 disputed+`no_source`、一条 `end_date` 年度范围（断言必须能失败）。
+
+### T-024 acceptance criteria
+- 人物详情列出全部角色（职位/组织/起止/精度/来源），按时间排序且时间缺口可见（最新角色附 as-of，过期标 "last confirmed <year>"，FR-019）；person fixture（1 人 2 段角色）同 PR。
+- 人物屏与组织详情共用同一 fact JSON（`facts_for`），不重复解析；`无来源`/冲突规则与 T-010 一致。
 
 ### T-011 acceptance criteria
 - Timeline shows 3–4 episodes; a year-only event renders as a band, not a point; entering from the tree lands on the same node in the timeline; at 100 orgs it stays interactive (no full relayout on scroll).
@@ -95,7 +104,7 @@ Milestones follow the release slices in requirements.md. M1 is the walking skele
 - Two filters combine; reload reproduces the filtered view; missing values reported as "missing: N", never 0; search by alias jumps to focus without losing scroll position.
 
 ### T-014 acceptance criteria
-- Save a relation to a non-existent org → rejected, bad id named; edit a relation → object history lists editor, time, old → new; edits appear after refresh with no rebuild; add a new relation type via registry → it renders and filters without a deploy; same-name orgs stay separate until a merge decision is recorded.
+- Save a relation to a non-existent org → rejected, bad id named; edit a relation → object history lists editor, time, old → new; edits appear after refresh with no rebuild; add a new relation type via registry → it renders and filters without a deploy; same-name orgs stay separate until a merge decision is recorded; **mark one of two conflicting facts `disputed` through the station** (FR-004's authoring path; R1 has no such path until this task).
 
 ### T-015 acceptance criteria
 - Exported PNG contains the attribution appendix; CSV round-trips (export → import gives the same records).
@@ -135,9 +144,11 @@ Preview path (M1): T-001 → T-002 → T-003 → T-004 → T-005 → T-006 (2026
 
 | Person | Available (days ≈ 6 h) | Assigned (days) |
 |---|---|---|
-| UGcraftist | ≈ 26 (≈160 h over 4 weeks at ~40 h/week, 2026-11-16 → 2026-12-11) | 16.25 tasks + 0.5 spikes = 16.75, ≈100 h |
+| UGcraftist | ≈ 26 (≈160 h over 4 weeks at ~40 h/week, 2026-11-16 → 2026-12-11) | 17.75 tasks + 0.5 spikes = 18.25, ≈110 h |
 
-Result: ≈9.25 days (≈55 h) of buffer reserved for review passes (T-021), rework and data-collection surprises. Fits without cutting Must scope. Stretch (Should) work T-015 is scheduled only after Must is green.
+任务行合计 15.75 d（Must 14.75 + T-015 1.0）；余下 2.0 d 为里程碑/集成与评审缓冲（CR-010 之前即存在），故 Assigned = 15.75 + 2.0 + 0.5 spikes = 18.25。
+
+Result: ≈7.75 days (≈45 h) of buffer reserved for review passes (T-021), rework and data-collection surprises. Fits without cutting Must scope. Stretch (Should) work T-015 is scheduled only after Must is green.
 
 ## Change log
 

@@ -17,7 +17,7 @@ export interface FactSegment {
   text: string;
   /** kind !== null && name === null: an end that exists but is gated */
   hidden: boolean;
-  /** only a public org can be navigated to; persons have no tree screen (S-02) */
+  /** only a public org can be navigated to; persons have no tree screen yet (S-07 person screen = T-024) */
   focusable: boolean;
   /** the org currently open in the drawer */
   emphasized: boolean;
