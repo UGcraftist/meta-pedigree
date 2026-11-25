@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { useAuth } from '../../auth/AuthProvider';
 import type { TreeData } from '../../lib/api';
-import { applyFocus, readFocus } from '../../lib/urlState';
+import { useUrlState } from '../../lib/useUrlState';
 import { buildForest, PREDICATE_LABEL, type ForestNode } from './layout';
 import { DetailDrawer } from './DetailDrawer';
 import { useTheme } from '../../lib/theme';
@@ -34,8 +34,13 @@ export function TreeScreen({ data }: { data: TreeData }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [table, setTable] = useState(false);
   const [zoomReset, setZoomReset] = useState(0);
-  const [focusId, setFocusId] = useState<string | null>(() => readFocus(window.location.search));
+  const [url, urlController] = useUrlState();
+  const focusId = url.state.focus;
   const [focusNotice, setFocusNotice] = useState<string | null>(null);
+  const [noticesHidden, setNoticesHidden] = useState(false);
+  const urlNotices = [...url.notices.map((n) => n.text), ...(focusNotice ? [focusNotice] : [])];
+  const noticeKey = urlNotices.join(' | ');
+  useEffect(() => setNoticesHidden(false), [noticeKey]);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
@@ -49,10 +54,12 @@ export function TreeScreen({ data }: { data: TreeData }) {
     return map;
   }, [data.nodes]);
 
-  const focusNode = useCallback((id: string | null) => {
-    setFocusId(id);
-    applyFocus(id);
-  }, []);
+  const focusNode = useCallback(
+    (id: string | null) => {
+      urlController.set({ ...urlController.get().state, focus: id });
+    },
+    [urlController],
+  );
 
   // A stale or unknown deep link is dropped with a one-line notice, never
   // guessed or silently re-pointed at another object (ux.md, URL state).
@@ -245,10 +252,10 @@ export function TreeScreen({ data }: { data: TreeData }) {
         </div>
       </header>
 
-      {focusNotice && (
+      {urlNotices.length > 0 && !noticesHidden && (
         <div className="banner" role="status">
-          <span>{focusNotice}</span>
-          <button className="ghost" onClick={() => setFocusNotice(null)}>知道了</button>
+          <span>{urlNotices.join(' ')}</span>
+          <button className="ghost" onClick={() => setNoticesHidden(true)}>知道了</button>
         </div>
       )}
 
@@ -363,6 +370,7 @@ export function TreeScreen({ data }: { data: TreeData }) {
           <DetailDrawer
             orgId={focusId}
             nameById={nameById}
+            copyUrl={urlController.link()}
             onClose={() => focusNode(null)}
             onFocus={focusNode}
           />

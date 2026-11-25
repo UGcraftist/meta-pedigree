@@ -86,6 +86,29 @@
   `attrs_schema` deferral stated; denial assertions accept 403/42501/404 **and** assert row counts unchanged;
   credentials docs extended with editor/readonly accounts; CR-007 raised for the plan AC wording.
 
+## CR-009 — ux.md's URL-state sketch contradicts its own route decision (proposed 2026-11-25)
+
+**Raised by:** agent (advisor review of the T-009 plan), owner of the affected doc: UGcraftist (stage-2 gate approved, `STATE.md`).
+
+**Problem.** `ux.md` S-09 shows `#/org/ORG-eu-012?view=tree&...` while the same section decides
+"every screen stays on one route, no per-screen routing"; `ORG-eu-012` is a human-readable id no requirement
+asks for (FR-004 is about conflicting values), and it is the string S-09's copy button is defined to copy.
+The T-009 AC also cited NFR-005 (availability) where it meant FR-023.
+
+**Decision (proposed).** One CR carrying all four corrections:
+
+1. hash route → query string on the single route (`/?focus=<uuid>&view=tree&t=…&f=…&compare=<uuid>`);
+2. `ORG-eu-012` → object UUIDs for focus and compare;
+3. delete "Stable human-readable IDs (FR-004)" — no FR asks for readable ids;
+4. record the history rule: `replaceState`, no history entry in M1 (back-button view history is M2, FR-024/T-012),
+   and `view` is `tree|timeline|network` only (the table is NFR-009's alternative rendering, not a view);
+5. `plan.md` T-009 AC: NFR-005 → FR-023/FR-027.
+
+**Status:** proposed — waiting for UGcraftist. The T-009 PR contains the `ux.md`/`plan.md` wording so the
+change is visible, but must not merge before this CR is decided.
+
+- 2026-11-25: **T-009 manual browser check (written record, implementation/SKILL:49)** — Chromium (ego-browser) against vite :5173, signed in as the dev editor via a Supabase password grant (session injected, password never typed into the page). Verified: `?view=timeline&t=2015-2024&f=region:eu` renders the tree with three notices (view → T-011, t → T-011, f → T-013) and the params preserved; clicking Franka Emika wrote `?view=timeline&focus=<uuid>&t=2015-2024&f=region:eu&compare=bad` (canonical order, readable `f=`); the notices survived the focus write; Esc cleared focus and kept view/t/f **and** the `#section` hash; `?focus=does-not-exist` showed "链接里的对象 does-not-exist …" and rewrote the URL without it; `?focus=a&focus=b&compare=x,y,z,w` showed the duplicate-key and compare-cap notices; the table toggle changed no URL parameter. Clipboard content itself was not read back (Chromium denied `clipboard.readText` without a user gesture); `copyUrl` is produced by the same `controller.link()` covered in `urlState.test.ts` and the button rendered its idle label after the copy attempt.
+
 ## CR-007 — T-007 acceptance wording drifts from the corrected write contract (decided 2026-11-19)
 
 **Why.** The advisor review of the T-007 plan (`0006_write_rpc`) found the plan's acceptance criteria
